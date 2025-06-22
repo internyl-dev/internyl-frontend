@@ -73,7 +73,10 @@ Filters:
 
 ## Development
 ### Technologies
-The tech stack is yet to be decided. 
+* **Web Development Framework:** NextJS
+* **Styling:** Tailwind CSS
+* **User Authentication:** Firebase
+* **Database:** Firestore
 
 <br>
   
