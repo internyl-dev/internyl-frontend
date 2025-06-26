@@ -4,6 +4,7 @@ export interface Deadline {
   date: Date | null; // Use Date object or null if "not provided"
   rollingBasis: boolean;
   time: string; // e.g. "morning", "12:30 PM", or "not provided"
+  timeRemaining?: string;
 }
 
 export type Grade = "freshman" | "sophomore" | "junior" | "senior" | "undergraduate" | "not provided";
@@ -45,6 +46,8 @@ export interface Requirements {
 }
 
 export interface InternshipCards {
+  id?: string;
+  
   title: string;
   provider: string; // or "not provided"
   description: string;
@@ -61,7 +64,7 @@ export interface InternshipCards {
 
   duration_weeks: number | null; // null if "not provided"
 
-  cost: number | "free" | "not provided";
+  cost: number | "free" | "not provided" | string;
 
   stipend: Stipend;
 

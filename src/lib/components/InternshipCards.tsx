@@ -1,46 +1,79 @@
 import { sampleInternshipData } from "../test/sample";
 
+import { getDaysRemaining } from "../modules/getTimeRemaining";
+import { getDueColorClass } from "../modules/getDueDateTextColor";
+import { getIconColor } from "../modules/getDueDateIconColor";
+
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import WorkOutlineOutlinedIcon from '@mui/icons-material/WorkOutlineOutlined';
 import AttachMoneyOutlinedIcon from '@mui/icons-material/AttachMoneyOutlined';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
-import { BookmarkBorder } from "@mui/icons-material";
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 
 export default function InternshipCards() {
     return (
-        <div className="internship-cards-container">
-            {sampleInternshipData.map((internship, idx) => (
-                <div key={idx} className="internship-card">
-                    <div className="">
-                        <h3 className="font-semibold text-[_#8D8DAC]">{internship.provider}</h3>
-                        <h2 className="font-normal leading-[45px] text-5xl">{internship.title}</h2>
-                        <p className="text-xl">
-                            <AccessTimeOutlinedIcon className="inline-block mr-1" />
-                            <strong>Due:{" "}
-                                {
-                                    internship.deadlines[0] !== null && internship.deadlines[0]?.date ?
-                                        internship.deadlines[0].date.toLocaleDateString() :
-                                        "Date not provided"
-                                }
-                            </strong>
-                        </p>
+        <div className="flex flex-wrap justify-center gap-8 mt-10">
+            {sampleInternshipData.map((internship, idx) => {
+                const daysRemaining = getDaysRemaining(internship.deadlines[0]?.date ?? null);
+                const dueTextClass = getDueColorClass(daysRemaining);
+                const iconColor = getIconColor(daysRemaining);
+
+                return (
+                    <div
+                        key={idx}
+                        className="w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] flex flex-col gap-y-5 shadow-md"
+                    >
+                        {/* Header */}
+                        <div>
+                            <h3 className="text-sm font-semibold text-[#8D8DAC] pb-2">
+                                {internship.provider}
+                            </h3>
+                            <h2 className="text-[2.5rem] leading-[45px] font-regular capitalize bg-gradient-to-t from-[_#2F2F3A] to-[_#5F5F74] bg-clip-text text-transparent pb-2">
+                                {internship.title}
+                            </h2>
+                            <p className={`text-base font-medium flex items-center text-[1.2rem] ${dueTextClass}`}>
+                                <AccessTimeOutlinedIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
+                                <span className="font-bold">Due: </span>
+                                <span className="ml-1">
+                                    {internship.deadlines[0]?.date
+                                        ? internship.deadlines[0].date.toLocaleDateString()
+                                        : "Date not provided"}
+                                </span>
+                            </p>
+                        </div>
+
+                        {/* Middle */}
+                        <div className="flex flex-col gap-y-[6px]">
+                            <p className="text-base flex items-center text-[1.2rem] text-[#3C66C2]">
+                                <WorkOutlineOutlinedIcon className="mr-2" fontSize="small" />
+                                <span>{internship.subject}</span>
+                            </p>
+                            <p className="text-base flex items-center text-[1.2rem] text-[#E66646]">
+                                <SchoolOutlinedIcon className="mr-2" fontSize="small" />
+                                <span>
+                                    {internship.eligibility.rising ? "Rising " : ""}
+                                    {internship.eligibility.grades
+                                        .map((grade) => grade.charAt(0).toUpperCase() + grade.slice(1))
+                                        .join(", ")}
+                                </span>
+                            </p>
+                            <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                                <AttachMoneyOutlinedIcon className="mr-2" fontSize="small" />
+                                <span>
+                                    {internship.stipend.available
+                                        ? `$${internship.stipend.amount}`
+                                        : "Free"}
+                                </span>
+                            </p>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-auto text-right">
+                            <BookmarkBorderIcon fontSize="medium" />
+                        </div>
                     </div>
-                    <div className="">
-                        <p className="text-xl">
-                            <WorkOutlineOutlinedIcon className="inline-block mr-1" />
-                            {internship.subject}
-                        </p>
-                        <p className="text-xl">
-                            <AttachMoneyOutlinedIcon className="inline-block mr-1" />
-                            {internship.stipend.available ?
-                                `Stipend: $${internship.stipend.amount}` :
-                                "Free"
-                            }
-                        </p>
-                    </div>
-                    <BookmarkBorderIcon />
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }
