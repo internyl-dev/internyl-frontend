@@ -17,7 +17,6 @@ Internyl is a real time website that displays current internship opportunities i
 
 
 
-
 <br>
 <br>
 
