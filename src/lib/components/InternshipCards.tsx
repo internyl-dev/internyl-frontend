@@ -32,7 +32,7 @@ export default function InternshipCards() {
         return (
           <div
             key={idx}
-            className="w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-md flex flex-col"
+            className="w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border border-black/30 flex flex-col"
           >
             {/* Top */}
             <div>
