@@ -1,40 +1,36 @@
-import { useState } from "react";
-import { sampleInternshipData } from "../test/sample";
+import {
+  AccessTimeOutlined as TimeIcon,
+  WorkOutlineOutlined as WorkIcon,
+  AttachMoneyOutlined as MoneyIcon,
+  BookmarkBorder as BookmarkBorderIcon,
+  BookmarkOutlined as BookmarkFilledIcon,
+  SchoolOutlined as SchoolIcon,
+} from "@mui/icons-material";
 
 import { getDaysRemaining } from "../modules/getTimeRemaining";
 import { getDueColorClass } from "../modules/getDueDateTextColor";
 import { getIconColor } from "../modules/getDueDateIconColor";
+import { InternshipCards as InternshipType } from "../types/internshipCards";
 
-import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import WorkOutlineOutlinedIcon from "@mui/icons-material/WorkOutlineOutlined";
-import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
-import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import BookmarkOutlinedIcon from "@mui/icons-material/BookmarkOutlined";
-import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+interface Props {
+  internships: InternshipType[];
+  bookmarked: { [key: number]: boolean };
+  toggleBookmark: (idx: number) => void;
+}
 
-export default function InternshipCards() {
-  const [bookmarked, setBookmarked] = useState<{ [key: number]: boolean }>({});
-
-  const toggleBookmark = (idx: number) => {
-    setBookmarked((prev) => ({
-      ...prev,
-      [idx]: !prev[idx],
-    }));
-  };
-
+export default function InternshipCards({ internships, bookmarked, toggleBookmark }: Props) {
   return (
     <div className="flex flex-wrap justify-center items-start gap-8 mt-10">
-      {sampleInternshipData.map((internship, idx) => {
+      {internships.map((internship, idx) => {
         const daysRemaining = getDaysRemaining(internship.deadlines[0]?.date ?? null);
         const dueTextClass = getDueColorClass(daysRemaining);
         const iconColor = getIconColor(daysRemaining);
 
         return (
           <div
-            key={idx}
+            key={internship.id || idx}
             className="w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border border-black/30 flex flex-col"
           >
-            {/* Top */}
             <div>
               <h3 className="text-sm font-semibold text-[#8D8DAC] pb-2">
                 {internship.provider}
@@ -43,7 +39,7 @@ export default function InternshipCards() {
                 {internship.title}
               </h2>
               <p className={`text-base font-medium flex items-center text-[1.2rem] ${dueTextClass}`}>
-                <AccessTimeOutlinedIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
+                <TimeIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
                 <span className="font-bold">Due: </span>
                 <span className="ml-1">
                   {internship.deadlines[0]?.date
@@ -53,14 +49,13 @@ export default function InternshipCards() {
               </p>
             </div>
 
-            {/* Middle */}
             <div className="mt-4 flex flex-col gap-y-[6px]">
               <p className="text-base flex items-center text-[1.2rem] text-[#3C66C2]">
-                <WorkOutlineOutlinedIcon className="mr-2" fontSize="small" />
+                <WorkIcon className="mr-2" fontSize="small" />
                 <span>{internship.subject}</span>
               </p>
               <p className="text-base flex items-center text-[1.2rem] text-[#E66646]">
-                <SchoolOutlinedIcon className="mr-2" fontSize="small" />
+                <SchoolIcon className="mr-2" fontSize="small" />
                 <span>
                   {internship.eligibility.rising ? "Rising " : ""}
                   {internship.eligibility.grades
@@ -69,20 +64,19 @@ export default function InternshipCards() {
                 </span>
               </p>
               <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
-                <AttachMoneyOutlinedIcon className="mr-2" fontSize="small" />
+                <MoneyIcon className="mr-2" fontSize="small" />
                 <span>
-                  {internship.stipend.available
+                  {internship.stipend.available && internship.stipend.amount !== null
                     ? `$${internship.stipend.amount}`
                     : "Free"}
                 </span>
               </p>
             </div>
 
-            {/* Bookmark Icon */}
             <div className="mt-4 text-right">
-              <button onClick={() => toggleBookmark(idx)}>
+              <button onClick={() => toggleBookmark(idx)} className="text-[#8D8DAC] hover:text-[#2F2F3A] transition-colors cursor-pointer">
                 {bookmarked[idx] ? (
-                  <BookmarkOutlinedIcon fontSize="medium" />
+                  <BookmarkFilledIcon fontSize="medium" className="text-[#2F2F3A]"/>
                 ) : (
                   <BookmarkBorderIcon fontSize="medium" />
                 )}

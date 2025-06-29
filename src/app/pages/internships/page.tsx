@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown } from "lucide-react"; // Icon library
+import { ChevronDown } from "lucide-react";
 import SearchBar from "@/lib/components/SearchBar";
 import InternshipCards from "@/lib/components/InternshipCards";
+import { sampleInternshipData } from "@/lib/test/sample";
+import { getDaysRemaining } from "@/lib/modules/getTimeRemaining";
 
-// Define filters with label, color, and options
 const filterData = [
   {
     label: "Due in",
@@ -37,8 +38,15 @@ const filterData = [
 export default function Internships() {
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string[] }>({});
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [bookmarked, setBookmarked] = useState<{ [key: number]: boolean }>({});
 
-  // Toggle filter option inside a category
+  const toggleBookmark = (idx: number) => {
+    setBookmarked((prev) => ({
+      ...prev,
+      [idx]: !prev[idx],
+    }));
+  };
+
   const toggleFilterOption = (category: string, option: string) => {
     setActiveFilters((prev) => {
       const selected = new Set(prev[category] || []);
@@ -56,14 +64,12 @@ export default function Internships() {
 
   return (
     <div className="min-h-screen radial-bg text-gray-800 px-4">
-      {/* Search bar at the top */}
       <SearchBar />
 
       {/* Filter bar */}
       <div className="flex flex-wrap justify-center gap-4 mt-6 relative z-10">
         {filterData.map((filter) => (
           <div key={filter.label} className="relative">
-            {/* Filter button */}
             <button
               onClick={() =>
                 setOpenDropdown((prev) => (prev === filter.label ? null : filter.label))
@@ -74,7 +80,6 @@ export default function Internships() {
               <ChevronDown className="w-4 h-4 mt-[1px]" />
             </button>
 
-            {/* Dropdown with checkboxes */}
             {openDropdown === filter.label && (
               <div className="absolute top-12 left-0 w-48 bg-white rounded-xl shadow-lg p-3 space-y-2 z-20">
                 {filter.options.map((option) => (
@@ -94,8 +99,12 @@ export default function Internships() {
         ))}
       </div>
 
-      {/* Internship cards */}
-      <InternshipCards />
+      {/* Cards with data and state */}
+      <InternshipCards
+        internships={sampleInternshipData}
+        bookmarked={bookmarked}
+        toggleBookmark={toggleBookmark}
+      />
     </div>
   );
 }
