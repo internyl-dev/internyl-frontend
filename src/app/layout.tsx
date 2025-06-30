@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Sora } from "next/font/google";
 import "./globals.css";
 
-import Navbar from "@/lib/components/Navbar"; ``
+import Navbar from "@/lib/components/Navbar";
+import { AuthProvider } from "@/lib/config/context/AuthContext";
 
 const sora = Sora({
   variable: "--font-sora",
@@ -24,8 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={sora.className}>
       <body>
-        <Navbar/>
-        {children}
+        <AuthProvider>
+          <Navbar/>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
