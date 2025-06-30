@@ -1,5 +1,10 @@
-import { Inter, Caveat } from 'next/font/google';
+"use client";
 
+import { useEffect, useState } from "react";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth } from "@/lib/config/firebaseConfig";
+
+import { Inter, Caveat } from 'next/font/google';
 import Image from 'next/image';
 
 const inter = Inter({ 
@@ -15,6 +20,29 @@ const caveat = Caveat({
 });
 
 export default function Home() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (isLoading) return null;
+
+  if (user) {
+    return (
+      <div className="text-[#1d1d1f] px-6 md:px-20 pt-24 pb-32 relative overflow-hidden">
+        <h1 className="text-4xl font-bold text-center">Welcome to your homepage!</h1>
+        <p className="text-center mt-4">This is a blank homepage template. Add content here.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="text-[#1d1d1f] px-6 md:px-20 pt-24 pb-32 relative overflow-hidden">
       {/* Hero Section */}
