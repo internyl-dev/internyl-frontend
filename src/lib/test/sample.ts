@@ -2,6 +2,7 @@ import { InternshipCards } from "../types/internshipCards";
 
 export const sampleInternshipData: InternshipCards[] = [
     {
+        id: "internship1",
         title: "Sewer Cleaning",
         provider: "Random University",
         description: "With this opportunity you are able to clean the sewers of New York City.",
@@ -71,6 +72,7 @@ export const sampleInternshipData: InternshipCards[] = [
     },
 
     {
+        id: "internship2",
         title: "Machine Learning",
         provider: "NYU",
         description: "Introductory hands-on experience in machine learning using Python and TensorFlow.",
@@ -140,6 +142,7 @@ export const sampleInternshipData: InternshipCards[] = [
     },
 
     {
+        id: "internship3",
         title: "NYC Residential Summer",
         provider: "Columbia",
         description: "Live and learn on Columbia's campus with access to top-tier academic and social opportunities.",
@@ -209,6 +212,7 @@ export const sampleInternshipData: InternshipCards[] = [
     },
 
     {
+        id: "internship4",
         title: "Intro to Civil Engineering",
         provider: "MITx Virtual Lab",
         description: "Discover how infrastructure shapes society and gain foundational civil engineering skills.",
@@ -278,6 +282,7 @@ export const sampleInternshipData: InternshipCards[] = [
     },
 
     {
+        id: "internship5",
         title: "Climate Justice Youth Lab",
         provider: "Berkeley Environmental Institute",
         description: "Collaborate with youth activists and scientists on real-world climate justice campaigns.",
@@ -345,7 +350,9 @@ export const sampleInternshipData: InternshipCards[] = [
             phone: "510-555-3281",
         },
     },
+
     {
+        id: "internship6",
         title: "AI4ALL Summer Lab",
         provider: "Stanford University",
         description: "A summer program introducing high school students from underrepresented backgrounds to artificial intelligence through hands-on projects and mentorship.",
@@ -413,7 +420,9 @@ export const sampleInternshipData: InternshipCards[] = [
             phone: "not provided",
         },
     },
+
     {
+        id: "internship7",
         title: "Summer Journalism Academy",
         provider: "Boston University",
         description: "An immersive two-week program for high schoolers interested in journalism, reporting, and media production.",
@@ -481,7 +490,9 @@ export const sampleInternshipData: InternshipCards[] = [
             phone: "617-353-1378",
         },
     },
+
     {
+        id: "internship8",
         title: "Pre-College Program in Neuroscience",
         provider: "University of Pennsylvania",
         description: "Study the brain and nervous system through lectures, labs, and neuroscience research projects on Penn’s campus.",
@@ -549,7 +560,9 @@ export const sampleInternshipData: InternshipCards[] = [
             phone: "215-898-7326",
         },
     },
+
     {
+        id: "internship9",
         title: "Girls Who Code Summer Immersion",
         provider: "Girls Who Code",
         description: "Free 2-week virtual summer program that teaches high school girls coding, design thinking, and career prep.",
@@ -617,7 +630,9 @@ export const sampleInternshipData: InternshipCards[] = [
             phone: "not provided",
         },
     },
+
     {
+        id: "internship10",
         title: "NASA SEES Internship",
         provider: "NASA & UT Austin",
         description: "Participate in authentic NASA Earth and space science research as a high school student, virtually and in Austin.",
@@ -685,7 +700,9 @@ export const sampleInternshipData: InternshipCards[] = [
             phone: "not provided",
         },
     },
+
     {
+        id: "internship11",
         title: "Urban Sustainability Internship",
         provider: "Green Future Institute",
         description: "Work on community projects to improve urban green spaces and sustainability practices.",
@@ -734,6 +751,7 @@ export const sampleInternshipData: InternshipCards[] = [
     },
 
     {
+        id: "internship12",
         title: "Tech Innovators Bootcamp",
         provider: "TechNation",
         description: "An intensive bootcamp introducing high school students to software development and innovation.",
@@ -782,6 +800,7 @@ export const sampleInternshipData: InternshipCards[] = [
     },
 
     {
+        id: "internship13",
         title: "Historic Preservation Internship",
         provider: "Heritage Society",
         description: "Assist with preservation projects and historical research in local communities.",

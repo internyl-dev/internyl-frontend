@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/config/firebaseConfig";
+import { auth, db } from "@/lib/config/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
-import { Inter, Caveat } from 'next/font/google';
-import Image from 'next/image';
-
-import Link from 'next/link';
-
-// Material UI Icons
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { Inter, Caveat } from "next/font/google";
+import Image from "next/image";
+import Link from "next/link";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import InternshipCards from "@/lib/components/InternshipCards";
 import { sampleInternshipData } from "@/lib/test/sample";
+
+// Bookmark functionality
+import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -29,23 +30,49 @@ const caveat = Caveat({
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [bookmarked, setBookmarked] = useState<{ [key: number]: boolean }>({});
+  const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
 
-  const toggleBookmark = (idx: number) => {
-    setBookmarked((prev) => ({
-      ...prev,
-      [idx]: !prev[idx],
-    }));
-  };
+  const [userData, setUserData] = useState<any>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setIsLoading(false);
+
+      if (currentUser) {
+        const docRef = doc(db, "users", currentUser.uid);
+        const snapshot = await getDoc(docRef);
+
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          setUserData(data);
+
+          const saved: string[] = data.savedInternships || [];
+          const map: { [key: string]: boolean } = {};
+          saved.forEach((id: string) => {
+            map[id] = true;
+          });
+          setBookmarked(map);
+        }
+      }
     });
 
     return () => unsubscribe();
   }, []);
+
+
+  const toggleBookmark = async (internshipId: string) => {
+    const isBookmarked = bookmarked[internshipId] === true;
+    try {
+      await toggleBookmarkInFirestore(internshipId, isBookmarked);
+      setBookmarked((prev) => ({
+        ...prev,
+        [internshipId]: !isBookmarked,
+      }));
+    } catch (err) {
+      console.error("Failed to toggle bookmark:", err);
+    }
+  };
 
   if (isLoading) return null;
 
@@ -57,7 +84,7 @@ export default function Home() {
         <div className="bg-[#9381FF] text-white">
           <div className="px-6 md:px-20 pt-28 pb-28 relative text-right">
             <div className="inline-block max-w-full">
-              <h1 className="text-[52px] font-bold">Beware, {user.uid}</h1>
+              <h1 className="text-[52px] font-bold">Beware, {userData?.displayName.split(" ")[0] || user.displayName || "Intern"}</h1>
               <p
                 className={`text-left text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className}`}
               >

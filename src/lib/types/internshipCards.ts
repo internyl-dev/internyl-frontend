@@ -46,7 +46,7 @@ export interface Requirements {
 }
 
 export interface InternshipCards {
-  id?: string;
+  id: string;
   
   title: string;
   provider: string; // or "not provided"

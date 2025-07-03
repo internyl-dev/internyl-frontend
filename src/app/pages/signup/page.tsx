@@ -8,6 +8,11 @@ import {
 } from "firebase/auth";
 import { useAuth } from "@/lib/config/context/AuthContext";
 
+import { db } from "@/lib/config/firebaseConfig";
+import { collection, addDoc, setDoc, doc } from "firebase/firestore";
+
+import { useRouter } from "next/navigation";
+
 import Image from "next/image";
 
 export default function SignUp() {
@@ -23,8 +28,11 @@ export default function SignUp() {
     const [status, setStatus] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    const router = useRouter();
+
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (signUpPassword !== signUpConfirmPassword) {
             setStatus("Passwords do not match");
             return;
@@ -32,8 +40,21 @@ export default function SignUp() {
 
         setIsLoading(true);
         try {
-            await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
+            const userCredential = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
+
+            const user = userCredential.user;
+
+            await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                displayName: signUpName,
+                username: signUpUsername,
+                email: signUpEmail,
+                createdAt: new Date(),
+            })
+
             setStatus("Account created successfully!");
+
+            router.push("/");
         } catch (err: any) {
             setStatus(err.message);
         } finally {
@@ -67,6 +88,7 @@ export default function SignUp() {
                         value={signUpName}
                         onChange={(e) => setSignUpName(e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#3C66C2] transition"
+                        autoComplete="name"
                     />
 
                     <input
@@ -83,6 +105,7 @@ export default function SignUp() {
                         value={signUpEmail}
                         onChange={(e) => setSignUpEmail(e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#3C66C2] transition"
+                        autoComplete="email"
                         required
                     />
 
@@ -92,6 +115,8 @@ export default function SignUp() {
                         value={signUpPassword}
                         onChange={(e) => setSignUpPassword(e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#E66646] transition"
+                        autoSave="new-password"
+                        minLength={8}
                         required
                     />
 
