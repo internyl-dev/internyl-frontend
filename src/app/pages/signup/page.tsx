@@ -41,7 +41,6 @@ export default function SignUp() {
         setIsLoading(true);
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
-
             const user = userCredential.user;
 
             await setDoc(doc(db, "users", user.uid), {
@@ -64,7 +63,19 @@ export default function SignUp() {
 
     const handleGoogleSignIn = async () => {
         try {
-            await signInWithPopup(auth, GoogleProvider);
+            const userCredential = await signInWithPopup(auth, GoogleProvider);
+            const user = userCredential.user;
+
+            await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,displayName: signUpName,
+                username: signUpUsername,
+                email: signUpEmail,
+                createdAt: new Date(),
+            })
+
+            setStatus("Account created successfully!");
+
+            router.push("/");
         } catch (err: any) {
             setStatus(err.message);
         }

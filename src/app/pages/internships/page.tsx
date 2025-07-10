@@ -1,11 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import SearchBar from "@/lib/components/SearchBar";
 import InternshipCards from "@/lib/components/InternshipCards";
 import { sampleInternshipData } from "@/lib/test/sample";
-import { getDaysRemaining } from "@/lib/modules/getTimeRemaining";
+import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
+
+// Firebase
+import { auth, db } from "@/lib/config/firebaseConfig";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 const filterData = [
   {
@@ -38,13 +43,44 @@ const filterData = [
 export default function Internships() {
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string[] }>({});
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [bookmarked, setBookmarked] = useState<{ [key: number]: boolean }>({});
+  const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const toggleBookmark = (idx: number) => {
-    setBookmarked((prev) => ({
-      ...prev,
-      [idx]: !prev[idx],
-    }));
+  // 🔁 Fetch saved bookmarks from Firestore
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const docRef = doc(db, "users", currentUser.uid);
+        const snapshot = await getDoc(docRef);
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          const saved: string[] = data.savedInternships || [];
+          const map: { [key: string]: boolean } = {};
+          saved.forEach((id: string) => {
+            map[id] = true;
+          });
+          setBookmarked(map);
+        }
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const toggleBookmark = async (internshipId: string) => {
+    const isBookmarked = bookmarked[internshipId] === true;
+    try {
+      await toggleBookmarkInFirestore(internshipId, isBookmarked);
+      setBookmarked((prev) => ({
+        ...prev,
+        [internshipId]: !isBookmarked,
+      }));
+    } catch (err) {
+      console.error("Failed to toggle bookmark:", err);
+    }
   };
 
   const toggleFilterOption = (category: string, option: string) => {
@@ -61,6 +97,8 @@ export default function Internships() {
       };
     });
   };
+
+  if (isLoading) return null;
 
   return (
     <div className="min-h-screen radial-bg text-gray-800 px-4">
@@ -83,7 +121,7 @@ export default function Internships() {
             {openDropdown === filter.label && (
               <div className="absolute top-12 left-0 w-48 bg-white rounded-xl shadow-lg p-3 space-y-2 z-20">
                 {filter.options.map((option) => (
-                  <label key={option} className="flex items-center gap-2 text-sm text-gray-700">
+                  <label key={option} className="flex items-center gap-2 text-sm text-gray-700 ">
                     <input
                       type="checkbox"
                       checked={activeFilters[filter.label]?.includes(option) || false}
@@ -99,7 +137,7 @@ export default function Internships() {
         ))}
       </div>
 
-      {/* Cards with data and state */}
+      {/* Cards with data and persistent bookmarks */}
       <InternshipCards
         internships={sampleInternshipData}
         bookmarked={bookmarked}

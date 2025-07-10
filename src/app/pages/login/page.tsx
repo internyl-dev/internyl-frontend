@@ -10,6 +10,10 @@ import {
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+
+import { db } from "@/lib/config/firebaseConfig";
+import { collection, addDoc, setDoc, doc, getDoc } from "firebase/firestore";
+
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
@@ -29,6 +33,18 @@ export default function Login() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
+
+      // Check if user exists in Firestore
+      const userDocRef = doc(db, "users", auth.currentUser?.uid || "");
+      const userSnapshot = await getDoc(userDocRef);
+      if (!userSnapshot.exists()) {
+        await setDoc(userDocRef, {
+          email: auth.currentUser?.email,
+          createdAt: new Date(),
+        });
+      }
+
+
       router.push("/");
     } catch (error) {
       setStatus("Invalid email or password.");
