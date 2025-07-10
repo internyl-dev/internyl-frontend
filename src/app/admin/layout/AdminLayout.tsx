@@ -3,59 +3,129 @@
 import Link from "next/link";
 import { useAdminCheck } from "@/lib/hooks/useAdminCheck";
 import { usePathname, useRouter } from "next/navigation";
-import { Box, Drawer, List, ListItemButton, ListItemText, Typography, CircularProgress } from "@mui/material";
-import { useEffect } from "react";
+import {
+    Box,
+    Drawer,
+    List,
+    ListItemButton,
+    ListItemText,
+    CircularProgress,
+    IconButton,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { useEffect, useState } from "react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const isAdmin = useAdminCheck();  // should return: null | true | false
-  const pathname = usePathname();
-  const router = useRouter();
+    const isAdmin = useAdminCheck(); // null | true | false
+    const pathname = usePathname();
+    const router = useRouter();
 
-  useEffect(() => {
-    if (isAdmin === false) {
-      router.push("/");
+    const drawerWidth = 240;
+    const [open, setOpen] = useState(true);
+
+    useEffect(() => {
+        if (isAdmin === false) {
+            router.push("/");
+        }
+    }, [isAdmin, router]);
+
+    if (isAdmin === null) {
+        return (
+            <Box sx={{ mt: 12, display: "flex", justifyContent: "center" }}>
+                <CircularProgress />
+            </Box>
+        );
     }
-  }, [isAdmin, router]);
+    if (isAdmin === false) return null;
 
-  if (isAdmin === null) {
-    // still loading admin status
     return (
-      <Box sx={{ mt: 12, display: "flex", justifyContent: "center" }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (isAdmin === false) {
-    // Optionally show message briefly if you want (or blank since redirecting)
-    return null;
-  }
-
-  // isAdmin === true here
-  return (
-    <Box sx={{ display: "flex", pt: 8 }}>
-      <Drawer
-        variant="permanent"
-        open
-        PaperProps={{ sx: { width: 240, top: 64 } }}
+        <Box sx={{ display: "flex", pt: 8, minHeight: "100vh" }}>
+            {/* Toggle Sidebar Button */}
+            {/* <IconButton
+        onClick={() => setOpen(!open)}
+        sx={{
+          position: "fixed",
+          top: 50,
+          left: 16,
+          zIndex: 1301,
+          bgcolor: "background.paper",
+          boxShadow: 1,
+          borderRadius: "50%",
+          "&:hover": { bgcolor: "grey.200" },
+        }}
+        aria-label={open ? "Close sidebar" : "Open sidebar"}
       >
-        <List>
-          <ListItemButton component={Link} href="/admin" selected={pathname === "/admin"}>
-            <ListItemText primary="Dashboard" />
-          </ListItemButton>
-          <ListItemButton
-            component={Link}
-            href="/admin/manage-internships"
-            selected={pathname.startsWith("/admin/manage-internships")}
-          >
-            <ListItemText primary="Manage Internships" />
-          </ListItemButton>
-        </List>
-      </Drawer>
+        <MenuIcon />
+      </IconButton> */}
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3, ml: 30 }}>
-        {children}
-      </Box>
-    </Box>
-  );
+            <Drawer
+                variant="persistent"
+                open={open}
+                PaperProps={{
+                    sx: {
+                        width: drawerWidth,
+                        top: 64,
+                        borderRadius: "0 12px 12px 0",
+                        boxShadow: "2px 0 8px rgba(0,0,0,0.1)",
+                        backgroundImage: "linear-gradient(-25deg, #AEAEF3 0%, #D3D3EA 88%)",
+                        color: "black",
+                        borderRight: "none",
+                        overflowX: "hidden",
+                        transition: "width 0.3s ease",
+                        px: 1,
+                        pt: 2,
+                    },
+                }}
+            >
+                <List>
+                    <ListItemButton
+                        component={Link}
+                        href="/admin"
+                        selected={pathname === "/admin"}
+                        sx={{
+                            borderRadius: 1,
+                            mb: 1,
+                            "&.Mui-selected": {
+                                bgcolor: "primary.main",
+                                color: "primary.contrastText",
+                                "&:hover": { bgcolor: "primary.dark" },
+                            },
+                            "&:hover": { bgcolor: "grey.100" },
+                        }}
+                    >
+                        <ListItemText primary="Dashboard" />
+                    </ListItemButton>
+
+                    <ListItemButton
+                        component={Link}
+                        href="/admin/manage-internships"
+                        selected={pathname.startsWith("/admin/manage-internships")}
+                        sx={{
+                            borderRadius: 1,
+                            "&.Mui-selected": {
+                                bgcolor: "primary.main",
+                                color: "primary.contrastText",
+                                "&:hover": { bgcolor: "primary.dark" },
+                            },
+                            "&:hover": { bgcolor: "grey.100" },
+                        }}
+                    >
+                        <ListItemText primary="Manage Internships" />
+                    </ListItemButton>
+                </List>
+            </Drawer>
+
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    p: 3,
+                    ml: open ? `${drawerWidth}px` : 0,
+                    transition: "margin-left 0.3s ease",
+                }}
+            >
+                {children}
+            </Box>
+        </Box>
+    );
 }

@@ -3,22 +3,21 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "@/lib/config/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 
 import { Inter, Caveat } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import InternshipCards from "@/lib/components/InternshipCards";
-import { sampleInternshipData } from "@/lib/test/sample";
 
-// Bookmark functionality
+import InternshipCards from "@/lib/components/InternshipCards";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
+import { InternshipCards as Internship } from "@/lib/types/internshipCards";
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
-  weight: ['400', '500', '600', '700']
+  weight: ['400', '500', '600', '700'],
 });
 
 const caveat = Caveat({
@@ -32,6 +31,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
   const [userData, setUserData] = useState<any>(null);
+  const [internships, setInternships] = useState<Internship[]>([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -53,6 +53,26 @@ export default function Home() {
           });
           setBookmarked(map);
         }
+
+        // Fetch internships from Firestore
+        const querySnapshot = await getDocs(collection(db, "internships"));
+        const internshipList = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+
+          // Normalize nested Timestamp values to Date
+          if (Array.isArray(data.deadlines)) {
+            data.deadlines = data.deadlines.map((d: any) => ({
+              ...d,
+              date: d.date?.toDate?.() ?? d.date ?? null,
+            }));
+          }
+
+          return {
+            id: doc.id,
+            ...data,
+          };
+        }) as Internship[];
+        setInternships(internshipList);
       }
     });
 
@@ -75,8 +95,7 @@ export default function Home() {
   if (isLoading) return null;
 
   if (user) {
-    // Prepare filtered saved internships once
-    const savedInternshipsFiltered = sampleInternshipData.filter((internship) =>
+    const savedInternshipsFiltered = internships.filter((internship) =>
       userData?.savedInternships?.includes(internship.id)
     );
 
@@ -98,21 +117,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Middle Section - View and Manage Internships */}
-        <div
-          className="
-            relative
-            bg-white/30 
-            backdrop-blur-md
-            rounded-tl-[25px] rounded-bl-[25px]
-            mt-6 mx-4
-            text-[#2F2F3A]
-            flex flex-col
-            max-w-full
-            shadow-lg
-          "
-        >
-          {/* Header Section: Title + Button */}
+        {/* Middle Section */}
+        <div className="relative bg-white/30 backdrop-blur-md rounded-tl-[25px] rounded-bl-[25px] mt-6 mx-4 text-[#2F2F3A] flex flex-col max-w-full shadow-lg">
           <div className="flex items-center justify-between px-6 md:px-20 pt-18 pb-12">
             <div className="flex flex-col items-start">
               <p className="text-[18px] text-[#A2A2C7] tracking-[-0.04em] mb-1">
@@ -120,39 +126,15 @@ export default function Home() {
               </p>
               <h2 className="text-5xl font-semibold">Your Internships</h2>
             </div>
-
             <Link
               href="/pages/internships"
-              className="
-                inline-flex items-center
-                px-6 py-3
-                text-[18px] font-light
-                text-white bg-[#E26262]
-                rounded-full gap-3.5
-                hover:bg-[#d65050]
-                transition-colors duration-200
-                cursor-pointer
-                shadow-lg
-                whitespace-nowrap
-              "
+              className="inline-flex items-center px-6 py-3 text-[18px] font-light text-white bg-[#E26262] rounded-full gap-3.5 hover:bg-[#d65050] transition-colors duration-200 cursor-pointer shadow-lg whitespace-nowrap"
             >
               see all <ArrowForwardIcon className="w-5 h-5 text-white" />
             </Link>
           </div>
 
-          {/* Internship Cards Container with horizontal scrollbar */}
-          <div
-            className="
-              flex space-x-6
-              overflow-x-auto
-              scrollbar-thin scrollbar-thumb-[#E26262]/80 scrollbar-track-[#F3F3F3]
-              scrollbar-thumb-rounded-full scrollbar-track-rounded-full
-              px-6 md:px-20 pb-8
-              snap-x snap-mandatory
-              max-w-full
-            "
-          >
-            {/* Render InternshipCards component ONCE with the filtered internships */}
+          <div className="flex space-x-6 overflow-x-auto scrollbar-thin scrollbar-thumb-[#E26262]/80 scrollbar-track-[#F3F3F3] scrollbar-thumb-rounded-full scrollbar-track-rounded-full px-6 md:px-20 pb-8 snap-x snap-mandatory max-w-full">
             <InternshipCards
               internships={savedInternshipsFiltered}
               bookmarked={bookmarked}
@@ -164,20 +146,20 @@ export default function Home() {
     );
   }
 
-  // Landing page if not logged in
+  // Public Landing Page
   return (
     <div className="text-[#1d1d1f] px-6 md:px-20 pt-24 pb-32 relative overflow-hidden">
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto relative z-10 mr-auto ml-auto">
         <div className="flex flex-col lg:flex-row items-center justify-between">
-          {/* Left Content */}
           <div className="text-center lg:text-left max-w-2xl">
             <p className="text-sm text-[#8d8dac] font-medium mb-2">
               Internyl — Internship Tracker for Students
             </p>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
               <span className={`text-[#ec6464] font-extrabold ${inter.className}`}>Streamline</span> your search,<br />
-              Secure <span className={`italic font-extrabold ${caveat.className} text-7xl`}>your</span> <span className={`italic font-extrabold ${caveat.className} text-7xl`}>future</span>
+              Secure <span className={`italic font-extrabold ${caveat.className} text-7xl`}>your</span>{" "}
+              <span className={`italic font-extrabold ${caveat.className} text-7xl`}>future</span>
             </h1>
             <p className="mt-4 text-lg text-[#1d1d1f]">
               Internyl helps students find and track internships and programs — all in one place.
@@ -195,7 +177,6 @@ export default function Home() {
             <p className="text-sm italic mt-2 text-[#1d1d1f]">it&apos;s free</p>
           </div>
 
-          {/* Right Image */}
           <div className="hidden lg:flex justify-end w-full">
             <Image
               src="/internyl-infinite-cards.svg"
@@ -249,31 +230,19 @@ export default function Home() {
       {/* Features Section */}
       <section className="mt-32 text-center max-w-3xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">No more stress,<br />we&apos;ve got you</h2>
-        <p className="text-base mb-3">
-          Discover programs easily with our intuitive search features.
-        </p>
-        <p className="text-base mb-3">
-          Save programs and receive reminders so that you never miss a deadline.
-        </p>
-        <p className="text-base mb-8">
-          Gain access to exclusive information like acceptance rates and release dates not even the program website will tell you.
-        </p>
+        <p className="text-base mb-3">Discover programs easily with our intuitive search features.</p>
+        <p className="text-base mb-3">Save programs and receive reminders so that you never miss a deadline.</p>
+        <p className="text-base mb-8">Gain access to exclusive information like acceptance rates and release dates not even the program website will tell you.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-white border border-gray-300 rounded-xl p-4 shadow text-center">
-            <p className="text-sm font-medium">
-              Discover programs easily with our intuitive search features.
-            </p>
+            <p className="text-sm font-medium">Discover programs easily with our intuitive search features.</p>
           </div>
           <div className="bg-white border border-gray-300 rounded-xl p-4 shadow text-center">
-            <p className="text-sm font-medium">
-              Save programs and receive reminders so that you never miss a deadline.
-            </p>
+            <p className="text-sm font-medium">Save programs and receive reminders so that you never miss a deadline.</p>
           </div>
           <div className="bg-white border border-gray-300 rounded-xl p-4 shadow text-center">
-            <p className="text-sm font-medium">
-              Gain access to exclusive information like acceptance rates and release dates.
-            </p>
+            <p className="text-sm font-medium">Gain access to exclusive information like acceptance rates and release dates.</p>
           </div>
         </div>
       </section>

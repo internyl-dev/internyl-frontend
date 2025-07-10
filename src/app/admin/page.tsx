@@ -35,13 +35,22 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <Typography variant="h4" mb={2}>Admin Dashboard</Typography>
+      <h2 className="text-[2.5rem] text-center font-semibold">Admin Dashboard</h2>
 
-      <Button variant="contained" onClick={uploadInternships} sx={{ mb: 2 }}>
-        Upload Sample Internship Data
-      </Button>
-
-      {status && <Typography>{status}</Typography>}
+      <div className="flex items-center justify-center flex-row gap-4 mt-8">
+        <div className="text-center bg-white p-6 rounded-xl shadow-md w-full max-w-screen">
+          <h3 className="pb-2 font-bold">Upload Internship Data</h3>
+          <p className="pb-2">Clicking this button will upload the internships stored in sample.ts</p>
+          <Button
+            onClick={uploadInternships}
+            variant="contained"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors m-w-[300px]">
+            Upload Sample Internship Data
+          </Button>
+          {status && <Typography>{status}</Typography>}
+        </div>
+        
+      </div>
     </AdminLayout>
   );
 }

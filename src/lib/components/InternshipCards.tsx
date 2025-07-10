@@ -14,6 +14,7 @@ import { getDaysRemaining } from "../modules/getTimeRemaining";
 import { getDueColorClass } from "../modules/getDueDateTextColor";
 import { getIconColor } from "../modules/getDueDateIconColor";
 
+
 interface Props {
   internships: InternshipType[];
   bookmarked: { [key: string]: boolean };
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export default function InternshipCards({ internships, bookmarked, toggleBookmark }: Props) {
+
   return (
     <div className="flex flex-wrap justify-center items-start gap-8 mt-10">
       {internships.map((internship) => {
@@ -45,9 +47,9 @@ export default function InternshipCards({ internships, bookmarked, toggleBookmar
                 <TimeIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
                 <span className="font-bold">Due: </span>
                 <span className="ml-1">
-                  {internship.deadlines[0]?.date
+                  {typeof window !== "undefined" && internship.deadlines[0]?.date
                     ? internship.deadlines[0].date.toLocaleDateString()
-                    : "Date not provided"}
+                    : internship.deadlines[0]?.date?.toString() || "Date not provided"}
                 </span>
               </p>
             </div>
@@ -60,16 +62,17 @@ export default function InternshipCards({ internships, bookmarked, toggleBookmar
               <p className="text-base flex items-center text-[1.2rem] text-[#E66646]">
                 <SchoolIcon className="mr-2" fontSize="small" />
                 <span>
-                  {internship.eligibility.rising ? "Rising " : ""}
-                  {internship.eligibility.grades.map((grade) =>
+                  {internship.eligibility?.rising ? "Rising " : ""}
+                  {internship.eligibility?.grades?.map((grade) =>
                     grade.charAt(0).toUpperCase() + grade.slice(1)
                   ).join(", ")}
                 </span>
               </p>
+
               <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
                 <MoneyIcon className="mr-2" fontSize="small" />
                 <span>
-                  {internship.stipend.available && internship.stipend.amount !== null
+                  {internship.stipend?.available && internship.stipend.amount !== null
                     ? `$${internship.stipend.amount}`
                     : "Free"}
                 </span>

@@ -7,10 +7,12 @@ import InternshipCards from "@/lib/components/InternshipCards";
 import { sampleInternshipData } from "@/lib/test/sample";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
 
+import { InternshipCards as InternshipType } from "@/lib/types/internshipCards";
+
 // Firebase
 import { auth, db } from "@/lib/config/firebaseConfig";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 
 const filterData = [
   {
@@ -69,7 +71,44 @@ export default function Internships() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [internships, setInternships] = useState<InternshipType[]>([]);
+
   useEffect(() => {
+    async function fetchInternships() {
+      try {
+        // Reference to your Firestore collection "internships"
+        const internshipsCollection = collection(db, "internships");
+
+        // Get all documents in the "internships" collection
+        const snapshot = await getDocs(internshipsCollection);
+
+        // Map over documents and convert them to InternshipType objects
+        const fetchedInternships = snapshot.docs.map((doc) => {
+          const data = doc.data();
+
+          // IMPORTANT: If you have Firestore Timestamp fields (e.g., deadlines[0].date),
+          // convert them to JS Date objects:
+          const deadlines = data.deadlines?.map((deadline: any) => ({
+            ...deadline,
+            date: deadline.date?.toDate ? deadline.date.toDate() : deadline.date,
+          })) || [];
+
+          return {
+            id: doc.id,
+            ...data,
+            deadlines,
+          } as InternshipType;
+        });
+
+        // Update state with the fetched data
+        setInternships(fetchedInternships);
+      } catch (error) {
+        console.error("Error fetching internships:", error);
+      }
+    }
+
+    fetchInternships();
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
@@ -120,7 +159,7 @@ export default function Internships() {
   };
 
   const filterInternships = () => {
-    return sampleInternshipData.filter((internship) => {
+    return internships.filter((internship) => {
       return Object.entries(activeFilters).every(([category, selectedOptions]) => {
         if (selectedOptions.length === 0) return true;
 
