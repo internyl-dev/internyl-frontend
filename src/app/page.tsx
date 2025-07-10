@@ -134,7 +134,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="flex space-x-6 overflow-x-auto scrollbar-thin scrollbar-thumb-[#E26262]/80 scrollbar-track-[#F3F3F3] scrollbar-thumb-rounded-full scrollbar-track-rounded-full px-6 md:px-20 pb-8 snap-x snap-mandatory max-w-full">
+          <div className="px-6 md:px-20 pb-8">
             <InternshipCards
               internships={savedInternshipsFiltered}
               bookmarked={bookmarked}
