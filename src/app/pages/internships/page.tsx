@@ -40,6 +40,28 @@ const filterData = [
   },
 ];
 
+function getDueCategory(date: Date | null): string {
+  if (!date) return "not provided";
+  const today = new Date();
+  const input = new Date(date);
+  input.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  const daysDiff = Math.floor((input.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (daysDiff < 0) return "Past Due";
+  if (daysDiff === 0) return "Due Today";
+
+  const endOfWeek = new Date(today);
+  endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+  if (input <= endOfWeek) return "Due This Week";
+  if (input <= endOfMonth) return "Due This Month";
+
+  return "Later";
+}
+
 export default function Internships() {
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string[] }>({});
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -47,7 +69,6 @@ export default function Internships() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 🔁 Fetch saved bookmarks from Firestore
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -98,6 +119,80 @@ export default function Internships() {
     });
   };
 
+  const filterInternships = () => {
+    return sampleInternshipData.filter((internship) => {
+      return Object.entries(activeFilters).every(([category, selectedOptions]) => {
+        if (selectedOptions.length === 0) return true;
+
+        switch (category) {
+          case "Due in":
+            const deadline = internship.deadlines[0]?.date ?? null;
+            const dueCategory = getDueCategory(deadline);
+            return selectedOptions.includes(dueCategory);
+
+          case "Subject":
+            return selectedOptions.includes(internship.subject);
+
+          case "Cost": {
+            const raw = internship.cost;
+            if (raw === "not provided") return false;
+
+            let costNum: number;
+            if (raw === "free") {
+              costNum = 0;
+            } else if (typeof raw === "number") {
+              costNum = raw;
+            } else if (typeof raw === "string") {
+              const numericStr = raw.replace(/[^0-9]/g, "");
+              if (!numericStr) return false;
+              costNum = parseInt(numericStr);
+            } else {
+              return false;
+            }
+
+            return selectedOptions.some((opt) => {
+              if (opt === "Free") return costNum === 0;
+              if (opt === "Under $1000") return costNum > 0 && costNum < 1000;
+              if (opt === "$1000–$3000") return costNum >= 1000 && costNum <= 3000;
+              if (opt === "$3000+") return costNum > 3000;
+              return false;
+            });
+          }
+
+          case "Eligibility": {
+            type GradeLabel = "Rising Sophomores" | "Juniors" | "Seniors" | "College Students";
+            type Grade = "sophomore" | "junior" | "senior" | "undergraduate";
+
+            const gradeMap: Record<GradeLabel, Grade> = {
+              "Rising Sophomores": "sophomore",
+              Juniors: "junior",
+              Seniors: "senior",
+              "College Students": "undergraduate",
+            };
+
+            return selectedOptions.some((opt) =>
+              internship.eligibility.grades.includes(gradeMap[opt as GradeLabel])
+            );
+          }
+
+          case "Duration":
+            if (internship.duration_weeks === null) return false;
+            const w = internship.duration_weeks;
+            return selectedOptions.some((opt) => {
+              if (opt === "1 week") return w <= 1;
+              if (opt === "2–4 weeks") return w > 1 && w <= 4;
+              if (opt === "1–2 months") return w > 4 && w <= 8;
+              if (opt === "Full Summer") return w > 8;
+              return false;
+            });
+
+          default:
+            return true;
+        }
+      });
+    });
+  };
+
   if (isLoading) return null;
 
   return (
@@ -139,7 +234,7 @@ export default function Internships() {
 
       {/* Cards with data and persistent bookmarks */}
       <InternshipCards
-        internships={sampleInternshipData}
+        internships={filterInternships()}
         bookmarked={bookmarked}
         toggleBookmark={toggleBookmark}
       />

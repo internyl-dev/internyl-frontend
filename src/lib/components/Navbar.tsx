@@ -5,16 +5,21 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/config/context/AuthContext";
 import { auth } from "@/lib/config/firebaseConfig";
 import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import { useAdminCheck } from "@/lib/hooks/useAdminCheck";
 
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 
 export default function Navbar() {
   const { user } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -33,8 +38,12 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await signOut(auth);
+    router.push("/");
     setDropdownOpen(false);
   };
+
+  // Check admin status
+  const isAdmin = useAdminCheck();
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-transparent backdrop-blur-md px-6 py-4 flex justify-between items-center">
@@ -52,6 +61,14 @@ export default function Navbar() {
           <SearchOutlinedIcon />
           internships
         </Link>
+
+        {/* Only show admin link if admin check is done AND user is admin */}
+        {isAdmin && (
+          <Link href="/admin" className="hover:text-black transition flex items-end gap-1.5">
+            <SettingsOutlinedIcon />
+            admin settings
+          </Link>
+        )}
 
         <div className="relative" ref={dropdownRef}>
           <button

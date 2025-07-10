@@ -257,7 +257,7 @@ export const sampleInternshipData: InternshipCards[] = [
 
         duration_weeks: 5,
 
-        cost: "Free",
+        cost: "free",
 
         stipend: {
             available: true,
@@ -327,7 +327,7 @@ export const sampleInternshipData: InternshipCards[] = [
 
         duration_weeks: 6,
 
-        cost: "Free",
+        cost: "free",
 
         stipend: {
             available: true,
@@ -397,7 +397,7 @@ export const sampleInternshipData: InternshipCards[] = [
 
         duration_weeks: 4,
 
-        cost: "Free",
+        cost: "free",
 
         stipend: {
             available: false,
@@ -607,7 +607,7 @@ export const sampleInternshipData: InternshipCards[] = [
 
         duration_weeks: 2,
 
-        cost: "Free",
+        cost: "free",
 
         stipend: {
             available: true,
@@ -677,7 +677,7 @@ export const sampleInternshipData: InternshipCards[] = [
 
         duration_weeks: 5,
 
-        cost: "Free",
+        cost: "free",
 
         stipend: {
             available: true,
@@ -737,7 +737,7 @@ export const sampleInternshipData: InternshipCards[] = [
             },
         ],
         duration_weeks: 4,
-        cost: "Free",
+        cost: "free",
         stipend: { available: true, amount: 1000 },
         requirements: {
             essay_required: true,
@@ -835,7 +835,7 @@ export const sampleInternshipData: InternshipCards[] = [
             },
         ],
         duration_weeks: 13,
-        cost: "Free",
+        cost: "free",
         stipend: { available: false, amount: null },
         requirements: {
             essay_required: true,

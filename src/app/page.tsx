@@ -87,7 +87,7 @@ export default function Home() {
           <div className="px-6 md:px-20 pt-28 pb-28 relative text-right">
             <div className="inline-block max-w-full">
               <h1 className="text-[52px] font-bold">
-                Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ")[0] || "Intern"}
+                Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ") || "Intern"}
               </h1>
               <p
                 className={`text-left text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className}`}
