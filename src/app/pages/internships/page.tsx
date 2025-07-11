@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import SearchBar from "@/lib/components/SearchBar";
 import InternshipCards from "@/lib/components/InternshipCards";
-import { sampleInternshipData } from "@/lib/test/sample";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
 import { InternshipCards as InternshipType } from "@/lib/types/internshipCards";
 
@@ -72,6 +72,8 @@ export default function Internships() {
   const [internships, setInternships] = useState<InternshipType[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const router = useRouter();
+
   useEffect(() => {
     async function fetchInternships() {
       try {
@@ -112,7 +114,16 @@ export default function Internships() {
           });
           setBookmarked(map);
         }
+
+        // Check for pending bookmark from localStorage
+        const pendingId = localStorage.getItem("pendingBookmark");
+        if (pendingId) {
+          await toggleBookmarkInFirestore(pendingId, false);
+          setBookmarked((prev) => ({ ...prev, [pendingId]: true }));
+          localStorage.removeItem("pendingBookmark");
+        }
       }
+
       setIsLoading(false);
     });
 
@@ -120,7 +131,14 @@ export default function Internships() {
   }, []);
 
   const toggleBookmark = async (internshipId: string) => {
+    if (!user) {
+      localStorage.setItem("pendingBookmark", internshipId);
+      router.push("/pages/signup");
+      return;
+    }
+
     const isBookmarked = bookmarked[internshipId] === true;
+
     try {
       await toggleBookmarkInFirestore(internshipId, isBookmarked);
       setBookmarked((prev) => ({
@@ -149,17 +167,11 @@ export default function Internships() {
 
   const filterInternships = () => {
     return internships.filter((internship) => {
-      // Search filtering
-      if (
-        searchTerm &&
-        !`${internship.title} ${internship.provider} ${internship.subject}`
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      ) {
+      const searchableText = `${internship.title} ${internship.provider} ${internship.subject}`.toLowerCase();
+      if (searchTerm && !searchableText.includes(searchTerm.toLowerCase())) {
         return false;
-      }      
+      }
 
-      // Filter tag logic
       return Object.entries(activeFilters).every(([category, selectedOptions]) => {
         if (selectedOptions.length === 0) return true;
 
@@ -237,7 +249,7 @@ export default function Internships() {
   return (
     <div className="min-h-screen radial-bg text-gray-800 px-4">
       <SearchBar setSearch={setSearchTerm} />
-      {/* Filter bar */}
+
       <div className="flex flex-wrap justify-center gap-4 mt-6 relative z-10">
         {filterData.map((filter) => (
           <div key={filter.label} className="relative">
