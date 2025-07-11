@@ -12,7 +12,8 @@ import { InternshipCards as InternshipType } from "@/lib/types/internshipCards";
 // Firebase
 import { auth, db } from "@/lib/config/firebaseConfig";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 const filterData = [
   {
@@ -70,24 +71,18 @@ export default function Internships() {
   const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
   const [internships, setInternships] = useState<InternshipType[]>([]);
+
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchInternships() {
       try {
-        // Reference to your Firestore collection "internships"
         const internshipsCollection = collection(db, "internships");
-
-        // Get all documents in the "internships" collection
         const snapshot = await getDocs(internshipsCollection);
 
-        // Map over documents and convert them to InternshipType objects
         const fetchedInternships = snapshot.docs.map((doc) => {
           const data = doc.data();
-
-          // IMPORTANT: If you have Firestore Timestamp fields (e.g., deadlines[0].date),
-          // convert them to JS Date objects:
           const deadlines = data.deadlines?.map((deadline: any) => ({
             ...deadline,
             date: deadline.date?.toDate ? deadline.date.toDate() : deadline.date,
@@ -100,7 +95,6 @@ export default function Internships() {
           } as InternshipType;
         });
 
-        // Update state with the fetched data
         setInternships(fetchedInternships);
       } catch (error) {
         console.error("Error fetching internships:", error);
@@ -111,19 +105,28 @@ export default function Internships() {
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+
       if (currentUser) {
         const docRef = doc(db, "users", currentUser.uid);
         const snapshot = await getDoc(docRef);
-        if (snapshot.exists()) {
-          const data = snapshot.data();
-          const saved: string[] = data.savedInternships || [];
-          const map: { [key: string]: boolean } = {};
-          saved.forEach((id: string) => {
-            map[id] = true;
-          });
-          setBookmarked(map);
+        const data = snapshot.exists() ? snapshot.data() : {};
+        const saved: string[] = data.savedInternships || [];
+        const map: { [key: string]: boolean } = {};
+        saved.forEach((id: string) => (map[id] = true));
+        setBookmarked(map);
+
+        // Check for a locally stored bookmark
+        const storedId = localStorage.getItem("pendingBookmarkId");
+        if (storedId && !map[storedId]) {
+          await toggleBookmarkInFirestore(storedId, false); // save it
+          setBookmarked((prev) => ({
+            ...prev,
+            [storedId]: true,
+          }));
+          localStorage.removeItem("pendingBookmarkId");
         }
       }
+
       setIsLoading(false);
     });
 
@@ -131,6 +134,12 @@ export default function Internships() {
   }, []);
 
   const toggleBookmark = async (internshipId: string) => {
+    if (!user) {
+      localStorage.setItem("pendingBookmarkId", internshipId);
+      router.push("/pages/signup");
+      return;
+    }
+
     const isBookmarked = bookmarked[internshipId] === true;
     try {
       await toggleBookmarkInFirestore(internshipId, isBookmarked);
@@ -164,10 +173,11 @@ export default function Internships() {
         if (selectedOptions.length === 0) return true;
 
         switch (category) {
-          case "Due in":
+          case "Due in": {
             const deadline = internship.deadlines[0]?.date ?? null;
             const dueCategory = getDueCategory(deadline);
             return selectedOptions.includes(dueCategory);
+          }
 
           case "Subject":
             return selectedOptions.includes(internship.subject);
@@ -177,17 +187,13 @@ export default function Internships() {
             if (raw === "not provided") return false;
 
             let costNum: number;
-            if (raw === "free") {
-              costNum = 0;
-            } else if (typeof raw === "number") {
-              costNum = raw;
-            } else if (typeof raw === "string") {
+            if (raw === "free") costNum = 0;
+            else if (typeof raw === "number") costNum = raw;
+            else if (typeof raw === "string") {
               const numericStr = raw.replace(/[^0-9]/g, "");
               if (!numericStr) return false;
               costNum = parseInt(numericStr);
-            } else {
-              return false;
-            }
+            } else return false;
 
             return selectedOptions.some((opt) => {
               if (opt === "Free") return costNum === 0;
@@ -214,9 +220,9 @@ export default function Internships() {
             );
           }
 
-          case "Duration":
-            if (internship.duration_weeks === null) return false;
+          case "Duration": {
             const w = internship.duration_weeks;
+            if (w == null) return false;
             return selectedOptions.some((opt) => {
               if (opt === "1 week") return w <= 1;
               if (opt === "2–4 weeks") return w > 1 && w <= 4;
@@ -224,6 +230,7 @@ export default function Internships() {
               if (opt === "Full Summer") return w > 8;
               return false;
             });
+          }
 
           default:
             return true;
@@ -238,7 +245,6 @@ export default function Internships() {
     <div className="min-h-screen radial-bg text-gray-800 px-4">
       <SearchBar />
 
-      {/* Filter bar */}
       <div className="flex flex-wrap justify-center gap-4 mt-6 relative z-10">
         {filterData.map((filter) => (
           <div key={filter.label} className="relative">
@@ -271,7 +277,6 @@ export default function Internships() {
         ))}
       </div>
 
-      {/* Cards with data and persistent bookmarks */}
       <InternshipCards
         internships={filterInternships()}
         bookmarked={bookmarked}
