@@ -54,12 +54,10 @@ export default function Home() {
           setBookmarked(map);
         }
 
-        // Fetch internships from Firestore
         const querySnapshot = await getDocs(collection(db, "internships"));
         const internshipList = querySnapshot.docs.map((doc) => {
           const data = doc.data();
 
-          // Normalize nested Timestamp values to Date
           if (Array.isArray(data.deadlines)) {
             data.deadlines = data.deadlines.map((d: any) => ({
               ...d,
@@ -72,6 +70,7 @@ export default function Home() {
             ...data,
           };
         }) as Internship[];
+
         setInternships(internshipList);
       }
     });
@@ -108,9 +107,7 @@ export default function Home() {
               <h1 className="text-[52px] font-bold">
                 Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ") || "Intern"}
               </h1>
-              <p
-                className={`text-left text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className}`}
-              >
+              <p className={`text-left text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className}`}>
                 An internship deadline is near
               </p>
             </div>
@@ -134,12 +131,19 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="px-6 md:px-20 pb-8">
-            <InternshipCards
-              internships={savedInternshipsFiltered}
-              bookmarked={bookmarked}
-              toggleBookmark={toggleBookmark}
-            />
+          {/* Scrollable Internship Cards */}
+          <div className="overflow-x-auto px-6 md:px-20 pb-8">
+            <div className="flex w-max">
+              {savedInternshipsFiltered.map((internship) => (
+                <div key={internship.id} className="flex-shrink-0">
+                  <InternshipCards
+                    internships={[internship]}
+                    bookmarked={bookmarked}
+                    toggleBookmark={toggleBookmark}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -191,7 +195,9 @@ export default function Home() {
 
       {/* Comparison Section */}
       <section className="mt-32 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold mb-2">Skip the search, <br className="sm:hidden" />just choose and apply</h2>
+        <h2 className="text-3xl md:text-4xl font-bold mb-2">
+          Skip the search, <br className="sm:hidden" />just choose and apply
+        </h2>
         <p className="text-base text-[#1d1d1f] mb-10">
           Internyl simplifies the entire search, so you can focus on applying.
         </p>

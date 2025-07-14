@@ -21,7 +21,7 @@ import { useRouter } from "next/navigation";
 import { db } from "@/lib/config/firebaseConfig";
 import { collection, setDoc, doc, Timestamp } from "firebase/firestore";
 
-import type { InternshipCards, Deadline, Eligibility, Location, DateRange, Stipend, Requirements } from "@/lib/types/internship";
+import type { InternshipCards, Deadline, Eligibility, Location, DateRange, Stipend, Requirements } from "@/lib/types/internshipCards";
 
 const gradesOptions = [
   "freshman",

@@ -12,7 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { db } from "@/lib/config/firebaseConfig";
-import { collection, addDoc, setDoc, doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
@@ -34,16 +34,34 @@ export default function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
 
-      // Check if user exists in Firestore
-      const userDocRef = doc(db, "users", auth.currentUser?.uid || "");
+      const user = auth.currentUser;
+      if (!user) throw new Error("User not found after login.");
+
+      const userDocRef = doc(db, "users", user.uid);
       const userSnapshot = await getDoc(userDocRef);
-      if (!userSnapshot.exists()) {
+
+      if (userSnapshot.exists()) {
+        const data = userSnapshot.data();
+        const updates: Partial<typeof data> = {};
+
+        // Add missing fields with defaults
+        if (!data.displayName) updates.displayName = user.displayName || "";
+        if (!data.username) updates.username = "";
+        if (!data.email) updates.email = user.email || "";
+
+        if (Object.keys(updates).length > 0) {
+          await setDoc(userDocRef, { ...data, ...updates });
+        }
+      } else {
+        // New user doc creation with all fields
         await setDoc(userDocRef, {
-          email: auth.currentUser?.email,
+          uid: user.uid,
+          displayName: user.displayName || "",
+          username: "",
+          email: user.email || "",
           createdAt: new Date(),
         });
       }
-
 
       router.push("/");
     } catch (error) {
@@ -55,7 +73,24 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, GoogleProvider);
+      const userCredential = await signInWithPopup(auth, GoogleProvider);
+      const user = userCredential.user;
+
+      if (!user) throw new Error("Google sign-in failed to return a user.");
+
+      const userDocRef = doc(db, "users", user.uid);
+      const userSnapshot = await getDoc(userDocRef);
+
+      if (!userSnapshot.exists()) {
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          displayName: user.displayName || "",
+          username: "",
+          email: user.email || "",
+          createdAt: new Date(),
+        });
+      }
+
       router.push("/");
     } catch (error) {
       setStatus("Google sign-in failed.");

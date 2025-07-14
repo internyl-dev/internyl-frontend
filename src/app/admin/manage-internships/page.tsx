@@ -18,7 +18,7 @@ import {
 import { Edit, Delete, Add } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 
-import type { InternshipCards } from "@/lib/types/internship";
+import type { InternshipCards } from "@/lib/types/internshipCards";
 import { db } from "@/lib/config/firebaseConfig";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 

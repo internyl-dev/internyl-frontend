@@ -28,8 +28,7 @@ export default function InternshipCards({
   return (
     <div className="px-6 sm:px-12 lg:px-20">
       <div
-        className="mt-10 gap-8 [column-width:350px] columns-auto"
-        style={{ columnGap: "2rem" }}
+        className="mt-10 [column-width:350px] columns-auto"
       >
         {internships.map((internship) => {
           const internshipId = internship.id;
