@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "@/lib/config/firebaseConfig";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
@@ -32,6 +34,12 @@ export default function Home() {
   const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
   const [userData, setUserData] = useState<any>(null);
   const [internships, setInternships] = useState<Internship[]>([]);
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+
+  const router = useRouter();
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -169,14 +177,26 @@ export default function Home() {
               Internyl helps students find and track internships and programs — all in one place.
             </p>
             <div className="mt-6 flex flex-wrap gap-2 items-center">
-              <input
-                type="text"
-                placeholder="search for your dream internship"
-                className="px-6 py-3 rounded-full text-base w-full max-w-md shadow-sm border border-gray-300"
-              />
-              <button className="bg-[#ec6464] text-white px-6 py-3 rounded-full font-semibold">
-                begin search →
-              </button>
+              <div className="mt-6 flex flex-wrap gap-2 items-center">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="search for your dream internship"
+                  className="px-6 py-3 rounded-full text-base w-full max-w-md shadow-sm border border-gray-300"
+                />
+                <button
+                  onClick={() => {
+                    if (searchTerm.trim() !== "") {
+                      router.push(`/pages/internships?search=${encodeURIComponent(searchTerm.trim())}`);
+                    }
+                  }}
+                  className="bg-[#ec6464] text-white px-6 py-3 rounded-full font-semibold"
+                >
+                  begin search →
+                </button>
+              </div>
+
             </div>
             <p className="text-sm italic mt-2 text-[#1d1d1f]">it&apos;s free</p>
           </div>

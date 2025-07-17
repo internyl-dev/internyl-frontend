@@ -1,21 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 
 interface SearchBarProps {
   setSearch: React.Dispatch<React.SetStateAction<string>>;
+  initialValue?: string;
 }
 
-export default function SearchBar({ setSearch }: SearchBarProps) {
+export default function SearchBar({ setSearch, initialValue }: SearchBarProps) {
   const [search, setLocalSearch] = useState('');
+
+  useEffect(() => {
+    if (initialValue !== undefined) {
+      setLocalSearch(initialValue);
+      setSearch(initialValue);
+    }
+  }, [initialValue]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearch(search); // sync with parent
+    setSearch(search);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalSearch(e.target.value);
-    setSearch(e.target.value); // live update
+    setSearch(e.target.value);
   };
 
   return (

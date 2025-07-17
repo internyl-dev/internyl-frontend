@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import SearchBar from "@/lib/components/SearchBar";
 import InternshipCards from "@/lib/components/InternshipCards";
@@ -70,7 +70,10 @@ export default function Internships() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [internships, setInternships] = useState<InternshipType[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+
 
   const router = useRouter();
 
@@ -248,7 +251,7 @@ export default function Internships() {
 
   return (
     <div className="min-h-screen radial-bg text-gray-800 px-4">
-      <SearchBar setSearch={setSearchTerm} />
+      <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
 
       <div className="flex flex-wrap justify-center gap-4 mt-6 relative z-10">
         {filterData.map((filter) => (
