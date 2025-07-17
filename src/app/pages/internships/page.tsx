@@ -234,7 +234,7 @@ export default function Internships() {
             const w = internship.duration_weeks;
             return selectedOptions.some((opt) => {
               if (opt === "1 week") return w <= 1;
-              if (opt === "2–4 weeks") return w > 1 && w <= 4;
+              if (opt === "2-4 weeks") return w > 1 && w <= 4;
               if (opt === "1–2 months") return w > 4 && w <= 8;
               if (opt === "Full Summer") return w > 8;
               return false;

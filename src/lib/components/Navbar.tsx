@@ -73,7 +73,7 @@ export default function Navbar() {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen((prev) => !prev)}
-            className="flex items-end gap-1 hover:text-black transition focus:outline-none"
+            className="flex items-end gap-1 hover:text-black transition focus:outline-none cursor-pointer"
           >
             <PersonOutlineOutlinedIcon />
             account
@@ -81,19 +81,19 @@ export default function Navbar() {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50">
+            <div className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50 cursor-pointer">
               {user ? (
                 <>
                   <Link
                     href="/pages/account"
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                   >
                     User Settings
                   </Link>
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                   >
                     Logout
                   </button> 

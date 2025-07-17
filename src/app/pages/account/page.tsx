@@ -14,6 +14,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 export default function Account() {
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
@@ -25,6 +26,7 @@ export default function Account() {
         setUser(currentUser);
         setEmail(currentUser.email || "");
         setPhotoURL(currentUser.photoURL || null);
+        // setUsername(currentUser.username || "");
 
         const docRef = doc(db, "users", currentUser.uid);
         const snapshot = await getDoc(docRef);
@@ -77,6 +79,19 @@ export default function Account() {
     }
   };
 
+  const handleUpdateUsername = async () => {
+    if (user) {
+      try {
+        const docRef = doc(db, "users", user.uid);
+        await updateDoc(docRef, { username });
+        setStatusMessage("✅ Username updated.");
+      } catch (err) {
+        console.error(err);
+        setStatusMessage("❌ Error updating username.");
+      }
+    }
+  }
+
   const handleSignOut = async () => {
     await signOut(auth);
   };
@@ -111,6 +126,23 @@ export default function Account() {
               className="w-full mt-2 py-2 bg-black text-white rounded-lg hover:opacity-90 transition"
             >
               Update Display Name
+            </button>
+          </div>
+
+          {/* Username */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            />
+            <button
+              onClick={handleUpdateUsername}
+              className="w-full mt-2 py-2 bg-black text-white rounded-lg hover:opacity-90 transition"
+            >
+              Update Username
             </button>
           </div>
 
