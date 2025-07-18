@@ -8,17 +8,25 @@ import {
   onAuthStateChanged,
   signOut,
   User,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
 } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 
 export default function Account() {
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState<"success" | "error" | null>(null);
   const [photoURL, setPhotoURL] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -52,17 +60,46 @@ export default function Account() {
   };
 
   const handleUpdatePassword = async () => {
-    if (user && newPassword.length >= 6) {
-      try {
-        await updatePassword(user, newPassword);
-        setStatusMessage("✅ Password updated.");
-        setNewPassword("");
-      } catch (err) {
-        console.error(err);
-        setStatusMessage("❌ Error updating password.");
-      }
-    } else {
-      setStatusMessage("❌ Password must be at least 6 characters.");
+    if (!user) return;
+
+    if (newPassword.length < 6) {
+      setStatusType("error");
+      setStatusMessage("Password must be at least 6 characters");
+      return;
+    }
+
+    if (!currentPassword) {
+      setStatusType("error");
+      setStatusMessage("Please enter your current password");
+      return;
+    }
+
+    setIsUpdating(true);
+
+    try {
+      // Re-authenticate user with current password
+      const credential = EmailAuthProvider.credential(
+        user.email!,
+        currentPassword
+      );
+      await reauthenticateWithCredential(user, credential);
+
+      // Update password
+      await updatePassword(user, newPassword);
+      setStatusType("success");
+      setStatusMessage("Password successfully updated!");
+      setNewPassword("");
+      setCurrentPassword("");
+    } catch (err: any) {
+      console.error(err);
+      setStatusType("error");
+      setStatusMessage(
+        err.code === "auth/wrong-password"
+          ? "Current password is incorrect"
+          : "Error updating password. Please try again."
+      );
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -97,107 +134,164 @@ export default function Account() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen px-4 py-8">
-      <div className="w-full max-w-2xl bg-white/30 backdrop-blur-xl border border-white/20 shadow-2xl p-8 rounded-3xl transition-all duration-300">
-        <h1 className="text-3xl font-bold text-center mb-8 text-gray-900 drop-shadow">Account Settings</h1>
+    <div className="min-h-screen px-4 py-12 mt-12">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white/50 backdrop-blur-xl border border-white/20 shadow-2xl p-8 rounded-3xl transition-all duration-300">
+          <div className="max-w-2xl mx-auto">
+            <h1 className="text-4xl font-bold text-center mb-8 text-gray-900 drop-shadow-sm">
+              Account Settings
+            </h1>
 
-        {photoURL && (
-          <div className="flex justify-center mb-8">
-            <img
-              src={photoURL}
-              alt="Profile"
-              className="w-28 h-28 rounded-full object-cover ring-4 ring-white/30 shadow-lg"
-            />
-          </div>
-        )}
+            {photoURL && (
+              <div className="flex justify-center mb-10">
+                <div className="relative group">
+                  <img
+                    src={photoURL}
+                    alt="Profile"
+                    className="w-32 h-32 rounded-full object-cover ring-4 ring-white shadow-xl transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 rounded-full shadow-inner"></div>
+                </div>
+              </div>
+            )}
 
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Display Name */}
-            <div className="w-full space-y-3">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Display Name</label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-4 py-3 border border-white/30 bg-white/10 text-gray-900 placeholder-gray-500 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
-              />
-              <button
-                onClick={handleUpdateDisplayName}
-                className="w-full py-3 bg-[#ec6464] text-white rounded-xl hover:bg-[#d55555] transition-all duration-300 font-medium shadow-lg"
-              >
-                Update Display Name
-              </button>
+            <div className="space-y-8">
+              {/* Personal Information Section */}
+              <div className="bg-white/40 rounded-2xl p-6 shadow-lg border border-white/50">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Personal Information</h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Display Name */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">Display Name</label>
+                    <input
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464] transition-all duration-200"
+                      placeholder="Your display name"
+                    />
+                    <button
+                      onClick={handleUpdateDisplayName}
+                      disabled={isUpdating}
+                      className="w-full py-2.5 bg-[#ec6464] text-white rounded-xl hover:bg-[#d55555] transition-all duration-300 font-medium shadow-sm disabled:opacity-50"
+                    >
+                      Update Display Name
+                    </button>
+                  </div>
+
+                  {/* Username */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">Username</label>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464] transition-all duration-200"
+                      placeholder="Your username"
+                    />
+                    <button
+                      onClick={handleUpdateUsername}
+                      disabled={isUpdating}
+                      className="w-full py-2.5 bg-[#ec6464] text-white rounded-xl hover:bg-[#d55555] transition-all duration-300 font-medium shadow-sm disabled:opacity-50"
+                    >
+                      Update Username
+                    </button>
+                  </div>
+                </div>
+
+                {/* User ID - Immutable */}
+                <div className="space-y-3 mt-6">
+                  <label className="block text-sm font-medium text-gray-700">User ID:</label>
+                  <div className="mt-1 px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm relative">
+                    {user?.uid}
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 group">
+                      <HelpOutlineOutlinedIcon className="text-gray-400/50 hover:text-gray-600 transition-colors duration-200" />
+                      <div className="invisible group-hover:visible absolute right-0 -top-12 w-64 bg-gray-700 text-white text-sm rounded-lg py-2 px-3 shadow-xl">
+                        This is unchangeable and is only used for organization on our database.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+              {/* Security Section */}
+              <div className="bg-white/40 rounded-2xl p-6 shadow-lg border border-white/50">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Security Settings</h2>
+
+                {/* Email */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                  <div className="flex gap-4">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464] transition-all duration-200"
+                      placeholder="your.email@example.com"
+                    />
+                    <button
+                      onClick={handleUpdateEmail}
+                      disabled={isUpdating}
+                      className="px-6 py-3 bg-[#ec6464] text-white rounded-xl hover:bg-[#d55555] transition-all duration-300 font-medium shadow-sm whitespace-nowrap disabled:opacity-50"
+                    >
+                      Update Email
+                    </button>
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700">Change Password</label>
+                  <div className="space-y-3">
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464] transition-all duration-200"
+                      placeholder="Current password"
+                    />
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464] transition-all duration-200"
+                      placeholder="New password"
+                    />
+                    <button
+                      onClick={handleUpdatePassword}
+                      disabled={isUpdating}
+                      className="w-full py-3 bg-[#ec6464] text-white rounded-xl hover:bg-[#d55555] transition-all duration-300 font-medium shadow-sm disabled:opacity-50"
+                    >
+                      {isUpdating ? "Updating..." : "Update Password"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sign Out */}
+                <div className="pt-6">
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full py-3 border-2 border-red-500/70 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all duration-300 font-medium"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+
+                {/* Status Message */}
+                {statusMessage && (
+                  <div className={`mt-4 p-4 rounded-xl backdrop-blur-md ${statusType === 'success'
+                    ? 'bg-green-50 border border-green-200 text-green-800'
+                    : 'bg-red-50 border border-red-200 text-red-800'
+                    } shadow-lg transition-all duration-300`}>
+                    <p className="text-sm font-medium text-center">
+                      {statusType === 'success' ? '✅ ' : '❌ '}{statusMessage}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-
-            {/* Username */}
-            <div className="w-full space-y-3">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 border border-white/30 bg-white/10 text-gray-900 placeholder-gray-500 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
-              />
-              <button
-                onClick={handleUpdateUsername}
-                className="w-full py-3 bg-[#ec6464] text-white rounded-xl hover:bg-[#d55555] transition-all duration-300 font-medium shadow-lg"
-              >
-                Update Username
-              </button>
-            </div>
           </div>
-
-          {/* Email */}
-          <div className="space-y-3">
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-white/30 bg-white/10 text-gray-900 placeholder-gray-500 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
-            />
-            <button
-              onClick={handleUpdateEmail}
-              className="w-full py-3 bg-[#ec6464] text-white rounded-xl hover:bg-[#d55555] transition-all duration-300 font-medium shadow-lg"
-            >
-              Update Email
-            </button>
-          </div>
-
-          {/* Password */}
-          <div className="space-y-3">
-            <label className="block text-sm font-semibold text-gray-700 mb-1">New Password</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-white/30 bg-white/10 text-gray-900 placeholder-gray-500 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
-            />
-            <button
-              onClick={handleUpdatePassword}
-              className="w-full py-3 bg-[#ec6464] text-white rounded-xl hover:bg-[#d55555] transition-all duration-300 font-medium shadow-lg"
-            >
-              Update Password
-            </button>
-          </div>
-
-          {/* Sign Out */}
-          <div className="pt-4 border-t border-white/30">
-            <button
-              onClick={handleSignOut}
-              className="w-full py-3 border-2 border-red-500 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all duration-300 font-medium"
-            >
-              Sign Out
-            </button>
-          </div>
-
-          {/* Status Message */}
-          {statusMessage && (
-            <div className="mt-4 p-4 rounded-xl backdrop-blur-md bg-white/30 border border-white/20 text-center shadow-md">
-              <p className="text-sm font-medium text-gray-800">{statusMessage}</p>
-            </div>
-          )}
         </div>
       </div>
     </div>

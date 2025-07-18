@@ -10,7 +10,12 @@ import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { Inter, Caveat } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 
 import InternshipCards from "@/lib/components/InternshipCards";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
@@ -244,7 +249,7 @@ export default function Home() {
         <div className="flex flex-col md:flex-row justify-center items-stretch gap-4 sm:gap-6 max-w-5xl mx-auto text-md">
           {/* Without Internyl Card */}
           <div
-            className="relative w-full md:w-1/2 p-5 sm:p-7 text-center rounded-2xl shadow-xl border border-white/30 bg-white/10 backdrop-blur-2xl overflow-hidden min-w-[220px]"
+            className="relative w-full md:w-1/2 p-5 sm:p-7 text-left rounded-2xl shadow-xl  backdrop-blur-2xl overflow-hidden min-w-[220px]"
             style={{
               boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
             }}
@@ -254,7 +259,10 @@ export default function Home() {
               zIndex: 0,
             }} />
             <div className="relative z-10">
-              <h3 className="font-semibold text-gray-900 mb-3 drop-shadow-lg text-lg md:text-xl" style={{textShadow: '0 2px 8px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.10)'}}>Finding an internship without Internyl:</h3>
+              <h3 className="font-semibold text-gray-900 mb-3 drop-shadow-lg text-lg md:text-xl flex justify-between items-center" style={{textShadow: '0 2px 8px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.10)'}}>
+                Finding an internship without Internyl
+                <ThumbDownOutlinedIcon style={{ color: '#e02b2b', paddingLeft: "3px" }} />
+              </h3>
               <ul className="text-gray-800 space-y-2 list-disc list-inside text-base md:text-lg font-medium" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>
                 <li><s>Google random keywords</s></li>
                 <li><s>Open 10+ tabs</s></li>
@@ -269,17 +277,20 @@ export default function Home() {
 
           {/* With Internyl Card */}
           <div
-            className="relative w-full md:w-1/2 p-5 sm:p-7 text-center rounded-2xl shadow-xl border border-white/30 bg-white/10 backdrop-blur-2xl overflow-hidden min-w-[220px]"
+            className="relative w-full md:w-1/2 p-5 sm:p-7 text-left rounded-2xl shadow-xl border border-white bg-white/10 backdrop-blur-2xl overflow-hidden min-w-[220px]"
             style={{
-              boxShadow: '0 8px 32px 0 rgba(44, 102, 194, 0.15)',
+              boxShadow: '0 10px 36px 0 rgba(44, 102, 194, 0.2)',
             }}
           >
             <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(44,162,128,0.10) 100%)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(44,162,128,0.1) 100%)',
               zIndex: 0,
             }} />
             <div className="relative z-10">
-              <h3 className="font-semibold text-gray-900 mb-3 drop-shadow-lg text-lg md:text-xl" style={{textShadow: '0 2px 8px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.10)'}}>Finding an internship with Internyl:</h3>
+              <h3 className="font-semibold text-gray-900 mb-3 drop-shadow-lg text-lg md:text-xl flex justify-between items-center" style={{textShadow: '0 2px 8px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.1)'}}>
+                Finding an internship with Internyl
+                <AutoAwesomeOutlinedIcon sx={{ color: "#ffe359", paddingLeft: "2px", }}/>
+              </h3>
               <ul className="text-gray-900 space-y-2 list-disc list-inside text-base md:text-lg font-medium" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>
                 <li>
                   Use <span className="text-[#3C66C2] font-semibold">smart filters</span> to explore curated internships & programs
@@ -306,28 +317,57 @@ export default function Home() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Feature Card 1 */}
-          <div className="relative flex items-center justify-center rounded-2xl p-4 sm:p-5 text-center border border-white/30 bg-white/10 backdrop-blur-2xl shadow-xl overflow-hidden min-h-[120px]">
+          <div className="relative rounded-2xl p-4 sm:p-5 text-center border border-white/30 bg-white/10 backdrop-blur-2xl shadow-xl overflow-hidden">
             <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(236,100,100,0.08) 100%)', zIndex: 0}} />
-            <div className="relative z-10">
-              <p className="text-base font-medium text-gray-900 drop-shadow" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Discover programs easily with our intuitive search features.</p>
+            <div className="relative z-10 flex flex-col h-full">
+              <div className="flex items-center justify-center w-20 h-20 mb-6 mx-auto rounded-full bg-gradient-to-br from-white/50 to-white/10 shadow-lg backdrop-blur-sm border border-white/20" style={{
+                animation: 'float 4s ease-in-out infinite',
+              }}>
+                <SearchOutlinedIcon className="text-[#ec6464] text-5xl transform transition-transform hover:scale-110 duration-300" style={{
+                  filter: 'drop-shadow(0 0 8px rgba(236,100,100,0.3))',
+                }} /> 
+              </div>
+              <p className="text-base font-medium text-gray-900 drop-shadow flex-grow" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Discover programs easily with our intuitive search features.</p>
             </div>
           </div>
           {/* Feature Card 2 */}
-          <div className="relative flex items-center justify-center rounded-2xl p-4 sm:p-5 text-center border border-white/30 bg-white/10 backdrop-blur-2xl shadow-xl overflow-hidden min-h-[120px]">
+          <div className="relative rounded-2xl p-4 sm:p-5 text-center border border-white/30 bg-white/10 backdrop-blur-2xl shadow-xl overflow-hidden">
             <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(44,162,128,0.08) 100%)', zIndex: 0}} />
-            <div className="relative z-10">
-              <p className="text-base font-medium text-gray-900 drop-shadow" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Save programs and receive reminders so that you never miss a deadline.</p>
+            <div className="relative z-10 flex flex-col h-full">
+              <div className="flex items-center justify-center w-20 h-20 mb-6 mx-auto rounded-full bg-gradient-to-br from-white/50 to-white/10 shadow-lg backdrop-blur-sm border border-white/20" style={{
+                animation: 'float 4s ease-in-out infinite',
+                animationDelay: '1.333s',
+              }}>
+                <WatchLaterOutlinedIcon className="text-[#2BA280] text-5xl transform transition-transform hover:scale-110 duration-300" style={{
+                  filter: 'drop-shadow(0 0 8px rgba(43,162,128,0.3))',
+                }} />
+              </div>
+              <p className="text-base font-medium text-gray-900 drop-shadow flex-grow" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Save programs and receive reminders so that you never miss a deadline.</p>
             </div>
           </div>
           {/* Feature Card 3 */}
-          <div className="relative flex items-center justify-center rounded-2xl p-4 sm:p-5 text-center border border-white/30 bg-white/10 backdrop-blur-2xl shadow-xl overflow-hidden min-h-[120px]">
+          <div className="relative rounded-2xl p-4 sm:p-5 text-center border border-white/30 bg-white/10 backdrop-blur-2xl shadow-xl overflow-hidden">
             <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(44,102,194,0.08) 100%)', zIndex: 0}} />
-            <div className="relative z-10">
-              <p className="text-base font-medium text-gray-900 drop-shadow" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Gain access to exclusive information like acceptance rates and release dates.</p>
+            <div className="relative z-10 flex flex-col h-full">
+              <div className="flex items-center justify-center w-20 h-20 mb-6 mx-auto rounded-full bg-gradient-to-br from-white/50 to-white/10 shadow-lg backdrop-blur-sm border border-white/20" style={{
+                animation: 'float 4s ease-in-out infinite',
+                animationDelay: '2.666s',
+              }}>
+                <AutoAwesomeOutlinedIcon className="text-[#3C66C2] text-5xl transform transition-transform hover:scale-110 duration-300" style={{
+                  filter: 'drop-shadow(0 0 8px rgba(60,102,194,0.3))',
+                }} />
+              </div>
+              <p className="text-base font-medium text-gray-900 drop-shadow flex-grow" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Gain access to exclusive information like acceptance rates and release dates.</p>
             </div>
           </div>
         </div>
-      </section >
-    </div >
+      </section>
+      <style jsx global>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+      `}</style>
+    </div>
   );
 }

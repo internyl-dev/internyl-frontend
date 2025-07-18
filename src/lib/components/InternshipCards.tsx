@@ -27,6 +27,17 @@ interface CardPosition {
   height: number;
 }
 
+const bookmarkButtonStyles = {
+  animation: "bookmarkAnimation 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
+  "@keyframes bookmarkAnimation": {
+    "0%": { transform: "scale(1) rotate(0deg)" },
+    "35%": { transform: "scale(1.15) rotate(-8deg)" },
+    "65%": { transform: "scale(1.25) rotate(5deg)" },
+    "85%": { transform: "scale(1.1) rotate(-2deg)" },
+    "100%": { transform: "scale(1) rotate(0deg)" },
+  },
+};
+
 export default function InternshipCards({
   internships,
   bookmarked,
@@ -251,16 +262,28 @@ export default function InternshipCards({
                 >Visit Website</Button>
                 <button
                   onClick={() => toggleBookmark(internshipId)}
-                  className="text-[#8D8DAC] hover:text-[#2F2F3A] transition-colors cursor-pointer"
+                  className="text-[#8D8DAC] hover:text-[#2F2F3A] cursor-pointer p-1 rounded-full hover:bg-black/5 active:bg-black/10 transition-all duration-200"
                   aria-label={`${bookmarked[internshipId] ? 'Remove' : 'Add'} bookmark for ${internship.title}`}
                 >
                   {bookmarked[internshipId] ? (
                     <BookmarkFilledIcon
                       fontSize="medium"
                       className="text-[#2F2F3A]"
+                      sx={{ 
+                        ...bookmarkButtonStyles,
+                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+                      }}
                     />
                   ) : (
-                    <BookmarkBorderIcon fontSize="medium" />
+                    <BookmarkBorderIcon
+                      fontSize="medium"
+                      sx={{ 
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        "&:hover": {
+                          transform: "scale(1.1)",
+                        },
+                      }}
+                    />
                   )}
                 </button>
               </div>
