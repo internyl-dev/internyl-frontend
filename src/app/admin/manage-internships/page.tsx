@@ -148,7 +148,7 @@ export default function ManageInternships() {
                       <IconButton
                         color="primary"
                         onClick={() =>
-                          router.push(`/admin/internships/${internship.id}`)
+                          router.push(`/admin/manage-internships/${internship.id}`)
                         }
                         aria-label={`Edit internship ${internship.title}`}
                         size="medium"

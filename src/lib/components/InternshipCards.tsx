@@ -13,6 +13,7 @@ import {
 import { getDaysRemaining } from "../modules/getTimeRemaining";
 import { getDueColorClass } from "../modules/getDueDateTextColor";
 import { getIconColor } from "../modules/getDueDateIconColor";
+import { Button } from "@mui/material";
 
 interface Props {
   internships: InternshipType[];
@@ -38,7 +39,7 @@ export default function InternshipCards({
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const [isLayoutCalculated, setIsLayoutCalculated] = useState<boolean>(false);
   const [isInitialRender, setIsInitialRender] = useState<boolean>(true);
-  
+
   // Configuration
   const itemWidth = 350; // Fixed width for each card
   const gap = 32; // Gap between cards
@@ -49,24 +50,24 @@ export default function InternshipCards({
     const container = containerRef.current;
     const containerRect = container.getBoundingClientRect();
     const availableWidth = containerRect.width;
-    
+
     // Calculate how many columns can fit
     const totalItemWidth = itemWidth + gap;
     const maxColumns = Math.floor((availableWidth + gap) / totalItemWidth);
     let newColumnCount = Math.max(1, maxColumns);
-    
+
     // Add minimum spacing enforcement to prevent squishing
     const actualTotalWidth = newColumnCount * itemWidth + (newColumnCount - 1) * gap;
     if (actualTotalWidth > availableWidth && newColumnCount > 1) {
       newColumnCount = Math.max(1, newColumnCount - 1);
     }
-    
+
     setColumnCount(newColumnCount);
 
     // Calculate positions for masonry layout
     const positions: { [key: string]: CardPosition } = {};
     const columnHeights: number[] = new Array(newColumnCount).fill(0);
-    
+
     // Center the columns if there's extra space
     const totalColumnsWidth = newColumnCount * itemWidth + (newColumnCount - 1) * gap;
     const startX = Math.max(0, (availableWidth - totalColumnsWidth) / 2);
@@ -74,25 +75,25 @@ export default function InternshipCards({
     internships.forEach((internship, index) => {
       const internshipId = internship.id;
       const cardElement = cardRefs.current[internshipId];
-      
+
       if (!cardElement) return;
 
       // Get the actual height of the card
       const cardHeight = cardElement.offsetHeight || 300; // fallback height
-      
+
       // Find the shortest column
       const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights));
-      
+
       // Calculate position
       const x = startX + shortestColumnIndex * (itemWidth + gap);
       const y = columnHeights[shortestColumnIndex];
-      
+
       positions[internshipId] = {
         x,
         y,
         height: cardHeight
       };
-      
+
       // Update column height
       columnHeights[shortestColumnIndex] += cardHeight + gap;
     });
@@ -145,7 +146,7 @@ export default function InternshipCards({
   }, [internships.length, calculateMasonryLayout]);
 
   return (
-    <div className="px-6 sm:px-12 lg:px-20">
+    <div className="px-0 sm:px-4 lg:px-8">
       <div
         ref={containerRef}
         className="mt-10 relative"
@@ -153,7 +154,7 @@ export default function InternshipCards({
           height: `${containerHeight}px`,
           transition: 'height 0.3s ease-out',
           minWidth: '382px', // itemWidth + gap to prevent squishing
-          overflowX: 'auto' // Allow horizontal scroll if needed
+          // overflowX: 'auto' // Allow horizontal scroll if needed
         }}
       >
         {internships.map((internship) => {
@@ -236,7 +237,18 @@ export default function InternshipCards({
                 </p>
               </div>
 
-              <div className="mt-4 text-right">
+              <div className="mt-4 flex justify-between items-center">
+                <Button
+                  variant="outlined"
+                  href={
+                    !internship.link
+                      ? "/pages/report"
+                      : internship.link.startsWith("http")
+                        ? internship.link
+                        : `https://${internship.link}`
+                  }
+                  sx={{ borderColor: '#ec6464', color: 'black', '&:hover': { borderColor: '#d55555', backgroundColor: '#f8dada' } }}
+                >Visit Website</Button>
                 <button
                   onClick={() => toggleBookmark(internshipId)}
                   className="text-[#8D8DAC] hover:text-[#2F2F3A] transition-colors cursor-pointer"

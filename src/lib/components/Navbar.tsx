@@ -46,34 +46,34 @@ export default function Navbar() {
   const isAdmin = useAdminCheck();
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-transparent backdrop-blur-md px-6 py-4 flex justify-between items-center">
+    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-md px-4 sm:px-6 py-3 flex justify-between items-center">
       {/* Logo */}
-      <h1 className="text-[1.75rem] font-bold text-gray-900 tracking-[-0.05em]">internyl</h1>
+      <h1 className="text-[1.5rem] sm:text-[1.75rem] font-bold text-gray-900 tracking-[-0.05em]">internyl</h1>
 
       {/* Navigation Links */}
-      <div className="flex gap-8 items-center text-sm text-gray-800 font-light relative">
-        <Link href="/" className="hover:text-black transition flex items-end gap-1.5">
+      <div className="hidden sm:flex gap-6 md:gap-8 items-center text-sm text-gray-800 font-light relative">
+        <Link href="/" className="hover:text-black transition flex items-center gap-1.5">
           <HomeOutlinedIcon />
           home
         </Link>
 
-        <Link href="/pages/internships" className="hover:text-black transition flex items-end gap-1.5">
+        <Link href="/pages/internships" className="hover:text-black transition flex items-center gap-1.5">
           <SearchOutlinedIcon />
           internships
         </Link>
 
         {/* Only show admin link if admin check is done AND user is admin */}
         {isAdmin && (
-          <Link href="/admin" className="hover:text-black transition flex items-end gap-1.5">
+          <Link href="/admin" className="hover:text-black transition flex items-center gap-1.5">
             <SettingsOutlinedIcon />
-            admin settings
+            admin dashboard
           </Link>
         )}
 
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen((prev) => !prev)}
-            className="flex items-end gap-1 hover:text-black transition focus:outline-none cursor-pointer"
+            className="flex items-center gap-1 hover:text-black transition focus:outline-none cursor-pointer"
           >
             <PersonOutlineOutlinedIcon />
             account
@@ -119,6 +119,66 @@ export default function Navbar() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className="sm:hidden flex items-center gap-4">
+        <Link href="/" className="hover:text-black transition">
+          <HomeOutlinedIcon />
+        </Link>
+        <Link href="/pages/internships" className="hover:text-black transition">
+          <SearchOutlinedIcon />
+        </Link>
+        {isAdmin && (
+          <Link href="/admin" className="hover:text-black transition">
+            <SettingsOutlinedIcon />
+          </Link>
+        )}
+        <button
+          onClick={() => setDropdownOpen((prev) => !prev)}
+          className="text-gray-800 hover:text-black transition focus:outline-none"
+        >
+          <PersonOutlineOutlinedIcon />
+        </button>
+
+        {dropdownOpen && (
+          <div className="absolute right-4 top-16 w-40 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50 cursor-pointer">
+            {user ? (
+              <>
+                <Link
+                  href="/pages/account"
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                >
+                  User Settings
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                >
+                  Logout
+                </button> 
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/pages/signup"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setDropdownOpen(false)}
+                >
+                  Sign Up
+                </Link>
+                <Link
+                  href="/pages/login"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setDropdownOpen(false)}
+                >
+                  Log In
+                </Link>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </nav>
   );
