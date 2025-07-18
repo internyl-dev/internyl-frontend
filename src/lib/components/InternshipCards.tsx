@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { InternshipCards as InternshipType } from "../types/internshipCards";
 import {
   AccessTimeOutlined as TimeIcon,
@@ -20,15 +20,137 @@ interface Props {
   toggleBookmark: (internshipId: string) => void;
 }
 
+interface CardPosition {
+  x: number;
+  y: number;
+  height: number;
+}
+
 export default function InternshipCards({
   internships,
   bookmarked,
   toggleBookmark,
 }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const [columnCount, setColumnCount] = useState<number>(1);
+  const [cardPositions, setCardPositions] = useState<{ [key: string]: CardPosition }>({});
+  const [containerHeight, setContainerHeight] = useState<number>(0);
+  const [isLayoutCalculated, setIsLayoutCalculated] = useState<boolean>(false);
+  
+  // Configuration
+  const itemWidth = 350; // Fixed width for each card
+  const gap = 32; // Gap between cards
+
+  const calculateMasonryLayout = useCallback(() => {
+    if (!containerRef.current || internships.length === 0) return;
+
+    const container = containerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const availableWidth = containerRect.width;
+    
+    // Calculate how many columns can fit
+    const totalItemWidth = itemWidth + gap;
+    const maxColumns = Math.floor((availableWidth + gap) / totalItemWidth);
+    const newColumnCount = Math.max(1, maxColumns);
+    
+    setColumnCount(newColumnCount);
+
+    // Calculate positions for masonry layout
+    const positions: { [key: string]: CardPosition } = {};
+    const columnHeights: number[] = new Array(newColumnCount).fill(0);
+    
+    // Center the columns if there's extra space
+    const totalColumnsWidth = newColumnCount * itemWidth + (newColumnCount - 1) * gap;
+    const startX = Math.max(0, (availableWidth - totalColumnsWidth) / 2);
+
+    internships.forEach((internship, index) => {
+      const internshipId = internship.id;
+      const cardElement = cardRefs.current[internshipId];
+      
+      if (!cardElement) return;
+
+      // Get the actual height of the card
+      const cardHeight = cardElement.offsetHeight || 300; // fallback height
+      
+      // Find the shortest column
+      const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights));
+      
+      // Calculate position
+      const x = startX + shortestColumnIndex * (itemWidth + gap);
+      const y = columnHeights[shortestColumnIndex];
+      
+      positions[internshipId] = {
+        x,
+        y,
+        height: cardHeight
+      };
+      
+      // Update column height
+      columnHeights[shortestColumnIndex] += cardHeight + gap;
+    });
+
+    setCardPositions(positions);
+    setContainerHeight(Math.max(...columnHeights) - gap); // Remove last gap
+    setIsLayoutCalculated(true);
+  }, [internships, itemWidth, gap]);
+
+  // Initial layout calculation after cards are rendered
+  useEffect(() => {
+    // Wait for cards to be rendered and measured
+    const timer = setTimeout(() => {
+      calculateMasonryLayout();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [calculateMasonryLayout]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLayoutCalculated(false);
+      // Recalculate after a short delay to ensure proper measurements
+      setTimeout(() => {
+        calculateMasonryLayout();
+      }, 100);
+    };
+
+    // Use ResizeObserver for better performance if available
+    if (typeof window !== "undefined" && window.ResizeObserver) {
+      const resizeObserver = new ResizeObserver(handleResize);
+      if (containerRef.current) {
+        resizeObserver.observe(containerRef.current);
+      }
+      return () => resizeObserver.disconnect();
+    } else {
+      // Fallback to window resize event
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [calculateMasonryLayout]);
+
+  // Recalculate layout when cards change
+  useEffect(() => {
+    if (Object.keys(cardRefs.current).length === internships.length) {
+      calculateMasonryLayout();
+    }
+  }, [internships.length, calculateMasonryLayout]);
+
   return (
     <div className="px-6 sm:px-12 lg:px-20">
+      {/* Optional: Display current layout info for debugging */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mb-4 text-center text-gray-600 text-sm">
+          Columns: {columnCount} | Layout Calculated: {isLayoutCalculated ? 'Yes' : 'No'}
+        </div>
+      )}
+      
       <div
-        className="mt-10 [column-width:350px] columns-auto"
+        ref={containerRef}
+        className="mt-10 relative"
+        style={{
+          height: `${containerHeight}px`,
+          transition: 'height 0.3s ease-out'
+        }}
       >
         {internships.map((internship) => {
           const internshipId = internship.id;
@@ -37,11 +159,24 @@ export default function InternshipCards({
           );
           const dueTextClass = getDueColorClass(daysRemaining);
           const iconColor = getIconColor(daysRemaining);
+          const position = cardPositions[internshipId];
 
           return (
             <div
               key={internshipId}
-              className="break-inside-avoid mb-8 w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border border-black/30 flex flex-col"
+              ref={(el) => {
+                cardRefs.current[internshipId] = el;
+              }}
+              className="absolute w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border border-black/30 flex flex-col hover:shadow-xl transition-all duration-300"
+              style={{
+                left: position ? `${position.x}px` : '0px',
+                top: position ? `${position.y}px` : '0px',
+                transform: position ? 'translate3d(0, 0, 0)' : 'translate3d(0, 0, 0)',
+                opacity: isLayoutCalculated ? 1 : 0,
+                transition: 'all 0.3s ease-out, opacity 0.3s ease-out',
+                width: `${itemWidth}px`,
+                zIndex: 1
+              }}
             >
               <div>
                 <h3 className="text-sm font-semibold text-[#8D8DAC] pb-2">
@@ -101,6 +236,7 @@ export default function InternshipCards({
                 <button
                   onClick={() => toggleBookmark(internshipId)}
                   className="text-[#8D8DAC] hover:text-[#2F2F3A] transition-colors cursor-pointer"
+                  aria-label={`${bookmarked[internshipId] ? 'Remove' : 'Add'} bookmark for ${internship.title}`}
                 >
                   {bookmarked[internshipId] ? (
                     <BookmarkFilledIcon
@@ -116,6 +252,6 @@ export default function InternshipCards({
           );
         })}
       </div>
-      </div>
-      );
+    </div>
+  );
 }
