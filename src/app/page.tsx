@@ -40,6 +40,12 @@ export default function Home() {
 
   const router = useRouter();
 
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchTerm.trim() !== "") {
+      router.push(`/pages/internships?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -110,12 +116,12 @@ export default function Home() {
       <div className="overflow-hidden">
         {/* Top Section */}
         <div className="bg-[#9381FF] text-white">
-          <div className="px-6 md:px-20 pt-28 pb-28 relative text-right">
+          <div className="px-4 sm:px-6 md:px-12 lg:px-20 pt-20 md:pt-28 pb-20 md:pb-28 relative text-right">
             <div className="inline-block max-w-full">
-              <h1 className="text-[52px] font-bold">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-bold">
                 Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ") || "Intern"}
               </h1>
-              <p className={`text-left text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className}`}>
+              <p className={`text-left text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className}`}>
                 An internship deadline is near
               </p>
             </div>
@@ -123,27 +129,27 @@ export default function Home() {
         </div>
 
         {/* Middle Section */}
-        <div className="relative bg-white/30 backdrop-blur-md rounded-tl-[25px] rounded-bl-[25px] mt-6 mx-4 text-[#2F2F3A] flex flex-col max-w-full shadow-lg">
-          <div className="flex items-center justify-between px-6 md:px-20 pt-18 pb-12">
-            <div className="flex flex-col items-start">
-              <p className="text-[18px] text-[#A2A2C7] tracking-[-0.04em] mb-1">
+        <div className="relative bg-white/30 backdrop-blur-md rounded-tl-[25px] rounded-bl-[25px] mt-6 mx-2 sm:mx-4 text-[#2F2F3A] flex flex-col max-w-full shadow-lg">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 sm:px-6 md:px-12 lg:px-20 pt-10 md:pt-18 pb-8 md:pb-12 gap-4 md:gap-0">
+            <div className="flex flex-col items-start w-full md:w-auto">
+              <p className="text-base sm:text-lg md:text-[18px] text-[#A2A2C7] tracking-[-0.04em] mb-1">
                 Track your internships
               </p>
-              <h2 className="text-5xl font-semibold">Your Internships</h2>
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-semibold">Your Internships</h2>
             </div>
             <Link
               href="/pages/internships"
-              className="inline-flex items-center px-6 py-3 text-[18px] font-light text-white bg-[#E26262] rounded-full gap-3.5 hover:bg-[#d65050] transition-colors duration-200 cursor-pointer shadow-lg whitespace-nowrap"
+              className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-[18px] font-light text-white bg-[#E26262] rounded-full gap-2 sm:gap-3.5 hover:bg-[#d65050] transition-colors duration-200 cursor-pointer shadow-lg whitespace-nowrap mt-4 md:mt-0"
             >
               see all <ArrowForwardIcon className="w-5 h-5 text-white" />
             </Link>
           </div>
 
           {/* Scrollable Internship Cards */}
-          <div className="overflow-x-auto px-6 md:px-20 pb-8">
-            <div className="flex w-max">
+          <div className="overflow-x-auto px-2 sm:px-6 md:px-12 lg:px-20 pb-6 md:pb-8">
+            <div className="flex w-max md:w-full gap-4">
               {savedInternshipsFiltered.map((internship) => (
-                <div key={internship.id} className="flex-shrink-0">
+                <div key={internship.id} className="flex-shrink-0 min-w-[260px] max-w-xs md:max-w-sm">
                   <InternshipCards
                     internships={[internship]}
                     bookmarked={bookmarked}
@@ -160,54 +166,67 @@ export default function Home() {
 
   // Public Landing Page
   return (
-    <div className="text-[#1d1d1f] px-6 md:px-20 pt-24 pb-32 relative overflow-hidden">
+    <div className="text-[#1d1d1f] px-2 sm:px-6 md:px-12 lg:px-20 pt-16 sm:pt-24 pb-20 sm:pb-32 relative overflow-hidden">
       {/* Hero Section */}
-      <section className="max-w-6xl mx-auto relative z-10 mr-auto ml-auto">
-        <div className="flex flex-col lg:flex-row items-center justify-between">
-          <div className="text-center lg:text-left max-w-2xl">
+      <section className="max-w-7xl mx-auto relative z-10 mr-auto ml-auto">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-0">
+          <div className="text-center lg:text-left w-full mt-8 sm:mt-10">
             <p className="text-sm text-[#8d8dac] font-medium mb-2">
               Internyl — Internship Tracker for Students
             </p>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
-              <span className={`text-[#ec6464] font-extrabold ${inter.className}`}>Streamline</span> your search,<br />
-              Secure <span className={`italic font-extrabold ${caveat.className} text-7xl`}>your</span>{" "}
-              <span className={`italic font-extrabold ${caveat.className} text-7xl`}>future</span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <span className={`text-[#ec6464] font-extrabold ${inter.className}`}>Streamline</span><br />
+              <span>your search,</span><br />
+              Secure <span className={`italic font-extrabold ${caveat.className} text-3xl sm:text-5xl md:text-6xl lg:text-7xl`}>your</span><br />
+              <span className={`italic font-extrabold ${caveat.className} text-3xl sm:text-5xl md:text-6xl lg:text-7xl`}>future</span>
             </h1>
             <p className="mt-4 text-lg text-[#1d1d1f]">
               Internyl helps students find and track internships and programs — all in one place.
             </p>
-            <div className="mt-6 flex flex-wrap gap-2 items-center">
-              <div className="mt-6 flex flex-wrap gap-2 items-center">
+            <div className="mt-6 flex flex-col items-center gap-4 w-full">
+              <form
+                className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full max-w-lg"
+                onSubmit={handleSearch}
+              >
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="search for your dream internship"
-                  className="px-6 py-3 rounded-full text-base w-full max-w-md shadow-sm border border-gray-300"
+                  className="px-4 sm:px-6 py-3 sm:py-3 rounded-full text-base w-full shadow-sm border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#ec6464] focus:border-transparent"
                 />
                 <button
-                  onClick={() => {
-                    if (searchTerm.trim() !== "") {
-                      router.push(`/pages/internships?search=${encodeURIComponent(searchTerm.trim())}`);
-                    }
-                  }}
-                  className="bg-[#ec6464] text-white px-6 py-3 rounded-full font-semibold"
+                  type="submit"
+                  className="mx-auto bg-[#ec6464] text-white px-8 py-3 rounded-full font-semibold cursor-pointer hover:bg-[#d65050] transition-colors duration-200 flex items-center justify-center whitespace-nowrap text-base min-w-[160px] min-h-[48px]"
+                  style={{boxShadow: '0 2px 12px 0 rgba(236,100,100,0.10)'}}
                 >
-                  begin search →
+                  <span className="inline-flex items-center gap-0.5">
+                    begin search →
+                  </span>
                 </button>
+              </form>
+              <div className="flex justify-center w-full">
+                <Image
+                  src="/free-text.svg"
+                  width={180}
+                  height={48}
+                  alt="Free to use"
+                  className="mt-2 sm:mt-3 w-auto h-10 sm:h-12 drop-shadow-lg"
+                  style={{filter: 'drop-shadow(0 2px 12px rgba(236,100,100,0.12))'}}
+                />
               </div>
-
             </div>
-            <p className="text-sm italic mt-2 text-[#1d1d1f]">it&apos;s free</p>
+
           </div>
 
-          <div className="hidden lg:flex justify-end w-full">
+
+          <div className="hidden md:flex justify-end w-full">
             <Image
               src="/internyl-infinite-cards.svg"
               alt="Internship tiles visual"
-              className="w-[440px] xl:w-[1000px] drop-shadow-2xl"
-              width={440}
-              height={500}
+              className="drop-shadow-2xl object-left overflow-x-hidden w-[220px] md:w-[340px] lg:w-[440px] xl:w-[540px] h-auto"
+              width={540}
+              height={540}
             />
           </div>
         </div>
@@ -222,56 +241,93 @@ export default function Home() {
           Internyl simplifies the entire search, so you can focus on applying.
         </p>
 
-        <div className="flex flex-col md:flex-row justify-center items-start gap-6 max-w-5xl mx-auto">
-          <div className="bg-white border border-gray-300 rounded-xl p-6 text-left w-full md:w-1/2 shadow">
-            <h3 className="font-semibold mb-3">Finding an internship without Internyl:</h3>
-            <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-              <li><s>Google random keywords</s></li>
-              <li><s>Open 10+ tabs</s></li>
-              <li><s>Search each website for eligibility</s></li>
-              <li><s>Manually copy deadlines</s></li>
-              <li><s>Track due dates on a random Google Doc</s></li>
-              <li><s>Forget which ones you applied to</s></li>
-              <li><s>Miss the results email</s></li>
-            </ul>
+        <div className="flex flex-col md:flex-row justify-center items-stretch gap-4 sm:gap-6 max-w-5xl mx-auto text-md">
+          {/* Without Internyl Card */}
+          <div
+            className="relative w-full md:w-1/2 p-5 sm:p-7 text-center rounded-2xl shadow-xl border border-white/30 bg-white/10 backdrop-blur-2xl overflow-hidden min-w-[220px]"
+            style={{
+              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
+            }}
+          >
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(236,100,100,0.10) 100%)',
+              zIndex: 0,
+            }} />
+            <div className="relative z-10">
+              <h3 className="font-semibold text-gray-900 mb-3 drop-shadow-lg text-lg md:text-xl" style={{textShadow: '0 2px 8px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.10)'}}>Finding an internship without Internyl:</h3>
+              <ul className="text-gray-800 space-y-2 list-disc list-inside text-base md:text-lg font-medium" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>
+                <li><s>Google random keywords</s></li>
+                <li><s>Open 10+ tabs</s></li>
+                <li><s>Search each website for eligibility</s></li>
+                <li><s>Manually copy deadlines</s></li>
+                <li><s>Track due dates on a random Google Doc</s></li>
+                <li><s>Forget which ones you applied to</s></li>
+                <li><s>Miss the results email</s></li>
+              </ul>
+            </div>
           </div>
 
-          <div className="bg-white border border-gray-300 rounded-xl p-6 text-left w-full md:w-1/2 shadow">
-            <h3 className="font-semibold mb-3">Finding an internship with Internyl:</h3>
-            <ul className="text-sm text-[#1d1d1f] space-y-1 list-disc list-inside">
-              <li>
-                Use <span className="text-[#3C66C2] font-medium">smart filters</span> to explore curated internships & programs
-              </li>
-              <li>
-                View all <span className="text-[#E66646] font-medium">key info</span> at a glance: deadlines, eligibility, cost
-              </li>
-              <li>
-                <span className="text-[#2BA280] font-medium">Save listings</span>, set reminders, and <span className="text-[#E66646] font-medium">never miss a deadline</span>
-              </li>
-            </ul>
+          {/* With Internyl Card */}
+          <div
+            className="relative w-full md:w-1/2 p-5 sm:p-7 text-center rounded-2xl shadow-xl border border-white/30 bg-white/10 backdrop-blur-2xl overflow-hidden min-w-[220px]"
+            style={{
+              boxShadow: '0 8px 32px 0 rgba(44, 102, 194, 0.15)',
+            }}
+          >
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(44,162,128,0.10) 100%)',
+              zIndex: 0,
+            }} />
+            <div className="relative z-10">
+              <h3 className="font-semibold text-gray-900 mb-3 drop-shadow-lg text-lg md:text-xl" style={{textShadow: '0 2px 8px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.10)'}}>Finding an internship with Internyl:</h3>
+              <ul className="text-gray-900 space-y-2 list-disc list-inside text-base md:text-lg font-medium" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>
+                <li>
+                  Use <span className="text-[#3C66C2] font-semibold">smart filters</span> to explore curated internships & programs
+                </li>
+                <li>
+                  View all <span className="text-[#E66646] font-semibold">key info</span> at a glance: deadlines, eligibility, cost
+                </li>
+                <li>
+                  <span className="text-[#2BA280] font-semibold">Save listings</span>, set reminders, and <span className="text-[#E66646] font-semibold">never miss a deadline</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="mt-32 text-center max-w-3xl mx-auto">
+      </section >
+
+    {/* Features Section */ }
+    <section className="mt-20 sm:mt-32 text-center max-w-3xl mx-auto px-2 sm:px-0">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">No more stress,<br />we&apos;ve got you</h2>
         <p className="text-base mb-3">Discover programs easily with our intuitive search features.</p>
         <p className="text-base mb-3">Save programs and receive reminders so that you never miss a deadline.</p>
         <p className="text-base mb-8">Gain access to exclusive information like acceptance rates and release dates not even the program website will tell you.</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="bg-white border border-gray-300 rounded-xl p-4 shadow text-center">
-            <p className="text-sm font-medium">Discover programs easily with our intuitive search features.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Feature Card 1 */}
+          <div className="relative flex items-center justify-center rounded-2xl p-4 sm:p-5 text-center border border-white/30 bg-white/10 backdrop-blur-2xl shadow-xl overflow-hidden min-h-[120px]">
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(236,100,100,0.08) 100%)', zIndex: 0}} />
+            <div className="relative z-10">
+              <p className="text-base font-medium text-gray-900 drop-shadow" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Discover programs easily with our intuitive search features.</p>
+            </div>
           </div>
-          <div className="bg-white border border-gray-300 rounded-xl p-4 shadow text-center">
-            <p className="text-sm font-medium">Save programs and receive reminders so that you never miss a deadline.</p>
+          {/* Feature Card 2 */}
+          <div className="relative flex items-center justify-center rounded-2xl p-4 sm:p-5 text-center border border-white/30 bg-white/10 backdrop-blur-2xl shadow-xl overflow-hidden min-h-[120px]">
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(44,162,128,0.08) 100%)', zIndex: 0}} />
+            <div className="relative z-10">
+              <p className="text-base font-medium text-gray-900 drop-shadow" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Save programs and receive reminders so that you never miss a deadline.</p>
+            </div>
           </div>
-          <div className="bg-white border border-gray-300 rounded-xl p-4 shadow text-center">
-            <p className="text-sm font-medium">Gain access to exclusive information like acceptance rates and release dates.</p>
+          {/* Feature Card 3 */}
+          <div className="relative flex items-center justify-center rounded-2xl p-4 sm:p-5 text-center border border-white/30 bg-white/10 backdrop-blur-2xl shadow-xl overflow-hidden min-h-[120px]">
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(44,102,194,0.08) 100%)', zIndex: 0}} />
+            <div className="relative z-10">
+              <p className="text-base font-medium text-gray-900 drop-shadow" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Gain access to exclusive information like acceptance rates and release dates.</p>
+            </div>
           </div>
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   );
 }
