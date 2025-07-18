@@ -52,7 +52,13 @@ export default function InternshipCards({
     // Calculate how many columns can fit
     const totalItemWidth = itemWidth + gap;
     const maxColumns = Math.floor((availableWidth + gap) / totalItemWidth);
-    const newColumnCount = Math.max(1, maxColumns);
+    let newColumnCount = Math.max(1, maxColumns);
+    
+    // Add minimum spacing enforcement to prevent squishing
+    const actualTotalWidth = newColumnCount * itemWidth + (newColumnCount - 1) * gap;
+    if (actualTotalWidth > availableWidth && newColumnCount > 1) {
+      newColumnCount = Math.max(1, newColumnCount - 1);
+    }
     
     setColumnCount(newColumnCount);
 
@@ -137,19 +143,14 @@ export default function InternshipCards({
 
   return (
     <div className="px-6 sm:px-12 lg:px-20">
-      {/* Optional: Display current layout info for debugging */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mb-4 text-center text-gray-600 text-sm">
-          Columns: {columnCount} | Layout Calculated: {isLayoutCalculated ? 'Yes' : 'No'}
-        </div>
-      )}
-      
       <div
         ref={containerRef}
         className="mt-10 relative"
         style={{
           height: `${containerHeight}px`,
-          transition: 'height 0.3s ease-out'
+          transition: 'height 0.3s ease-out',
+          minWidth: '382px', // itemWidth + gap to prevent squishing
+          overflowX: 'auto' // Allow horizontal scroll if needed
         }}
       >
         {internships.map((internship) => {
