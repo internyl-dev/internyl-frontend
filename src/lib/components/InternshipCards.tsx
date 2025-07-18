@@ -37,6 +37,7 @@ export default function InternshipCards({
   const [cardPositions, setCardPositions] = useState<{ [key: string]: CardPosition }>({});
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const [isLayoutCalculated, setIsLayoutCalculated] = useState<boolean>(false);
+  const [isInitialRender, setIsInitialRender] = useState<boolean>(true);
   
   // Configuration
   const itemWidth = 350; // Fixed width for each card
@@ -99,6 +100,9 @@ export default function InternshipCards({
     setCardPositions(positions);
     setContainerHeight(Math.max(...columnHeights) - gap); // Remove last gap
     setIsLayoutCalculated(true);
+    if (isInitialRender) {
+      setIsInitialRender(false);
+    }
   }, [internships, itemWidth, gap]);
 
   // Initial layout calculation after cards are rendered
@@ -113,11 +117,10 @@ export default function InternshipCards({
 
   useEffect(() => {
     const handleResize = () => {
-      setIsLayoutCalculated(false);
-      // Recalculate after a short delay to ensure proper measurements
+      // Don't hide cards on resize, just recalculate
       setTimeout(() => {
         calculateMasonryLayout();
-      }, 100);
+      }, 50); // Reduced delay
     };
 
     // Use ResizeObserver for better performance if available
@@ -173,8 +176,8 @@ export default function InternshipCards({
                 left: position ? `${position.x}px` : '0px',
                 top: position ? `${position.y}px` : '0px',
                 transform: position ? 'translate3d(0, 0, 0)' : 'translate3d(0, 0, 0)',
-                opacity: isLayoutCalculated ? 1 : 0,
-                transition: 'all 0.3s ease-out, opacity 0.3s ease-out',
+                opacity: isInitialRender ? 0 : 1, // Only hide on initial render
+                transition: isInitialRender ? 'opacity 0.3s ease-out' : 'all 0.3s ease-out',
                 width: `${itemWidth}px`,
                 zIndex: 1
               }}
