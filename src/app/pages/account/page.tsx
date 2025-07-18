@@ -97,100 +97,104 @@ export default function Account() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen px-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
-        <h1 className="text-2xl font-bold text-center mb-6">Account Settings</h1>
+    <div className="flex justify-center items-center min-h-screen px-4 py-8">
+      <div className="w-full max-w-lg bg-gradient-to-br from-gray-50 via-slate-100 to-blue-50 p-8 rounded-3xl shadow-xl border border-gray-300">
+        <h1 className="text-3xl font-bold text-center mb-8 text-gray-900">Account Settings</h1>
 
         {photoURL && (
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-8">
             <img
               src={photoURL}
               alt="Profile"
-              className="w-24 h-24 rounded-full object-cover border border-gray-300"
+              className="w-28 h-28 rounded-full object-cover border-4 border-gray-200 shadow-lg"
             />
           </div>
         )}
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Display Name */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Display Name</label>
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Display Name</label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
             />
             <button
               onClick={handleUpdateDisplayName}
-              className="w-full mt-2 py-2 bg-black text-white rounded-lg hover:opacity-90 transition"
+              className="w-full py-3 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-xl hover:from-blue-500 hover:to-blue-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
             >
               Update Display Name
             </button>
           </div>
 
           {/* Username */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Username</label>
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
             />
             <button
               onClick={handleUpdateUsername}
-              className="w-full mt-2 py-2 bg-black text-white rounded-lg hover:opacity-90 transition"
+              className="w-full py-3 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-xl hover:from-blue-500 hover:to-blue-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
             >
               Update Username
             </button>
           </div>
 
           {/* Email */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
             />
             <button
               onClick={handleUpdateEmail}
-              className="w-full mt-2 py-2 bg-black text-white rounded-lg hover:opacity-90 transition"
+              className="w-full py-3 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-xl hover:from-blue-500 hover:to-blue-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
             >
               Update Email
             </button>
           </div>
 
           {/* Password */}
-          <div>
-            <label className="block text-sm font-medium mb-1">New Password</label>
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
             />
             <button
               onClick={handleUpdatePassword}
-              className="w-full mt-2 py-2 bg-black text-white rounded-lg hover:opacity-90 transition"
+              className="w-full py-3 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-xl hover:from-blue-500 hover:to-blue-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
             >
               Update Password
             </button>
           </div>
 
           {/* Sign Out */}
-          <button
-            onClick={handleSignOut}
-            className="w-full mt-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition"
-          >
-            Sign Out
-          </button>
+          <div className="pt-4 border-t border-gray-200">
+            <button
+              onClick={handleSignOut}
+              className="w-full py-3 border-2 border-red-500 text-red-500 rounded-xl hover:bg-red-50 hover:border-red-600 hover:text-red-600 transition-all duration-200 font-medium"
+            >
+              Sign Out
+            </button>
+          </div>
 
           {/* Status Message */}
           {statusMessage && (
-            <p className="mt-3 text-sm text-center text-blue-600">{statusMessage}</p>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-sm text-center text-blue-700 font-medium">{statusMessage}</p>
+            </div>
           )}
         </div>
       </div>
