@@ -13,7 +13,7 @@ import {
 import { getDaysRemaining } from "../modules/getTimeRemaining";
 import { getDueColorClass } from "../modules/getDueDateTextColor";
 import { getIconColor } from "../modules/getDueDateIconColor";
-import { Button } from "@mui/material";
+import LaunchIcon from '@mui/icons-material/Launch';
 
 interface Props {
   internships: InternshipType[];
@@ -249,8 +249,7 @@ export default function InternshipCards({
               </div>
 
               <div className="mt-4 flex justify-between items-center">
-                <Button
-                  variant="outlined"
+                <a
                   href={
                     !internship.link
                       ? "/pages/report"
@@ -258,8 +257,13 @@ export default function InternshipCards({
                         ? internship.link
                         : `https://${internship.link}`
                   }
-                  sx={{ borderColor: '#ec6464', color: 'black', '&:hover': { borderColor: '#d55555', backgroundColor: '#f8dada' } }}
-                >Visit Website</Button>
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#4A90E2] hover:text-[#ffffff] hover:bg-[#4A90E2] p-2 rounded-full transition-all duration-200 cursor-pointer"
+                  aria-label={`Visit ${internship.title} website`}
+                >
+                  <LaunchIcon fontSize="medium" />
+                </a>
                 <button
                   onClick={() => toggleBookmark(internshipId)}
                   className="text-[#8D8DAC] hover:text-[#2F2F3A] cursor-pointer p-1 rounded-full hover:bg-black/5 active:bg-black/10 transition-all duration-200"

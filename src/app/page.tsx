@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "@/lib/config/firebaseConfig";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import { motion, useInView } from "framer-motion";
 
 import { Inter, Caveat } from "next/font/google";
 import Image from "next/image";
@@ -32,6 +33,59 @@ const caveat = Caveat({
   weight: ['600', '700'],
   variable: "--font-caveat",
 });
+
+// Animated Strikethrough List Component
+const AnimatedStrikethroughList = () => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
+
+  const items = [
+    "Google random keywords",
+    "Open 10+ tabs",
+    "Search each website for eligibility",
+    "Manually copy deadlines",
+    "Track due dates on a random Google Doc",
+    "Forget which ones you applied to",
+    "Miss the results email"
+  ];
+
+  return (
+    <ul
+      ref={ref}
+      className="text-gray-800 space-y-2 list-disc list-inside text-base md:text-lg font-medium"
+      style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}
+    >
+      {items.map((item, index) => (
+        <motion.li
+          key={index}
+          className="relative"
+          initial={{ opacity: 0.4 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0.4 }}
+          transition={{ duration: 0.5, delay: index * 0.2 }}
+        >
+          <span className="relative">
+            {item}
+            <motion.span
+              className="absolute inset-0 border-t-2 border-gray-600"
+              style={{
+                top: '50%',
+                transform: 'translateY(-50%)',
+                transformOrigin: 'left center'
+              }}
+              initial={{ scaleX: 0 }}
+              animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+              transition={{
+                duration: 0.6,
+                delay: index * 0.3,
+                ease: "easeInOut"
+              }}
+            />
+          </span>
+        </motion.li>
+      ))}
+    </ul>
+  );
+};
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
@@ -263,15 +317,7 @@ export default function Home() {
                 Finding an internship without Internyl
                 <ThumbDownOutlinedIcon style={{ color: '#e02b2b', paddingLeft: "3px" }} />
               </h3>
-              <ul className="text-gray-800 space-y-2 list-disc list-inside text-base md:text-lg font-medium" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>
-                <li><s>Google random keywords</s></li>
-                <li><s>Open 10+ tabs</s></li>
-                <li><s>Search each website for eligibility</s></li>
-                <li><s>Manually copy deadlines</s></li>
-                <li><s>Track due dates on a random Google Doc</s></li>
-                <li><s>Forget which ones you applied to</s></li>
-                <li><s>Miss the results email</s></li>
-              </ul>
+              <AnimatedStrikethroughList />
             </div>
           </div>
 
