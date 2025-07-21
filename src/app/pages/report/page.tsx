@@ -16,8 +16,9 @@ export default function ReportPage() {
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [reportType, setReportType] = useState<ReportType["reportType"]>("info");
 
-  // Common fields
+  // Common fields & Missing fields
   const [reportDetails, setReportDetails] = useState("");
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
   // Incorrect info specific
   const [internships, setInternships] = useState<InternshipCards[]>([]);
@@ -35,6 +36,9 @@ export default function ReportPage() {
   // Other specific
   const [otherSubject, setOtherSubject] = useState("");
   const [otherDescription, setOtherDescription] = useState("");
+
+  // Submission state
+  const [submitting, setSubmitting] = useState(false);
 
   const router = useRouter();
 
@@ -68,6 +72,13 @@ export default function ReportPage() {
     fetchInternships();
   }, []);
 
+  // Helper to validate internship selection is from the list
+  const isValidInternship = (selected: string) => {
+    return internships.some(
+      (int) => `${int.title} — ${int.provider}` === selected
+    );
+  };
+
   const handleStepOne = (e: React.FormEvent) => {
     e.preventDefault();
     if (!reportType) {
@@ -80,53 +91,64 @@ export default function ReportPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setSubmitting(true);
+
     // Validate required fields per report type
     if (reportType === "info") {
-      if (!reportDetails.trim()) {
-        toast.error("Please add comments for your report.");
-        return;
-      }
-      if (!searchTerm) {
-        toast.error("Please select an internship.");
+      if (!isValidInternship(searchTerm)) {
+        toast.error("Please select a valid internship from the list.");
+        setSubmitting(false);
         return;
       }
       if (!incorrectInfoType) {
         toast.error("Please select the incorrect info type.");
+        setSubmitting(false);
         return;
       }
       if (!correctInfo.trim()) {
         toast.error("Please provide the correct info.");
+        setSubmitting(false);
         return;
       }
     } else if (reportType === "bug") {
       if (!bugTitle.trim()) {
         toast.error("Please enter a bug title.");
+        setSubmitting(false);
         return;
       }
       if (!bugDescription.trim()) {
         toast.error("Please enter a bug description.");
+        setSubmitting(false);
         return;
       }
       if (!bugSteps.trim()) {
         toast.error("Please describe steps to reproduce.");
+        setSubmitting(false);
         return;
       }
       if (!bugSeverity) {
         toast.error("Please select a severity level.");
+        setSubmitting(false);
         return;
       }
     } else if (reportType === "other") {
       if (!otherSubject.trim()) {
         toast.error("Please enter a subject.");
+        setSubmitting(false);
         return;
       }
       if (!otherDescription.trim()) {
         toast.error("Please enter a description.");
+        setSubmitting(false);
         return;
       }
     }
 
-    if (!user) return;
+    if (!user) {
+      toast.error("User not authenticated.");
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const reportId = `report-${crypto.randomUUID()}`;
@@ -140,9 +162,14 @@ export default function ReportPage() {
         createdAt: new Date(),
         status: "pending",
         // Include common comments or description per type
-        reportDetails: reportType === "info" ? reportDetails :
-                       reportType === "bug" ? bugDescription :
-                       reportType === "other" ? otherDescription : "",
+        reportDetails:
+          reportType === "info"
+            ? reportDetails
+            : reportType === "bug"
+            ? bugDescription
+            : reportType === "other"
+            ? otherDescription
+            : "",
 
         // Incorrect info extra fields
         ...(reportType === "info" && {
@@ -167,7 +194,14 @@ export default function ReportPage() {
         }),
       };
 
-      await setDoc(doc(db, "reports", reportId), newReport);
+      await toast.promise(
+        setDoc(doc(db, "reports", reportId), newReport),
+        {
+          loading: "Submitting report...",
+          success: "Report submitted successfully!",
+          error: "Failed to submit report.",
+        }
+      );
 
       // Send full report data to backend for email notification
       await fetch("/api/notify-admin", {
@@ -176,17 +210,19 @@ export default function ReportPage() {
         body: JSON.stringify(newReport),
       });
 
-      toast.success("Report submitted successfully!");
       setStep(2);
+      setSubmitting(false);
     } catch (err) {
       console.error("Submission error:", err);
       toast.error("Failed to submit report.");
+      setSubmitting(false);
     }
   };
 
-  const filteredInternships = internships.filter((int) =>
-    int.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    int.provider.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredInternships = internships.filter(
+    (int) =>
+      int.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      int.provider.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSelect = (value: string) => {
@@ -199,250 +235,260 @@ export default function ReportPage() {
 
   return (
     <div className="mt-20 px-4 py-2">
-      <form className="bg-white rounded-2xl shadow-md p-6 max-w-3xl mx-auto">
-        <h1 className="text-xl text-center mb-4 font-semibold">Report an Issue</h1>
+      {step !== 2 ? (
+        <form className="bg-white rounded-2xl shadow-md p-6 max-w-3xl mx-auto" onSubmit={handleSubmit}>
+          <h1 className="text-xl text-center mb-4 font-semibold">Report an Issue</h1>
 
-        {step === 0 && (
-          <>
-            <div className="text-center">
-              <label>Issue Type</label>
-              <select
-                className="w-max-3xl mt-2 mb-4 p-2 border rounded m-4"
-                value={reportType}
-                onChange={(e) => setReportType(e.target.value as ReportType["reportType"])}
-              >
-                <option value="info">Incorrect Information on Internship Card</option>
-                <option value="bug">Bug / Issue on Website</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <button
-              className="bg-blue-500 text-white px-3 py-2 rounded-2xl hover:bg-blue-600 transition-colors cursor-pointer justified mx-auto block"
-              onClick={handleStepOne}
-            >
-              Next <ArrowForwardIcon />
-            </button>
-          </>
-        )}
-
-        {step === 1 && (
-          <>
-            {/* Info Report Form */}
-            {reportType === "info" && (
-              <>
-                <div className="text-center m-4 font-semibold text-lg">Report Incorrect Information</div>
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Internship</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onFocus={() => setIsDropdownVisible(true)}
-                    onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)}
-                    className="w-full border rounded-md p-2 mb-2"
-                    placeholder="Search by title or provider"
-                  />
-                  {isDropdownVisible && filteredInternships.length > 0 && (
-                    <ul className="absolute z-10 bg-white border border-gray-200 rounded-md shadow-md w-full max-h-40 overflow-y-auto">
-                      {filteredInternships.map((int) => (
-                        <li
-                          key={int.id}
-                          onClick={() => handleSelect(`${int.title} — ${int.provider}`)}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                        >
-                          {int.title} — {int.provider}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Incorrect Info</label>
+          {step === 0 && (
+            <>
+              <div className="text-center">
+                <label>Issue Type</label>
                 <select
-                  className="w-full border rounded-md p-2 mb-4"
-                  onChange={(e) => setIncorrectInfoType(e.target.value)}
-                  value={incorrectInfoType}
+                  className="w-max-3xl mt-2 mb-4 p-2 border rounded m-4"
+                  value={reportType}
+                  onChange={(e) => setReportType(e.target.value as ReportType["reportType"])}
                 >
-                  <option value="" disabled>Select the incorrect info</option>
-                  <option value="internshipName">Internship Name</option>
-                  <option value="provider">Provider</option>
-                  <option value="location">Location</option>
-                  <option value="dates">Dates</option>
+                  <option value="info">Incorrect Information on Internship Card</option>
+                  <option value="bug">Bug / Issue on Website</option>
                   <option value="other">Other</option>
                 </select>
-
-                {incorrectInfoType && (
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Current Info
-                    </label>
-                    <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm">
-                      {(() => {
-                        const selected = internships.find(
-                          (int) => `${int.title} — ${int.provider}` === searchTerm
-                        );
-                        if (!selected) return "Not available";
-
-                        switch (incorrectInfoType) {
-                          case "internshipName":
-                            return selected.title;
-                          case "provider":
-                            return selected.provider;
-                          case "location":
-                            return selected.location.map((loc) => `${loc.city}, ${loc.state}`).join("; ");
-                          case "dates":
-                            return selected.dates.map((d) =>
-                              `${d.start?.toLocaleDateString()} - ${d.end?.toLocaleDateString()}`
-                            ).join("; ");
-                          default:
-                            return "Not available";
-                        }
-                      })()}
-                    </div>
-                  </div>
-                )}
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Correct Info</label>
-                <textarea
-                  className="w-full border rounded-md p-2 mb-4"
-                  placeholder="Provide the correct information here"
-                  rows={3}
-                  value={correctInfo}
-                  onChange={(e) => setCorrectInfo(e.target.value)}
-                />
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Comments</label>
-                <textarea
-                  className="w-full border rounded-md p-2 mb-4"
-                  placeholder="Add any additional context"
-                  rows={3}
-                  value={reportDetails}
-                  onChange={(e) => setReportDetails(e.target.value)}
-                />
-              </>
-            )}
-
-            {/* Bug Report Form */}
-            {reportType === "bug" && (
-              <>
-                <div className="text-center m-4 font-semibold text-lg">Report a Bug / Issue</div>
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bug Title</label>
-                <input
-                  type="text"
-                  className="w-full border rounded-md p-2 mb-4"
-                  placeholder="Short summary of the bug"
-                  value={bugTitle}
-                  onChange={(e) => setBugTitle(e.target.value)}
-                />
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bug Description</label>
-                <textarea
-                  className="w-full border rounded-md p-2 mb-4"
-                  placeholder="Describe the bug in detail"
-                  rows={4}
-                  value={bugDescription}
-                  onChange={(e) => setBugDescription(e.target.value)}
-                />
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Steps to Reproduce</label>
-                <textarea
-                  className="w-full border rounded-md p-2 mb-4"
-                  placeholder="List the steps to reproduce the bug"
-                  rows={3}
-                  value={bugSteps}
-                  onChange={(e) => setBugSteps(e.target.value)}
-                />
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Severity</label>
-                <select
-                  className="w-full border rounded-md p-2 mb-4"
-                  value={bugSeverity}
-                  onChange={(e) => setBugSeverity(e.target.value)}
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                  <option value="Critical">Critical</option>
-                </select>
-              </>
-            )}
-
-            {/* Other Report Form */}
-            {reportType === "other" && (
-              <>
-                <div className="text-center m-4 font-semibold text-lg">Other Report</div>
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                <input
-                  type="text"
-                  className="w-full border rounded-md p-2 mb-4"
-                  placeholder="Brief subject"
-                  value={otherSubject}
-                  onChange={(e) => setOtherSubject(e.target.value)}
-                />
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea
-                  className="w-full border rounded-md p-2 mb-4"
-                  placeholder="Detailed description"
-                  rows={4}
-                  value={otherDescription}
-                  onChange={(e) => setOtherDescription(e.target.value)}
-                />
-              </>
-            )}
-
-            {/* User Info Display */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">User ID</label>
-              <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm">
-                {user.uid}
               </div>
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm">
-                {user.email}
-              </div>
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition-colors block mx-auto cursor-pointer"
-            >
-              Submit Report
-            </button>
-          </>
-        )}
-
-        {step === 2 && (
-          <div className="flex flex-col items-center justify-center text-center p-6 space-y-6">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
+              <button
+                className="bg-blue-500 text-white px-3 py-2 rounded-2xl hover:bg-blue-600 transition-colors cursor-pointer justified mx-auto block"
+                onClick={handleStepOne}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-green-700">Report Submitted</h2>
-            <p className="text-gray-600 max-w-md">
-              Thank you for helping us keep the platform accurate and functional. We’ll review your report as soon as possible.
-            </p>
-            <button
-              onClick={() => router.push("/")}
-              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
+                Next <ArrowForwardIcon />
+              </button>
+            </>
+          )}
+
+          {step === 1 && (
+            <>
+              {/* Info Report Form */}
+              {reportType === "info" && (
+                <>
+                  <div className="text-center m-4 font-semibold text-lg">
+                    Report Incorrect Information
+                    <p className="font-light text-[1rem]">An asterisk (*) indicates required information.</p>
+                  </div>
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Internship*</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onFocus={() => setIsDropdownVisible(true)}
+                      onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)}
+                      className="w-full border rounded-md p-2 mb-2"
+                      placeholder="Search by title or provider"
+                      required
+                    />
+                    {isDropdownVisible && filteredInternships.length > 0 && (
+                      <ul className="absolute z-10 bg-white border border-gray-200 rounded-md shadow-md w-full max-h-40 overflow-y-auto">
+                        {filteredInternships.map((int) => (
+                          <li
+                            key={int.id}
+                            onClick={() => handleSelect(`${int.title} — ${int.provider}`)}
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          >
+                            {int.title} — {int.provider}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Incorrect Info</label>
+                  <select
+                    className="w-full border rounded-md p-2 mb-4"
+                    onChange={(e) => setIncorrectInfoType(e.target.value)}
+                    value={incorrectInfoType}
+                    required
+                  >
+                    <option value="" disabled>Select the incorrect info</option>
+                    <option value="internshipName">Internship Name</option>
+                    <option value="provider">Provider</option>
+                    <option value="location">Location</option>
+                    <option value="dates">Dates</option>
+                    <option value="link">Link</option>
+                    <option value="other">Other</option>
+                  </select>
+
+                  {incorrectInfoType && (
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Current Info
+                      </label>
+                      <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm">
+                        {(() => {
+                          const selected = internships.find(
+                            (int) => `${int.title} — ${int.provider}` === searchTerm
+                          );
+                          if (!selected) return "Not available";
+
+                          switch (incorrectInfoType) {
+                            case "internshipName":
+                              return selected.title;
+                            case "provider":
+                              return selected.provider;
+                            case "location":
+                              return selected.location.map((loc) => `${loc.city}, ${loc.state}`).join("; ");
+                            case "dates":
+                              return selected.dates.map((d) =>
+                                `${d.start ? new Date(d.start).toLocaleDateString() : "N/A"} - ${d.end ? new Date(d.end).toLocaleDateString() : "N/A"}`
+                              ).join("; ");
+                            case "link":
+                              return `Current Link - ${selected.link}` || "No link provided";
+                            default:
+                              return "Not available";
+                          }
+                        })()}
+                      </div>
+                    </div>
+                  )}
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Correct Info*</label>
+                  <textarea
+                    className="w-full border rounded-md p-2 mb-4"
+                    placeholder="Provide the correct information here. Please be as detailed as possible. If you don't know the exact info, describe what needs to be changed."
+                    rows={3}
+                    value={correctInfo}
+                    onChange={(e) => setCorrectInfo(e.target.value)}
+                    required
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Comments</label>
+                  <textarea
+                    className="w-full border rounded-md p-2 mb-4"
+                    placeholder="Add any additional context/comments/concerns about the incorrect info."
+                    rows={3}
+                    value={reportDetails}
+                    onChange={(e) => setReportDetails(e.target.value)}
+                  />
+                </>
+              )}
+
+              {/* Bug Report Form */}
+              {reportType === "bug" && (
+                <>
+                  <div className="text-center m-4 font-semibold text-lg">Report a Bug / Issue</div>
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bug Title</label>
+                  <input
+                    type="text"
+                    className="w-full border rounded-md p-2 mb-4"
+                    placeholder="Short summary of the bug"
+                    value={bugTitle}
+                    onChange={(e) => setBugTitle(e.target.value)}
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bug Description</label>
+                  <textarea
+                    className="w-full border rounded-md p-2 mb-4"
+                    placeholder="Describe the bug in detail"
+                    rows={4}
+                    value={bugDescription}
+                    onChange={(e) => setBugDescription(e.target.value)}
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Steps to Reproduce</label>
+                  <textarea
+                    className="w-full border rounded-md p-2 mb-4"
+                    placeholder="List the steps to reproduce the bug"
+                    rows={3}
+                    value={bugSteps}
+                    onChange={(e) => setBugSteps(e.target.value)}
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Severity</label>
+                  <select
+                    className="w-full border rounded-md p-2 mb-4"
+                    value={bugSeverity}
+                    onChange={(e) => setBugSeverity(e.target.value)}
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
+                  </select>
+                </>
+              )}
+
+              {/* Other Report Form */}
+              {reportType === "other" && (
+                <>
+                  <div className="text-center m-4 font-semibold text-lg">Other Report</div>
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                  <input
+                    type="text"
+                    className="w-full border rounded-md p-2 mb-4"
+                    placeholder="Brief subject"
+                    value={otherSubject}
+                    onChange={(e) => setOtherSubject(e.target.value)}
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    className="w-full border rounded-md p-2 mb-4"
+                    placeholder="Detailed description"
+                    rows={4}
+                    value={otherDescription}
+                    onChange={(e) => setOtherDescription(e.target.value)}
+                  />
+                </>
+              )}
+
+              {/* User Info Display */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">User ID</label>
+                <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm">
+                  {user.uid}
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm">
+                  {user.email}
+                </div>
+              </div>
+
+              <button
+                disabled={submitting}
+                type="submit"
+                className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition-colors block mx-auto cursor-pointer"
+              >
+                Submit Report
+              </button>
+            </>
+          )}
+        </form>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center p-6 space-y-6 bg-white rounded-2xl shadow-md max-w-3xl mx-auto mt-[20vh] mb-[25vh]">
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
             >
-              Return to Home
-            </button>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
           </div>
-        )}
-      </form>
+          <h2 className="text-2xl font-bold text-green-700">Report Submitted</h2>
+          <p className="text-gray-600 max-w-md">
+            Thank you for helping us keep the platform accurate and functional. We’ll review your report as soon as possible.
+          </p>
+          <button
+            onClick={() => router.push("/")}
+            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition cursor-pointer"
+          >
+            Return to Home
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
   Select,
   InputLabel,
   FormControl,
+  useTheme,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/config/firebaseConfig";
@@ -40,6 +41,7 @@ const times = ["morning", "afternoon", "evening", "not provided"];
 
 export default function AddInternshipPage() {
   const router = useRouter();
+  const theme = useTheme();
 
   // Form state for the main internship fields
   const [title, setTitle] = useState("");
@@ -182,7 +184,18 @@ export default function AddInternshipPage() {
     <AdminLayout>
       <Box
         component="form"
-        sx={{ maxWidth: 700, mx: "auto", mt: 4, px: 2, bgcolor: "white", p: 6 }}
+        sx={{
+          maxWidth: 720,
+          mx: "auto",
+          mt: 4,
+          px: 3,
+          py: 6,
+          bgcolor: theme.palette.background.paper,
+          borderRadius: 3,
+          boxShadow: theme.shadows[8],
+          "& .MuiTextField-root": { mb: 2 },
+          "& .MuiFormControl-root": { mb: 2 },
+        }}
         noValidate
         autoComplete="off"
         onSubmit={(e) => {
@@ -190,7 +203,7 @@ export default function AddInternshipPage() {
           handleSubmit();
         }}
       >
-        <Typography variant="h4" mb={3}>
+        <Typography variant="h4" fontWeight={700} mb={4} color="primary.main">
           Add New Internship
         </Typography>
 
@@ -201,7 +214,7 @@ export default function AddInternshipPage() {
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          margin="normal"
+          placeholder="Internship Title"
         />
 
         {/* Provider */}
@@ -210,7 +223,7 @@ export default function AddInternshipPage() {
           label="Provider"
           value={provider}
           onChange={(e) => setProvider(e.target.value)}
-          margin="normal"
+          placeholder="Organization providing the internship"
           helperText="If none, will be 'not provided'"
         />
 
@@ -218,12 +231,12 @@ export default function AddInternshipPage() {
         <TextField
           fullWidth
           multiline
-          minRows={3}
+          minRows={4}
           label="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          margin="normal"
           required
+          placeholder="Brief description about the internship"
         />
 
         {/* Subject */}
@@ -232,8 +245,8 @@ export default function AddInternshipPage() {
           label="Subject"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          margin="normal"
-          helperText="e.g. Computer Science, History"
+          placeholder="e.g., Computer Science, Marketing"
+          helperText="Optional"
         />
 
         {/* Duration */}
@@ -242,9 +255,11 @@ export default function AddInternshipPage() {
           label="Duration (weeks)"
           type="number"
           value={durationWeeks}
-          onChange={(e) => setDurationWeeks(e.target.value === "" ? "" : Number(e.target.value))}
-          margin="normal"
+          onChange={(e) =>
+            setDurationWeeks(e.target.value === "" ? "" : Number(e.target.value))
+          }
           inputProps={{ min: 0 }}
+          placeholder="Number of weeks"
         />
 
         {/* Cost */}
@@ -253,8 +268,8 @@ export default function AddInternshipPage() {
           label="Cost"
           value={cost}
           onChange={(e) => setCost(e.target.value)}
-          margin="normal"
-          helperText="e.g. free, 100, not provided"
+          placeholder="e.g., free, 100, not provided"
+          helperText="Optional"
         />
 
         {/* Link */}
@@ -263,11 +278,20 @@ export default function AddInternshipPage() {
           label="Application Link"
           value={link}
           onChange={(e) => setLink(e.target.value)}
-          margin="normal"
+          placeholder="URL to apply"
         />
 
         {/* Tags input */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mt: 1, mb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            flexWrap: "wrap",
+            mt: 1,
+            mb: 3,
+          }}
+        >
           <TextField
             label="Add Tag"
             value={tagInput}
@@ -280,18 +304,28 @@ export default function AddInternshipPage() {
               }
             }}
           />
-          <Button variant="outlined" onClick={handleAddTag} size="small">
+          <Button
+            variant="outlined"
+            onClick={handleAddTag}
+            size="small"
+            sx={{ height: 36 }}
+          >
             Add
           </Button>
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
             {tags.map((tag) => (
-              <Chip key={tag} label={tag} onDelete={() => setTags(tags.filter((t) => t !== tag))} />
+              <Chip
+                key={tag}
+                label={tag}
+                onDelete={() => setTags(tags.filter((t) => t !== tag))}
+                sx={{ bgcolor: theme.palette.grey[200] }}
+              />
             ))}
           </Box>
         </Box>
 
-        {/* DEADLINE */}
-        <Typography variant="h6" mt={4} mb={1}>
+        {/* Deadline Section */}
+        <Typography variant="h6" mb={1} mt={4} fontWeight={600} color="primary.dark">
           Deadline
         </Typography>
 
@@ -300,15 +334,17 @@ export default function AddInternshipPage() {
           label="Deadline Name"
           value={deadlineName}
           onChange={(e) => setDeadlineName(e.target.value)}
-          margin="normal"
+          placeholder="e.g., Application Deadline"
         />
 
-        <FormControl fullWidth margin="normal">
+        <FormControl fullWidth>
           <InputLabel>Priority</InputLabel>
           <Select
             value={deadlinePriority}
             label="Priority"
-            onChange={(e) => setDeadlinePriority(e.target.value as Deadline["priority"])}
+            onChange={(e) =>
+              setDeadlinePriority(e.target.value as Deadline["priority"])
+            }
           >
             {priorityOptions.map((p) => (
               <MenuItem key={p} value={p}>
@@ -324,7 +360,6 @@ export default function AddInternshipPage() {
           type="date"
           value={deadlineDate}
           onChange={(e) => setDeadlineDate(e.target.value)}
-          margin="normal"
           InputLabelProps={{ shrink: true }}
         />
 
@@ -336,7 +371,6 @@ export default function AddInternshipPage() {
             />
           }
           label="Rolling Basis"
-          sx={{ mt: 1 }}
         />
 
         <TextField
@@ -345,7 +379,6 @@ export default function AddInternshipPage() {
           select
           value={deadlineTime}
           onChange={(e) => setDeadlineTime(e.target.value)}
-          margin="normal"
         >
           {times.map((t) => (
             <MenuItem key={t} value={t}>
@@ -354,8 +387,8 @@ export default function AddInternshipPage() {
           ))}
         </TextField>
 
-        {/* ELIGIBILITY */}
-        <Typography variant="h6" mt={4} mb={1}>
+        {/* Eligibility Section */}
+        <Typography variant="h6" mb={1} mt={4} fontWeight={600} color="primary.dark">
           Eligibility
         </Typography>
 
@@ -369,7 +402,7 @@ export default function AddInternshipPage() {
           label="Rising"
         />
 
-        <FormControl fullWidth margin="normal">
+        <FormControl fullWidth>
           <InputLabel>Grades</InputLabel>
           <Select
             multiple
@@ -400,7 +433,6 @@ export default function AddInternshipPage() {
             onChange={(e) =>
               setEligibilityAgeMin(e.target.value === "" ? "" : Number(e.target.value))
             }
-            margin="normal"
             sx={{ flex: 1 }}
           />
           <TextField
@@ -410,13 +442,12 @@ export default function AddInternshipPage() {
             onChange={(e) =>
               setEligibilityAgeMax(e.target.value === "" ? "" : Number(e.target.value))
             }
-            margin="normal"
             sx={{ flex: 1 }}
           />
         </Stack>
 
-        {/* LOCATION */}
-        <Typography variant="h6" mt={4} mb={1}>
+        {/* Location Section */}
+        <Typography variant="h6" mb={1} mt={4} fontWeight={600} color="primary.dark">
           Location
         </Typography>
 
@@ -435,29 +466,29 @@ export default function AddInternshipPage() {
           label="State"
           value={locationState}
           onChange={(e) => setLocationState(e.target.value)}
-          margin="normal"
+          placeholder="State or region"
         />
         <TextField
           fullWidth
           label="City"
           value={locationCity}
           onChange={(e) => setLocationCity(e.target.value)}
-          margin="normal"
+          placeholder="City"
         />
         <TextField
           fullWidth
           label="Address"
           value={locationAddress}
           onChange={(e) => setLocationAddress(e.target.value)}
-          margin="normal"
+          placeholder="Street address"
         />
 
-        {/* DATES */}
-        <Typography variant="h6" mt={4} mb={1}>
+        {/* Dates Section */}
+        <Typography variant="h6" mb={1} mt={4} fontWeight={600} color="primary.dark">
           Dates
         </Typography>
 
-        <FormControl fullWidth margin="normal">
+        <FormControl fullWidth>
           <InputLabel>Term</InputLabel>
           <Select
             value={dateTerm}
@@ -478,7 +509,6 @@ export default function AddInternshipPage() {
             type="date"
             value={dateStart}
             onChange={(e) => setDateStart(e.target.value)}
-            margin="normal"
             InputLabelProps={{ shrink: true }}
             sx={{ flex: 1 }}
           />
@@ -487,14 +517,13 @@ export default function AddInternshipPage() {
             type="date"
             value={dateEnd}
             onChange={(e) => setDateEnd(e.target.value)}
-            margin="normal"
             InputLabelProps={{ shrink: true }}
             sx={{ flex: 1 }}
           />
         </Stack>
 
-        {/* STIPEND */}
-        <Typography variant="h6" mt={4} mb={1}>
+        {/* Stipend Section */}
+        <Typography variant="h6" mb={1} mt={4} fontWeight={600} color="primary.dark">
           Stipend
         </Typography>
 
@@ -517,13 +546,13 @@ export default function AddInternshipPage() {
             onChange={(e) =>
               setStipendAmount(e.target.value === "" ? "" : Number(e.target.value))
             }
-            margin="normal"
             inputProps={{ min: 0 }}
+            placeholder="Enter stipend amount"
           />
         )}
 
-        {/* REQUIREMENTS */}
-        <Typography variant="h6" mt={4} mb={1}>
+        {/* Requirements Section */}
+        <Typography variant="h6" mb={1} mt={4} fontWeight={600} color="primary.dark">
           Requirements
         </Typography>
 
@@ -562,11 +591,11 @@ export default function AddInternshipPage() {
           label="Other Requirements (comma separated)"
           value={requirementsOther}
           onChange={(e) => setRequirementsOther(e.target.value)}
-          margin="normal"
+          placeholder="e.g. portfolio, background check"
         />
 
-        {/* CONTACT */}
-        <Typography variant="h6" mt={4} mb={1}>
+        {/* Contact Section */}
+        <Typography variant="h6" mb={1} mt={4} fontWeight={600} color="primary.dark">
           Contact Information
         </Typography>
 
@@ -576,21 +605,30 @@ export default function AddInternshipPage() {
           type="email"
           value={contactEmail}
           onChange={(e) => setContactEmail(e.target.value)}
-          margin="normal"
+          placeholder="example@example.com"
         />
         <TextField
           fullWidth
           label="Contact Phone"
           value={contactPhone}
           onChange={(e) => setContactPhone(e.target.value)}
-          margin="normal"
+          placeholder="Phone number"
         />
 
-        <Stack direction="row" spacing={2} justifyContent="flex-end" mt={4} mb={4}>
-          <Button variant="outlined" onClick={() => router.back()}>
+        {/* Buttons */}
+        <Stack direction="row" spacing={2} justifyContent="flex-end" mt={6}>
+          <Button
+            variant="outlined"
+            onClick={() => router.back()}
+            sx={{ textTransform: "none" }}
+          >
             Cancel
           </Button>
-          <Button variant="contained" type="submit">
+          <Button
+            variant="contained"
+            type="submit"
+            sx={{ textTransform: "none", fontWeight: 600 }}
+          >
             Add Internship
           </Button>
         </Stack>

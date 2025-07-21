@@ -14,6 +14,8 @@ import {
   Typography,
   Button,
   Stack,
+  Box,
+  useTheme,
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
@@ -26,6 +28,7 @@ export default function ManageInternships() {
   const [internships, setInternships] = useState<InternshipCards[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const theme = useTheme();
 
   useEffect(() => {
     async function fetchData() {
@@ -57,32 +60,44 @@ export default function ManageInternships() {
 
   return (
     <AdminLayout>
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-        sx={{ px: 1 }}
+      <Box
+        sx={{
+          mb: 3,
+          px: 1,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
+        }}
       >
-        <Typography variant="h4" fontWeight={600}>
+        <Typography variant="h4" fontWeight={700} color="primary.main">
           Manage Internships
         </Typography>
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={() => router.push("/admin/manage-internships/add")}
-          sx={{ px: 3, py: 1.2 }}
+          sx={{
+            px: 3,
+            py: 1.5,
+            borderRadius: 3,
+            textTransform: "none",
+            fontWeight: 600,
+            boxShadow: theme.shadows[4],
+          }}
+          disableElevation
         >
           Add Internship
         </Button>
-      </Stack>
+      </Box>
 
       <TableContainer
         component={Paper}
         sx={{
           maxHeight: "75vh",
-          boxShadow: 3,
-          borderRadius: 2,
+          boxShadow: theme.shadows[6],
+          borderRadius: 3,
           overflowX: "auto",
           mx: 1,
         }}
@@ -91,16 +106,18 @@ export default function ManageInternships() {
           <TableHead>
             <TableRow
               sx={{
-                backgroundColor: (theme) => theme.palette.grey[200],
+                backgroundColor: theme.palette.grey[100],
               }}
             >
-              <TableCell sx={{ minWidth: 100 }}>ID</TableCell>
-              <TableCell sx={{ minWidth: 180 }}>Title</TableCell>
-              <TableCell sx={{ minWidth: 150 }}>Provider</TableCell>
-              <TableCell sx={{ minWidth: 120 }}>Subject</TableCell>
-              <TableCell sx={{ minWidth: 120 }}>Duration (weeks)</TableCell>
-              <TableCell sx={{ minWidth: 100 }}>Cost</TableCell>
-              <TableCell sx={{ minWidth: 140, textAlign: "center" }}>
+              <TableCell sx={{ minWidth: 100, fontWeight: "bold" }}>ID</TableCell>
+              <TableCell sx={{ minWidth: 180, fontWeight: "bold" }}>Title</TableCell>
+              <TableCell sx={{ minWidth: 150, fontWeight: "bold" }}>Provider</TableCell>
+              <TableCell sx={{ minWidth: 120, fontWeight: "bold" }}>Subject</TableCell>
+              <TableCell sx={{ minWidth: 120, fontWeight: "bold" }}>
+                Duration (weeks)
+              </TableCell>
+              <TableCell sx={{ minWidth: 100, fontWeight: "bold" }}>Cost</TableCell>
+              <TableCell sx={{ minWidth: 140, textAlign: "center", fontWeight: "bold" }}>
                 Actions
               </TableCell>
             </TableRow>
@@ -108,17 +125,17 @@ export default function ManageInternships() {
 
           <TableBody>
             {loading ? (
-              <TableRow key="loading-row">
+              <TableRow>
                 <TableCell colSpan={7} align="center">
-                  <Typography color="text.secondary" variant="body1">
+                  <Typography color="text.secondary" variant="body1" sx={{ py: 4 }}>
                     Loading internships...
                   </Typography>
                 </TableCell>
               </TableRow>
             ) : internships.length === 0 ? (
-              <TableRow key="no-data-row">
+              <TableRow>
                 <TableCell colSpan={7} align="center">
-                  <Typography color="text.secondary" variant="body1">
+                  <Typography color="text.secondary" variant="body1" sx={{ py: 4 }}>
                     No internships found.
                   </Typography>
                 </TableCell>
@@ -130,15 +147,14 @@ export default function ManageInternships() {
                   hover
                   sx={{
                     backgroundColor:
-                      idx % 2 === 0
-                        ? (theme) => theme.palette.action.hover
-                        : "inherit",
+                      idx % 2 === 0 ? theme.palette.action.hover : "inherit",
+                    transition: "background-color 0.15s ease-in-out",
                   }}
                 >
-                  <TableCell sx={{ fontFamily: "monospace" }}>
+                  <TableCell sx={{ fontFamily: "monospace", fontSize: 13 }}>
                     {internship.id}
                   </TableCell>
-                  <TableCell>{internship.title}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{internship.title}</TableCell>
                   <TableCell>{internship.provider}</TableCell>
                   <TableCell>{internship.subject || "-"}</TableCell>
                   <TableCell>{internship.duration_weeks ?? "-"}</TableCell>
@@ -152,6 +168,12 @@ export default function ManageInternships() {
                         }
                         aria-label={`Edit internship ${internship.title}`}
                         size="medium"
+                        sx={{
+                          bgcolor: theme.palette.primary.light,
+                          "&:hover": { bgcolor: theme.palette.primary.main },
+                          color: "white",
+                          transition: "background-color 0.2s",
+                        }}
                       >
                         <Edit fontSize="inherit" />
                       </IconButton>
@@ -160,6 +182,12 @@ export default function ManageInternships() {
                         onClick={() => handleDelete(internship.id)}
                         aria-label={`Delete internship ${internship.title}`}
                         size="medium"
+                        sx={{
+                          bgcolor: theme.palette.error.light,
+                          "&:hover": { bgcolor: theme.palette.error.main },
+                          color: "white",
+                          transition: "background-color 0.2s",
+                        }}
                       >
                         <Delete fontSize="inherit" />
                       </IconButton>

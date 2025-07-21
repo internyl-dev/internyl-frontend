@@ -4,6 +4,7 @@ import "./globals.css";
 
 import Navbar from "@/lib/components/Navbar";
 import { AuthProvider } from "@/lib/config/context/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 const sora = Sora({
   variable: "--font-sora",
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <Navbar/>
+          <Toaster position="top-center" />
           {children}
         </AuthProvider>
       </body>
