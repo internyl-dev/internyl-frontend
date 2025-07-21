@@ -321,7 +321,7 @@ export default function Navbar() {
         scrolled ? 'navbar-scrolled' : ''
       }`}>
         {/* Logo */}
-        <h1 className="text-[2rem] sm:text-[2.5rem] font-bold text-gray-900 tracking-[-0.05em] logo-hover cursor-pointer">
+        <h1 className="text-[1.5rem] sm:text-[2rem] font-bold text-gray-900 tracking-[-0.05em] logo-hover cursor-pointer">
           internyl
         </h1>
 
