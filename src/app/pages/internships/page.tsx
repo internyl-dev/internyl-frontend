@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, X, Filter, Search } from "lucide-react";
+import { ChevronDown, X, Filter, Search, SlidersHorizontal, BookmarkCheck, Clock, Users, DollarSign, Calendar, RotateCcw } from "lucide-react";
 import SearchBar from "@/lib/components/SearchBar";
 import InternshipCards from "@/lib/components/InternshipCards";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
@@ -17,28 +17,42 @@ const filterData = [
   {
     label: "Due in",
     color: "bg-[#f7d7db]",
+    icon: Clock,
     options: ["Past Due", "Due Today", "Due This Week", "Due This Month"],
   },
   {
     label: "Subject",
     color: "bg-[#e4e8f6]",
+    icon: BookmarkCheck,
     options: ["Engineering", "Math", "Computer Science", "Art", "Business"],
   },
   {
     label: "Cost",
     color: "bg-[#f4e3f2]",
+    icon: DollarSign,
     options: ["Free", "Under $1000", "$1000–$3000", "$3000+"],
   },
   {
     label: "Eligibility",
     color: "bg-[#f9e4cb]",
+    icon: Users,
     options: ["Rising Sophomores", "Juniors", "Seniors", "College Students"],
   },
   {
     label: "Duration",
     color: "bg-[#def0ea]",
+    icon: Calendar,
     options: ["1 week", "2–4 weeks", "1–2 months", "Full Summer"],
   },
+];
+
+const sortOptions = [
+  { value: "relevance", label: "Best Match" },
+  { value: "deadline", label: "Deadline (Soonest)" },
+  { value: "cost-low", label: "Cost (Low to High)" },
+  { value: "cost-high", label: "Cost (High to Low)" },
+  { value: "duration", label: "Duration (Shortest)" },
+  { value: "alphabetical", label: "A to Z" },
 ];
 
 function getDueCategory(date: Date | null): string {
@@ -71,6 +85,9 @@ export default function Internships() {
   const [isLoading, setIsLoading] = useState(true);
   const [internships, setInternships] = useState<InternshipType[]>([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [sortBy, setSortBy] = useState("relevance");
+  const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
+  const [lastSearchTime, setLastSearchTime] = useState(Date.now());
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(initialSearch);
@@ -80,12 +97,23 @@ export default function Internships() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest('.filter-dropdown') && !target.closest('.filter-button')) {
+      if (!target.closest('.filter-dropdown') && !target.closest('.filter-button') && !target.closest('.sort-dropdown-container')) {
         setOpenDropdown(null);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Auto-hide mobile filters when desktop size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setShowMobileFilters(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -151,14 +179,21 @@ export default function Internships() {
 
     const isBookmarked = bookmarked[internshipId] === true;
 
+    // Optimistic update for better UX
+    setBookmarked((prev) => ({
+      ...prev,
+      [internshipId]: !isBookmarked,
+    }));
+
     try {
       await toggleBookmarkInFirestore(internshipId, isBookmarked);
-      setBookmarked((prev) => ({
-        ...prev,
-        [internshipId]: !isBookmarked,
-      }));
     } catch (err) {
       console.error("Failed to toggle bookmark:", err);
+      // Revert on error
+      setBookmarked((prev) => ({
+        ...prev,
+        [internshipId]: isBookmarked,
+      }));
     }
   };
 
@@ -175,24 +210,164 @@ export default function Internships() {
         [category]: Array.from(selected),
       };
     });
+    setLastSearchTime(Date.now()); // Trigger re-sort
   };
 
   const clearAllFilters = () => {
     setActiveFilters({});
     setSearchTerm("");
+    setShowBookmarkedOnly(false);
+    setSortBy("relevance");
+  };
+
+  const clearCategoryFilter = (category: string) => {
+    setActiveFilters(prev => {
+      const newFilters = { ...prev };
+      delete newFilters[category];
+      return newFilters;
+    });
   };
 
   const getFilterColor = (category: string) => {
     return filterData.find(f => f.label === category)?.color || "bg-gray-200";
   };
 
-  const filterInternships = () => {
-    return internships.filter((internship) => {
+  const getCostValue = (cost: any): number => {
+    if (!cost || cost === "not provided") return -1;
+    if (cost === "free") return 0;
+    if (typeof cost === "number") return cost;
+    if (typeof cost === "string") {
+      const numericStr = cost.replace(/[^0-9]/g, "");
+      return numericStr ? parseInt(numericStr) : -1;
+    }
+    return -1;
+  };
+
+  const calculateRelevanceScore = (internship: InternshipType, searchTerm: string): number => {
+    if (!searchTerm) return 1; // No search term, all equally relevant
+    
+    const search = searchTerm.toLowerCase().trim();
+    const title = internship.title.toLowerCase();
+    const provider = internship.provider.toLowerCase();
+    const subject = internship.subject.toLowerCase();
+    const description = (internship.description || '').toLowerCase();
+    
+    let score = 0;
+    
+    // Title matches (highest weight)
+    if (title.includes(search)) {
+      score += title.startsWith(search) ? 10 : 5; // Exact start match gets highest score
+    }
+    
+    // Provider matches
+    if (provider.includes(search)) {
+      score += provider.startsWith(search) ? 4 : 2;
+    }
+    
+    // Subject matches
+    if (subject.includes(search)) {
+      score += subject === search ? 6 : 3; // Exact subject match is valuable
+    }
+    
+    // Description matches (lower weight)
+    if (description.includes(search)) {
+      score += 1;
+    }
+    
+    // Word-by-word matching for multi-word searches
+    const searchWords = search.split(' ').filter(word => word.length > 2);
+    searchWords.forEach(word => {
+      if (title.includes(word)) score += 2;
+      if (provider.includes(word)) score += 1;
+      if (subject.includes(word)) score += 1.5;
+    });
+    
+    // Boost bookmarked items slightly
+    if (bookmarked[internship.id]) score += 1;
+    
+    // Penalty for very long titles (usually less relevant)
+    if (title.length > 60) score *= 0.9;
+    
+    // Boost if multiple fields match
+    const fieldsMatched = [title, provider, subject].filter(field => field.includes(search)).length;
+    if (fieldsMatched > 1) score *= 1.2;
+    
+    return score;
+  };
+
+  const sortInternships = (internships: InternshipType[]) => {
+    const sorted = [...internships];
+    
+    switch (sortBy) {
+      case "deadline":
+        return sorted.sort((a, b) => {
+          const aDate = a.deadlines[0]?.date;
+          const bDate = b.deadlines[0]?.date;
+          if (!aDate && !bDate) return 0;
+          if (!aDate) return 1;
+          if (!bDate) return -1;
+          return new Date(aDate).getTime() - new Date(bDate).getTime();
+        });
+      
+      case "cost-low":
+        return sorted.sort((a, b) => {
+          const aCost = getCostValue(a.cost);
+          const bCost = getCostValue(b.cost);
+          if (aCost === -1 && bCost === -1) return 0;
+          if (aCost === -1) return 1;
+          if (bCost === -1) return -1;
+          return aCost - bCost;
+        });
+      
+      case "cost-high":
+        return sorted.sort((a, b) => {
+          const aCost = getCostValue(a.cost);
+          const bCost = getCostValue(b.cost);
+          if (aCost === -1 && bCost === -1) return 0;
+          if (aCost === -1) return 1;
+          if (bCost === -1) return -1;
+          return bCost - aCost;
+        });
+      
+      case "duration":
+        return sorted.sort((a, b) => {
+          const aDuration = a.duration_weeks || 0;
+          const bDuration = b.duration_weeks || 0;
+          return aDuration - bDuration;
+        });
+      
+      case "alphabetical":
+        return sorted.sort((a, b) => a.title.localeCompare(b.title));
+      
+      case "relevance":
+      default:
+        return sorted.sort((a, b) => {
+          const aScore = calculateRelevanceScore(a, searchTerm);
+          const bScore = calculateRelevanceScore(b, searchTerm);
+          
+          // Higher scores first
+          if (bScore !== aScore) return bScore - aScore;
+          
+          // Fallback to alphabetical for same scores
+          return a.title.localeCompare(b.title);
+        });
+    }
+  };
+
+  const filteredAndSortedInternships = useMemo(() => {
+    let filtered = internships.filter((internship) => {
+      // Search filter
       const searchableText = `${internship.title} ${internship.provider} ${internship.subject}`.toLowerCase();
       if (searchTerm && !searchableText.includes(searchTerm.toLowerCase())) {
         return false;
       }
 
+      // Bookmarked only filter
+      if (showBookmarkedOnly && !bookmarked[internship.id]) {
+        return false;
+      }
+
+      // Category filters
       return Object.entries(activeFilters).every(([category, selectedOptions]) => {
         if (selectedOptions.length === 0) return true;
 
@@ -262,10 +437,12 @@ export default function Internships() {
         }
       });
     });
-  };
 
-  const filteredInternships = filterInternships();
+    return sortInternships(filtered);
+  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime]);
+
   const totalActiveFilters = Object.values(activeFilters).reduce((acc, arr) => acc + arr.length, 0);
+  const hasBookmarkedInternships = Object.values(bookmarked).some(Boolean);
 
   if (isLoading) {
     return (
@@ -279,9 +456,64 @@ export default function Internships() {
     <div className="min-h-screen radial-bg text-gray-800 px-4">
       <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
 
+      {/* Sort and View Options */}
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4 mt-8">
+        {/* Sort Dropdown */}
+        <div className="relative sort-dropdown-container">
+          <button
+            onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
+            className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            Sort: {sortOptions.find(opt => opt.value === sortBy)?.label}
+            <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {openDropdown === 'sort' && (
+            <div className="absolute top-12 left-0 w-56 bg-white rounded-xl shadow-lg p-2 z-20 border">
+              {sortOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSortBy(option.value);
+                    setOpenDropdown(null);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${
+                    sortBy === option.value ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Bookmarked Only Toggle */}
+        {user && hasBookmarkedInternships && (
+          <button
+            onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              showBookmarkedOnly 
+                ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+                : 'bg-white text-gray-700 border hover:bg-gray-50'
+            }`}
+          >
+            <BookmarkCheck className="w-4 h-4" />
+            Bookmarked Only
+            {showBookmarkedOnly && (
+              <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {Object.values(bookmarked).filter(Boolean).length}
+              </span>
+            )}
+          </button>
+        )}
+      </div>
+
       {/* Active Filters Display */}
-      {(totalActiveFilters > 0 || searchTerm) && (
-        <div className="flex flex-wrap items-center gap-2 mb-4 mt-8 justify-center">
+      {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
+        <div className="flex flex-wrap items-center gap-2 mb-4 justify-center">
           {searchTerm && (
             <div className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
               <Search className="w-3 h-3" />
@@ -289,6 +521,18 @@ export default function Internships() {
               <button
                 onClick={() => setSearchTerm("")}
                 className="hover:bg-gray-300 rounded-full p-0.5 transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+          {showBookmarkedOnly && (
+            <div className="flex items-center gap-1 px-3 py-1 bg-blue-100 rounded-full text-sm text-blue-700">
+              <BookmarkCheck className="w-3 h-3" />
+              <span>Bookmarked</span>
+              <button
+                onClick={() => setShowBookmarkedOnly(false)}
+                className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -310,11 +554,12 @@ export default function Internships() {
               </div>
             ))
           )}
-          {(totalActiveFilters > 0 || searchTerm) && (
+          {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
             <button
               onClick={clearAllFilters}
-              className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-full text-sm font-medium transition-colors"
+              className="flex items-center gap-1 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-full text-sm font-medium transition-colors"
             >
+              <RotateCcw className="w-3 h-3" />
               Clear all
             </button>
           )}
@@ -325,7 +570,9 @@ export default function Internships() {
       <div className="md:hidden flex justify-center mb-4">
         <button
           onClick={() => setShowMobileFilters(!showMobileFilters)}
-          className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border text-sm font-medium"
+          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm text-sm font-medium transition-colors ${
+            showMobileFilters ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-white text-gray-700'
+          } border`}
         >
           <Filter className="w-4 h-4" />
           Filters
@@ -342,6 +589,7 @@ export default function Internships() {
         <div className="flex flex-wrap justify-center gap-4 mt-6 relative z-10">
           {filterData.map((filter) => {
             const hasActiveOptions = activeFilters[filter.label]?.length > 0;
+            const Icon = filter.icon;
             return (
               <div key={filter.label} className="relative filter-dropdown">
                 <button
@@ -349,9 +597,10 @@ export default function Internships() {
                     setOpenDropdown((prev) => (prev === filter.label ? null : filter.label))
                   }
                   className={`filter-button flex items-center gap-2 px-4 py-2 rounded-full ${filter.color} text-black text-sm font-semibold shadow-sm hover:brightness-95 transition ${
-                    hasActiveOptions ? 'ring-2 ring-blue-400' : ''
+                    hasActiveOptions ? 'ring-2 ring-blue-400 ring-offset-1' : ''
                   }`}
                 >
+                  <Icon className="w-4 h-4" />
                   <span>{filter.label}</span>
                   {hasActiveOptions && (
                     <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -369,11 +618,7 @@ export default function Internships() {
                       <span className="text-sm font-medium text-gray-700">{filter.label}</span>
                       {hasActiveOptions && (
                         <button
-                          onClick={() => setActiveFilters(prev => {
-                            const newFilters = { ...prev };
-                            delete newFilters[filter.label];
-                            return newFilters;
-                          })}
+                          onClick={() => clearCategoryFilter(filter.label)}
                           className="text-xs text-blue-600 hover:text-blue-800 underline"
                         >
                           Clear
@@ -400,13 +645,16 @@ export default function Internships() {
       </div>
 
       {/* No Results Message */}
-      {filteredInternships.length === 0 && (
+      {filteredAndSortedInternships.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-500 text-lg mb-2">No internships found</div>
           <p className="text-gray-400 text-sm mb-4">
-            Try adjusting your search terms or filters
+            {showBookmarkedOnly 
+              ? "You don't have any bookmarked internships matching these filters"
+              : "Try adjusting your search terms or filters"
+            }
           </p>
-          {(totalActiveFilters > 0 || searchTerm) && (
+          {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
             <button
               onClick={clearAllFilters}
               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
@@ -418,7 +666,7 @@ export default function Internships() {
       )}
 
       <InternshipCards
-        internships={filteredInternships}
+        internships={filteredAndSortedInternships}
         bookmarked={bookmarked}
         toggleBookmark={toggleBookmark}
       />
