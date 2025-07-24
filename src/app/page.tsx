@@ -22,6 +22,8 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import InternshipCards from "@/lib/components/InternshipCards";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
 import { InternshipCards as Internship } from "@/lib/types/internshipCards";
+import InternshipReccommendations from "@/lib/components/InternshipRecommendations";
+import { useInternshipsWithFallback, useRecommendedInternships } from "@/lib/hooks/useRecommendedInternships";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -54,7 +56,7 @@ const AnimatedStrikethroughList = () => {
     <ul
       ref={ref}
       className="text-gray-800 space-y-3 list-disc list-inside text-base md:text-lg font-medium"
-      style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}
+      style={{ textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)' }}
     >
       {items.map((item, index) => (
         <motion.li
@@ -98,7 +100,7 @@ const FloatingCard = ({ children, delay = 0, className = "" }: {
     <motion.div
       className={className}
       initial={{ y: 0, rotate: 0 }}
-      animate={{ 
+      animate={{
         y: [-5, 5, -5],
         rotate: [-0.5, 0.5, -0.5]
       }}
@@ -125,6 +127,9 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
 
   const router = useRouter();
+
+  const recommendedInternships = useRecommendedInternships();
+  const { internshipsToShow, loading } = useInternshipsWithFallback(bookmarked);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -204,13 +209,13 @@ export default function Home() {
         <div className="bg-gradient-to-br from-[#9381FF] via-[#A891FF] to-[#9381FF] text-white relative">
           <div className="absolute inset-0 bg-black/5"></div>
           <div className="px-4 sm:px-6 md:px-12 lg:px-20 pt-20 md:pt-28 pb-20 md:pb-28 relative text-right z-10">
-            <motion.div 
+            <motion.div
               className="inline-block max-w-full"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <motion.h1 
+              <motion.h1
                 className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-bold drop-shadow-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -218,7 +223,7 @@ export default function Home() {
               >
                 Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ") || "Intern"}
               </motion.h1>
-              <motion.p 
+              <motion.p
                 className={`text-left text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className} drop-shadow-md`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -231,7 +236,7 @@ export default function Home() {
         </div>
 
         {/* Middle Section with enhanced styling */}
-        <motion.div 
+        <motion.div
           className="relative bg-white/40 backdrop-blur-xl rounded-tl-[30px] rounded-bl-[30px] mt-6 mx-2 sm:mx-4 text-[#2F2F3A] flex flex-col max-w-full shadow-2xl border border-white/20"
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -250,7 +255,7 @@ export default function Home() {
               href="/pages/internships"
               className="group inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-[18px] font-medium text-white bg-gradient-to-r from-[#E26262] to-[#F07575] rounded-full gap-2 sm:gap-3.5 hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl transform hover:scale-105 whitespace-nowrap mt-4 md:mt-0 border border-white/20"
             >
-              see all 
+              see all
               <ArrowForwardIcon className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
           </div>
@@ -259,8 +264,8 @@ export default function Home() {
           <div className="overflow-x-auto px-2 sm:px-6 md:px-12 lg:px-20 pb-8 md:pb-10">
             <div className="flex w-max md:w-full gap-6">
               {savedInternshipsFiltered.map((internship, index) => (
-                <motion.div 
-                  key={internship.id} 
+                <motion.div
+                  key={internship.id}
                   className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -273,6 +278,56 @@ export default function Home() {
                   />
                 </motion.div>
               ))}
+            </div>
+          </div>
+
+        </motion.div>
+        {/* Suggested Internships Section */}
+        <motion.div
+          className="relative bg-white/40 backdrop-blur-xl rounded-tl-[30px] rounded-bl-[30px] mt-10 mx-2 sm:mx-4 text-[#2F2F3A] flex flex-col max-w-full shadow-2xl border border-white/20"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+        >
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 sm:px-6 md:px-12 lg:px-20 pt-10 md:pt-18 pb-8 md:pb-12 gap-4 md:gap-0">
+            <div className="flex flex-col items-start w-full md:w-auto">
+              <p className="text-base sm:text-lg md:text-[18px] text-[#A2A2C7] tracking-[-0.04em] mb-1 font-medium">
+                Recommended for you
+              </p>
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-semibold bg-gradient-to-r from-[#2F2F3A] to-[#5A5A6B] bg-clip-text text-transparent">
+                Suggested Internships
+              </h2>
+            </div>
+            <Link
+              href="/pages/internships" // or wherever your full internships page is
+              className="group inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-[18px] font-medium text-white bg-gradient-to-r from-[#E26262] to-[#F07575] rounded-full gap-2 sm:gap-3.5 hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl transform hover:scale-105 whitespace-nowrap mt-4 md:mt-0 border border-white/20"
+            >
+              see all
+              <ArrowForwardIcon className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform duration-300" />
+            </Link>
+          </div>
+
+          <div className="overflow-x-auto px-2 sm:px-6 md:px-12 lg:px-20 pb-8 md:pb-10">
+            <div className="flex w-max md:w-full gap-6">
+              {internshipsToShow.length === 0 ? (
+                <p className="px-4 text-gray-500">No internships available.</p>
+              ) : (
+                internshipsToShow.map((internship, index) => (
+                  <motion.div
+                    key={internship.id}
+                    className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <InternshipCards
+                      internships={[internship]}
+                      bookmarked={bookmarked}
+                      toggleBookmark={toggleBookmark}
+                    />
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         </motion.div>
@@ -292,13 +347,13 @@ export default function Home() {
       {/* Hero Section with enhanced animations */}
       <section className="max-w-7xl mx-auto relative z-10 mr-auto ml-auto">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-0">
-          <motion.div 
+          <motion.div
             className="text-center lg:text-left w-full mt-8 sm:mt-10"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <motion.p 
+            <motion.p
               className="text-sm text-[#8d8dac] font-semibold mb-3 tracking-wide uppercase"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -306,7 +361,7 @@ export default function Home() {
             >
               Internyl — Internship Tracker for Students
             </motion.p>
-            <motion.h1 
+            <motion.h1
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -317,7 +372,7 @@ export default function Home() {
               Secure <span className={`italic font-extrabold ${caveat.className} text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#9381FF] to-[#A891FF] bg-clip-text`}>your</span><br />
               <span className={`italic font-extrabold ${caveat.className} text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#2BA280] to-[#3C66C2] bg-clip-text`}>future</span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="mt-6 text-lg text-[#1d1d1f]/80 font-medium leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -325,7 +380,7 @@ export default function Home() {
             >
               Internyl helps students find and track internships and programs — all in one place.
             </motion.p>
-            <motion.div 
+            <motion.div
               className="mt-8 flex flex-col items-center gap-6 w-full"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -356,7 +411,7 @@ export default function Home() {
                   </span>
                 </button>
               </form>
-              <motion.div 
+              <motion.div
                 className="flex justify-center w-full"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -367,13 +422,13 @@ export default function Home() {
                   height={54}
                   alt="Free to use"
                   className="mt-2 sm:mt-3 w-auto h-12 sm:h-14 drop-shadow-xl hover:drop-shadow-2xl transition-all duration-300"
-                  style={{filter: 'drop-shadow(0 4px 20px rgba(236,100,100,0.15))'}}
+                  style={{ filter: 'drop-shadow(0 4px 20px rgba(236,100,100,0.15))' }}
                 />
               </motion.div>
             </motion.div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="hidden md:flex justify-end w-full"
             initial={{ opacity: 0, x: 50, rotate: 5 }}
             animate={{ opacity: 1, x: 0, rotate: 0 }}
@@ -393,7 +448,7 @@ export default function Home() {
       </section>
 
       {/* Enhanced Comparison Section */}
-      <motion.section 
+      <motion.section
         className="mt-32 text-center"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -424,7 +479,7 @@ export default function Home() {
               zIndex: 0,
             }} />
             <div className="relative z-10">
-              <h3 className="font-bold text-gray-900 mb-4 drop-shadow-lg text-lg md:text-xl flex justify-between items-center group-hover:scale-105 transition-transform duration-300" style={{textShadow: '0 2px 8px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.10)'}}>
+              <h3 className="font-bold text-gray-900 mb-4 drop-shadow-lg text-lg md:text-xl flex justify-between items-center group-hover:scale-105 transition-transform duration-300" style={{ textShadow: '0 2px 8px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.10)' }}>
                 Finding an internship without Internyl
                 <ThumbDownOutlinedIcon className="text-[#e02b2b] ml-2 group-hover:rotate-12 transition-transform duration-300" />
               </h3>
@@ -448,11 +503,11 @@ export default function Home() {
               zIndex: 0,
             }} />
             <div className="relative z-10">
-              <h3 className="font-bold text-gray-900 mb-4 drop-shadow-lg text-lg md:text-xl flex justify-between items-center group-hover:scale-105 transition-transform duration-300" style={{textShadow: '0 2px 8px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.1)'}}>
+              <h3 className="font-bold text-gray-900 mb-4 drop-shadow-lg text-lg md:text-xl flex justify-between items-center group-hover:scale-105 transition-transform duration-300" style={{ textShadow: '0 2px 8px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.1)' }}>
                 Finding an internship with Internyl
-                <AutoAwesomeOutlinedIcon className="text-[#ffe359] ml-2 group-hover:rotate-12 transition-transform duration-300"/>
+                <AutoAwesomeOutlinedIcon className="text-[#ffe359] ml-2 group-hover:rotate-12 transition-transform duration-300" />
               </h3>
-              <ul className="text-gray-900 space-y-3 list-disc list-inside text-base md:text-lg font-medium" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>
+              <ul className="text-gray-900 space-y-3 list-disc list-inside text-base md:text-lg font-medium" style={{ textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)' }}>
                 <motion.li
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -487,7 +542,7 @@ export default function Home() {
       </motion.section>
 
       {/* Enhanced Features Section */}
-      <motion.section 
+      <motion.section
         className="mt-24 sm:mt-36 text-center max-w-4xl mx-auto px-2 sm:px-0"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -505,7 +560,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Feature Card 1 - Enhanced */}
-          <motion.div 
+          <motion.div
             className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-3xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -513,21 +568,21 @@ export default function Home() {
             viewport={{ once: true }}
             whileHover={{ y: -5 }}
           >
-            <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(236,100,100,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0}} />
+            <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(236,100,100,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0 }} />
             <div className="relative z-10 flex flex-col h-full">
               <FloatingCard delay={1}>
                 <div className="flex items-center justify-center w-24 h-24 mb-6 mx-auto rounded-2xl bg-gradient-to-br from-white/60 to-white/20 shadow-xl backdrop-blur-sm border border-white/30 group-hover:rotate-6 transition-all duration-500">
                   <SearchOutlinedIcon className="text-[#ec6464] text-6xl transform transition-all duration-500 group-hover:scale-110" style={{
                     filter: 'drop-shadow(0 0 12px rgba(236,100,100,0.4))',
-                  }} /> 
+                  }} />
                 </div>
               </FloatingCard>
-              <p className="text-base font-semibold text-gray-900 drop-shadow flex-grow leading-relaxed group-hover:scale-105 transition-transform duration-300" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Discover programs easily with our intuitive search features.</p>
+              <p className="text-base font-semibold text-gray-900 drop-shadow flex-grow leading-relaxed group-hover:scale-105 transition-transform duration-300" style={{ textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)' }}>Discover programs easily with our intuitive search features.</p>
             </div>
           </motion.div>
-          
+
           {/* Feature Card 2 - Enhanced */}
-          <motion.div 
+          <motion.div
             className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-3xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -535,7 +590,7 @@ export default function Home() {
             viewport={{ once: true }}
             whileHover={{ y: -5 }}
           >
-            <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(43,162,128,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0}} />
+            <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(43,162,128,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0 }} />
             <div className="relative z-10 flex flex-col h-full">
               <FloatingCard delay={2}>
                 <div className="flex items-center justify-center w-24 h-24 mb-6 mx-auto rounded-2xl bg-gradient-to-br from-white/60 to-white/20 shadow-xl backdrop-blur-sm border border-white/30 group-hover:rotate-6 transition-all duration-500">
@@ -544,12 +599,12 @@ export default function Home() {
                   }} />
                 </div>
               </FloatingCard>
-              <p className="text-base font-semibold text-gray-900 drop-shadow flex-grow leading-relaxed group-hover:scale-105 transition-transform duration-300" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Save programs and receive reminders so that you never miss a deadline.</p>
+              <p className="text-base font-semibold text-gray-900 drop-shadow flex-grow leading-relaxed group-hover:scale-105 transition-transform duration-300" style={{ textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)' }}>Save programs and receive reminders so that you never miss a deadline.</p>
             </div>
           </motion.div>
-          
+
           {/* Feature Card 3 - Enhanced */}
-          <motion.div 
+          <motion.div
             className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-3xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -557,7 +612,7 @@ export default function Home() {
             viewport={{ once: true }}
             whileHover={{ y: -5 }}
           >
-            <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(60,102,194,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0}} />
+            <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(60,102,194,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0 }} />
             <div className="relative z-10 flex flex-col h-full">
               <FloatingCard delay={3}>
                 <div className="flex items-center justify-center w-24 h-24 mb-6 mx-auto rounded-2xl bg-gradient-to-br from-white/60 to-white/20 shadow-xl backdrop-blur-sm border border-white/30 group-hover:rotate-6 transition-all duration-500">
@@ -566,7 +621,7 @@ export default function Home() {
                   }} />
                 </div>
               </FloatingCard>
-              <p className="text-base font-semibold text-gray-900 drop-shadow flex-grow leading-relaxed group-hover:scale-105 transition-transform duration-300" style={{textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)'}}>Gain access to exclusive information like acceptance rates and release dates.</p>
+              <p className="text-base font-semibold text-gray-900 drop-shadow flex-grow leading-relaxed group-hover:scale-105 transition-transform duration-300" style={{ textShadow: '0 1px 6px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08)' }}>Gain access to exclusive information like acceptance rates and release dates.</p>
             </div>
           </motion.div>
         </div>
