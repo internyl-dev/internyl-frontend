@@ -210,11 +210,15 @@ export default function InternshipCards({
                   />
                   <span className="font-bold">Due: </span>
                   <span className="ml-1">
-                    {typeof window !== "undefined" &&
+                    {/* {typeof window !== "undefined" &&
                       internship.deadlines[0]?.date
                       ? internship.deadlines[0].date.toLocaleDateString()
                       : internship.deadlines[0]?.date?.toString() ||
-                      "Date not provided"}
+                      "Date not provided"} */}
+                    {typeof window !== "undefined" && internship.deadlines[0]?.date
+                      ? new Date(internship.deadlines[0].date).toLocaleDateString()
+                      : "Date not provided"}
+
                   </span>
                 </p>
               </div>
@@ -273,7 +277,7 @@ export default function InternshipCards({
                     <BookmarkFilledIcon
                       fontSize="medium"
                       className="text-[#2F2F3A]"
-                      sx={{ 
+                      sx={{
                         ...bookmarkButtonStyles,
                         filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
                       }}
@@ -281,7 +285,7 @@ export default function InternshipCards({
                   ) : (
                     <BookmarkBorderIcon
                       fontSize="medium"
-                      sx={{ 
+                      sx={{
                         transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                         "&:hover": {
                           transform: "scale(1.1)",
