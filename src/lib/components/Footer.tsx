@@ -8,6 +8,7 @@ import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -203,23 +204,24 @@ export default function Footer() {
       <footer className="footer-container mt-16">
         <div className="max-w-7xl mx-auto px-5 sm:px-7 py-12">
           {/* Main Footer Content */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Company Info */}
-            <div className="footer-section">
+            <div className="footer-section lg:col-span-2">
               <h3 className="footer-logo text-2xl font-bold text-gray-900 mb-4 cursor-pointer tracking-[-0.05em]">
                 internyl
               </h3>
-              <p className="text-gray-600 text-sm leading-relaxed mb-4">
+              <p className="text-gray-600 text-sm leading-relaxed mb-6 max-w-md">
                 Connecting talented students with incredible internship opportunities. 
-                Build your career, gain experience, and make meaningful connections.
+                Build your career, gain experience, and make meaningful connections in your field.
               </p>
-              <div className="flex space-x-4">
+              <div className="flex space-x-3">
                 <Link 
                   href="https://linkedin.com" 
                   target="_blank"
                   className="social-link social-linkedin p-2 rounded-full"
                   onMouseEnter={() => setHoveredSocial('linkedin')}
                   onMouseLeave={() => setHoveredSocial(null)}
+                  aria-label="Follow us on LinkedIn"
                 >
                   <LinkedInIcon />
                 </Link>
@@ -229,6 +231,7 @@ export default function Footer() {
                   className="social-link social-twitter p-2 rounded-full"
                   onMouseEnter={() => setHoveredSocial('twitter')}
                   onMouseLeave={() => setHoveredSocial(null)}
+                  aria-label="Follow us on Twitter"
                 >
                   <TwitterIcon />
                 </Link>
@@ -238,6 +241,7 @@ export default function Footer() {
                   className="social-link social-instagram p-2 rounded-full"
                   onMouseEnter={() => setHoveredSocial('instagram')}
                   onMouseLeave={() => setHoveredSocial(null)}
+                  aria-label="Follow us on Instagram"
                 >
                   <InstagramIcon />
                 </Link>
@@ -247,6 +251,7 @@ export default function Footer() {
                   className="social-link social-facebook p-2 rounded-full"
                   onMouseEnter={() => setHoveredSocial('facebook')}
                   onMouseLeave={() => setHoveredSocial(null)}
+                  aria-label="Follow us on Facebook"
                 >
                   <FacebookIcon />
                 </Link>
@@ -275,28 +280,16 @@ export default function Footer() {
                     Contact Us
                   </Link>
                 </li>
-                <li>
-                  <Link href="/pages/report" className="footer-link text-gray-600 hover:text-red-600">
-                    <ReportProblemOutlinedIcon fontSize="small" />
-                    Report Issue
-                  </Link>
-                </li>
               </ul>
             </div>
 
-            {/* Support */}
+            {/* Support & Legal */}
             <div className="footer-section">
-              <h4 className="text-gray-900 font-semibold mb-4 text-lg">Support</h4>
+              <h4 className="text-gray-900 font-semibold mb-4 text-lg">Support & Legal</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/pages/help" className="footer-link text-gray-600 hover:text-blue-600">
-                    <InfoOutlinedIcon fontSize="small" />
-                    Help Center
-                  </Link>
-                </li>
-                <li>
                   <Link href="/pages/faq" className="footer-link text-gray-600 hover:text-green-600">
-                    <InfoOutlinedIcon fontSize="small" />
+                    <HelpOutlineIcon fontSize="small" />
                     FAQ
                   </Link>
                 </li>
@@ -307,15 +300,16 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/pages/feedback" className="footer-link text-gray-600 hover:text-indigo-600">
-                    <EmailOutlinedIcon fontSize="small" />
-                    Send Feedback
+                  <Link href="/pages/report" className="footer-link text-gray-600 hover:text-red-600">
+                    <ReportProblemOutlinedIcon fontSize="small" />
+                    Report Issue
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
         </div>
+
       </footer>
     </>
   );
