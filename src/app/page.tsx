@@ -159,7 +159,7 @@ export default function Home() {
           setBookmarked(map);
         }
 
-        const querySnapshot = await getDocs(collection(db, "internships"));
+        const querySnapshot = await getDocs(collection(db, "internships-history"));
         const internshipList = querySnapshot.docs.map((doc) => {
           const data = doc.data();
 

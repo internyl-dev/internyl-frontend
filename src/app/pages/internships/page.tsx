@@ -6,7 +6,7 @@ import { ChevronDown, X, Filter, Search, SlidersHorizontal, BookmarkCheck, Clock
 import SearchBar from "@/lib/components/SearchBar";
 import InternshipCards from "@/lib/components/InternshipCards";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
-import { InternshipCards as InternshipType } from "@/lib/types/internshipCards";
+import { InternshipCards as InternshipType, Deadline, CostsSection } from "@/lib/types/internshipCards";
 
 // Firebase
 import { auth, db } from "@/lib/config/firebaseConfig";
@@ -93,6 +93,29 @@ export default function Internships() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const router = useRouter();
 
+  function getEarliestDeadlineDate(deadlines: Deadline[]): Date | null {
+    const validDates = deadlines
+      .map((d) => (d.date !== "not provided" ? new Date(d.date) : null))
+      .filter((date): date is Date => !!date && !isNaN(date.getTime()));
+
+    if (validDates.length === 0) return null;
+
+    return validDates.reduce((earliest, current) =>
+      current < earliest ? current : earliest
+    );
+  }
+
+  function getCostValue(costs: CostsSection): number {
+    const allCosts = costs.costs
+      .filter((item) => item.lowest !== "not provided")
+      .map((item) => item.lowest as number);
+
+    if (allCosts.length === 0) return Number.MAX_SAFE_INTEGER;
+
+    return Math.min(...allCosts);
+  }
+
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -119,21 +142,35 @@ export default function Internships() {
   useEffect(() => {
     async function fetchInternships() {
       try {
-        const internshipsCollection = collection(db, "internships");
+        const internshipsCollection = collection(db, "internships-history");
         const snapshot = await getDocs(internshipsCollection);
+
         const fetchedInternships = snapshot.docs.map((doc) => {
           const data = doc.data();
-          const deadlines = data.deadlines?.map((deadline: any) => ({
+
+          // Convert deadlines inside dates
+          const deadlines = (data.dates?.deadlines ?? []).map((deadline: any) => ({
             ...deadline,
-            date: deadline.date?.toDate ? deadline.date.toDate() : deadline.date,
-          })) || [];
+            date: deadline.date?.toDate ? deadline.date.toDate().toISOString().split('T')[0] : deadline.date,
+          }));
+
+          // Rebuild dates with converted deadlines
+          const dates = {
+            ...data.dates,
+            deadlines,
+          };
 
           return {
             id: doc.id,
-            ...data,
-            deadlines,
+            overview: data.overview,
+            eligibility: data.eligibility,
+            dates,
+            locations: data.locations,
+            costs: data.costs,
+            contact: data.contact,
           } as InternshipType;
         });
+
         setInternships(fetchedInternships);
       } catch (error) {
         console.error("Error fetching internships:", error);
@@ -141,6 +178,7 @@ export default function Internships() {
     }
 
     fetchInternships();
+
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -232,132 +270,119 @@ export default function Internships() {
     return filterData.find(f => f.label === category)?.color || "bg-gray-200";
   };
 
-  const getCostValue = (cost: any): number => {
-    if (!cost || cost === "not provided") return -1;
-    if (cost === "free") return 0;
-    if (typeof cost === "number") return cost;
-    if (typeof cost === "string") {
-      const numericStr = cost.replace(/[^0-9]/g, "");
-      return numericStr ? parseInt(numericStr) : -1;
-    }
-    return -1;
-  };
-
   const calculateRelevanceScore = (internship: InternshipType, searchTerm: string): number => {
     if (!searchTerm) return 1; // No search term, all equally relevant
-    
+
     const search = searchTerm.toLowerCase().trim();
-    const title = internship.title.toLowerCase();
-    const provider = internship.provider.toLowerCase();
-    const subject = internship.subject.toLowerCase();
-    const description = (internship.description || '').toLowerCase();
-    
+    const title = internship.overview.title.toLowerCase();
+    const provider = internship.overview.provider.toLowerCase();
+    const description = (internship.overview.description || '').toLowerCase();
+
+    // Normalize subjects to lowercase strings
+    const subjects: string[] = Array.isArray(internship.overview.subject)
+      ? internship.overview.subject.map(s => (typeof s === "string" ? s.toLowerCase() : ""))
+      : [];
+
     let score = 0;
-    
+
     // Title matches (highest weight)
     if (title.includes(search)) {
       score += title.startsWith(search) ? 10 : 5; // Exact start match gets highest score
     }
-    
+
     // Provider matches
     if (provider.includes(search)) {
       score += provider.startsWith(search) ? 4 : 2;
     }
-    
-    // Subject matches
-    if (subject.includes(search)) {
-      score += subject === search ? 6 : 3; // Exact subject match is valuable
+
+    // Subject Search - score subject match
+    if (subjects.some(s => s.includes(search))) {
+      const isExact = subjects.some(s => s === search);
+      score += isExact ? 6 : 3;
     }
-    
+
     // Description matches (lower weight)
     if (description.includes(search)) {
       score += 1;
     }
-    
+
     // Word-by-word matching for multi-word searches
     const searchWords = search.split(' ').filter(word => word.length > 2);
     searchWords.forEach(word => {
       if (title.includes(word)) score += 2;
       if (provider.includes(word)) score += 1;
-      if (subject.includes(word)) score += 1.5;
+      if (subjects.some(s => s.includes(word))) score += 1.5;  // Use subjects array here!
     });
-    
-    // Boost bookmarked items slightly
-    if (bookmarked[internship.id]) score += 1;
-    
+
+    // Boost bookmarked items slightly (assumes bookmarked is in scope and indexed by internship.id)
+    if (typeof bookmarked === 'object' && bookmarked[internship.id]) score += 1;
+
     // Penalty for very long titles (usually less relevant)
     if (title.length > 60) score *= 0.9;
-    
+
     // Boost if multiple fields match
-    const fieldsMatched = [title, provider, subject].filter(field => field.includes(search)).length;
+    // Check which fields include the whole search term
+    const fieldsMatched = [title, provider, description, ...subjects].filter(field => field.includes(search)).length;
     if (fieldsMatched > 1) score *= 1.2;
-    
+
     return score;
   };
 
-  const sortInternships = (internships: InternshipType[]) => {
+
+  const sortInternships = (internships: InternshipType[], sortBy: string, searchTerm: string) => {
     const sorted = [...internships];
-    
+
     switch (sortBy) {
       case "deadline":
         return sorted.sort((a, b) => {
-          const aDate = a.deadlines[0]?.date;
-          const bDate = b.deadlines[0]?.date;
+          const aDate = getEarliestDeadlineDate(a.dates.deadlines);
+          const bDate = getEarliestDeadlineDate(b.dates.deadlines);
           if (!aDate && !bDate) return 0;
           if (!aDate) return 1;
           if (!bDate) return -1;
-          return new Date(aDate).getTime() - new Date(bDate).getTime();
+          return aDate.getTime() - bDate.getTime();
         });
-      
+
       case "cost-low":
         return sorted.sort((a, b) => {
-          const aCost = getCostValue(a.cost);
-          const bCost = getCostValue(b.cost);
-          if (aCost === -1 && bCost === -1) return 0;
-          if (aCost === -1) return 1;
-          if (bCost === -1) return -1;
+          const aCost = getCostValue(a.costs);
+          const bCost = getCostValue(b.costs);
           return aCost - bCost;
         });
-      
+
       case "cost-high":
         return sorted.sort((a, b) => {
-          const aCost = getCostValue(a.cost);
-          const bCost = getCostValue(b.cost);
-          if (aCost === -1 && bCost === -1) return 0;
-          if (aCost === -1) return 1;
-          if (bCost === -1) return -1;
+          const aCost = getCostValue(a.costs);
+          const bCost = getCostValue(b.costs);
           return bCost - aCost;
         });
-      
+
       case "duration":
         return sorted.sort((a, b) => {
-          const aDuration = a.duration_weeks || 0;
-          const bDuration = b.duration_weeks || 0;
+          const aDuration = typeof a.dates.duration_weeks === "number" ? a.dates.duration_weeks : 0;
+          const bDuration = typeof b.dates.duration_weeks === "number" ? b.dates.duration_weeks : 0;
           return aDuration - bDuration;
         });
-      
+
       case "alphabetical":
-        return sorted.sort((a, b) => a.title.localeCompare(b.title));
-      
+        return sorted.sort((a, b) => a.overview.title.localeCompare(b.overview.title));
+
       case "relevance":
       default:
         return sorted.sort((a, b) => {
           const aScore = calculateRelevanceScore(a, searchTerm);
           const bScore = calculateRelevanceScore(b, searchTerm);
-          
-          // Higher scores first
           if (bScore !== aScore) return bScore - aScore;
-          
-          // Fallback to alphabetical for same scores
-          return a.title.localeCompare(b.title);
+          return a.overview.title.localeCompare(b.overview.title);
         });
     }
   };
 
+
   const filteredAndSortedInternships = useMemo(() => {
     let filtered = internships.filter((internship) => {
       // Search filter
-      const searchableText = `${internship.title} ${internship.provider} ${internship.subject}`.toLowerCase();
+      const searchableText = `${internship.overview.title} ${internship.overview.provider} ${internship.overview.subject.join(" ")}`.toLowerCase();
       if (searchTerm && !searchableText.includes(searchTerm.toLowerCase())) {
         return false;
       }
@@ -373,29 +398,31 @@ export default function Internships() {
 
         switch (category) {
           case "Due in":
-            const deadline = internship.deadlines[0]?.date ?? null;
-            const dueCategory = getDueCategory(deadline);
+            const dateString = internship.dates.deadlines?.[0]?.date ?? null;
+            const dateObj = dateString && dateString !== "not provided" ? new Date(dateString) : null;
+            const dueCategory = getDueCategory(dateObj);
             return selectedOptions.includes(dueCategory);
 
+
           case "Subject":
-            return selectedOptions.includes(internship.subject);
+            return selectedOptions.includes(internship.overview.subject.join(" "));
 
           case "Cost": {
-            const raw = internship.cost;
-            if (raw === "not provided") return false;
+            const costsArray = internship.costs.costs;
+            if (!costsArray || costsArray.length === 0) return false;
 
-            let costNum: number;
-            if (raw === "free") {
-              costNum = 0;
-            } else if (typeof raw === "number") {
-              costNum = raw;
-            } else if (typeof raw === "string") {
-              const numericStr = raw.replace(/[^0-9]/g, "");
-              if (!numericStr) return false;
-              costNum = parseInt(numericStr);
-            } else {
+            // Filter out "not provided" and non-numeric lowest costs, keep only numbers
+            const numericCosts = costsArray
+              .map((item) => (typeof item.lowest === "number" ? item.lowest : null))
+              .filter((val): val is number => val !== null);
+
+            if (numericCosts.length === 0) {
+              // No numeric cost info
               return false;
             }
+
+            // Find the minimum cost number
+            const costNum = Math.min(...numericCosts);
 
             return selectedOptions.some((opt) => {
               if (opt === "Free") return costNum === 0;
@@ -417,20 +444,23 @@ export default function Internships() {
 
             return selectedOptions.some((opt) => {
               const mappedGrade = gradeMap[opt];
-              return mappedGrade && internship.eligibility.grades.includes(mappedGrade);
+              return mappedGrade && internship.eligibility.eligibility.grades.includes(mappedGrade);
             });
           }
 
-          case "Duration":
-            if (internship.duration_weeks === null) return false;
-            const w = internship.duration_weeks;
+          case "Duration": {
+            const duration = internship.dates.duration_weeks;
+
+            if (typeof duration !== "number") return false; // skip if not a number
+
             return selectedOptions.some((opt) => {
-              if (opt === "1 week") return w <= 1;
-              if (opt === "2–4 weeks") return w > 1 && w <= 4;
-              if (opt === "1–2 months") return w > 4 && w <= 8;
-              if (opt === "Full Summer") return w > 8;
+              if (opt === "1 week") return duration <= 1;
+              if (opt === "2–4 weeks") return duration > 1 && duration <= 4;
+              if (opt === "1–2 months") return duration > 4 && duration <= 8;
+              if (opt === "Full Summer") return duration > 8;
               return false;
             });
+          }
 
           default:
             return true;
@@ -438,7 +468,7 @@ export default function Internships() {
       });
     });
 
-    return sortInternships(filtered);
+    return sortInternships(filtered, sortBy, searchTerm);
   }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime]);
 
   const totalActiveFilters = Object.values(activeFilters).reduce((acc, arr) => acc + arr.length, 0);
@@ -453,7 +483,7 @@ export default function Internships() {
   }
 
   return (
-    <div className="min-h-screen radial-bg text-gray-800 px-4">
+    <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
       <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
 
       {/* Sort and View Options */}
@@ -468,7 +498,7 @@ export default function Internships() {
             Sort: {sortOptions.find(opt => opt.value === sortBy)?.label}
             <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
           </button>
-          
+
           {openDropdown === 'sort' && (
             <div className="absolute top-12 left-0 w-56 bg-white rounded-xl shadow-lg p-2 z-20 border">
               {sortOptions.map((option) => (
@@ -479,9 +509,8 @@ export default function Internships() {
                     setSortBy(option.value);
                     setOpenDropdown(null);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${
-                    sortBy === option.value ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
-                  }`}
+                  className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${sortBy === option.value ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
+                    }`}
                 >
                   {option.label}
                 </button>
@@ -494,11 +523,10 @@ export default function Internships() {
         {user && hasBookmarkedInternships && (
           <button
             onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              showBookmarkedOnly 
-                ? 'bg-blue-100 text-blue-700 border border-blue-200' 
-                : 'bg-white text-gray-700 border hover:bg-gray-50'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${showBookmarkedOnly
+              ? 'bg-blue-100 text-blue-700 border border-blue-200'
+              : 'bg-white text-gray-700 border hover:bg-gray-50'
+              }`}
           >
             <BookmarkCheck className="w-4 h-4" />
             Bookmarked Only
@@ -570,9 +598,8 @@ export default function Internships() {
       <div className="md:hidden flex justify-center mb-4">
         <button
           onClick={() => setShowMobileFilters(!showMobileFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm text-sm font-medium transition-colors ${
-            showMobileFilters ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-white text-gray-700'
-          } border`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm text-sm font-medium transition-colors ${showMobileFilters ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-white text-gray-700'
+            } border`}
         >
           <Filter className="w-4 h-4" />
           Filters
@@ -596,9 +623,8 @@ export default function Internships() {
                   onClick={() =>
                     setOpenDropdown((prev) => (prev === filter.label ? null : filter.label))
                   }
-                  className={`filter-button flex items-center gap-2 px-4 py-2 rounded-full ${filter.color} text-black text-sm font-semibold shadow-sm hover:brightness-95 transition ${
-                    hasActiveOptions ? 'ring-2 ring-blue-400 ring-offset-1' : ''
-                  }`}
+                  className={`filter-button flex items-center gap-2 px-4 py-2 rounded-full ${filter.color} text-black text-sm font-semibold shadow-sm hover:brightness-95 transition ${hasActiveOptions ? 'ring-2 ring-blue-400 ring-offset-1' : ''
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{filter.label}</span>
@@ -607,9 +633,8 @@ export default function Internships() {
                       {activeFilters[filter.label].length}
                     </span>
                   )}
-                  <ChevronDown className={`w-4 h-4 mt-[1px] transition-transform ${
-                    openDropdown === filter.label ? 'rotate-180' : ''
-                  }`} />
+                  <ChevronDown className={`w-4 h-4 mt-[1px] transition-transform ${openDropdown === filter.label ? 'rotate-180' : ''
+                    }`} />
                 </button>
 
                 {openDropdown === filter.label && (
@@ -649,7 +674,7 @@ export default function Internships() {
         <div className="text-center py-12">
           <div className="text-gray-500 text-lg mb-2">No internships found</div>
           <p className="text-gray-400 text-sm mb-4">
-            {showBookmarkedOnly 
+            {showBookmarkedOnly
               ? "You don't have any bookmarked internships matching these filters"
               : "Try adjusting your search terms or filters"
             }

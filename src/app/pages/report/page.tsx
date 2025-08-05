@@ -58,7 +58,7 @@ export default function ReportPage() {
   useEffect(() => {
     const fetchInternships = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "internships"));
+        const querySnapshot = await getDocs(collection(db, "internships-history"));
         const fetched = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -75,7 +75,7 @@ export default function ReportPage() {
   // Helper to validate internship selection is from the list
   const isValidInternship = (selected: string) => {
     return internships.some(
-      (int) => `${int.title} — ${int.provider}` === selected
+      (int) => `${int.overview.title} — ${int.overview.provider}` === selected
     );
   };
 
@@ -221,8 +221,8 @@ export default function ReportPage() {
 
   const filteredInternships = internships.filter(
     (int) =>
-      int.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      int.provider.toLowerCase().includes(searchTerm.toLowerCase())
+      int.overview.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      int.overview.provider.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSelect = (value: string) => {
@@ -289,10 +289,10 @@ export default function ReportPage() {
                         {filteredInternships.map((int) => (
                           <li
                             key={int.id}
-                            onClick={() => handleSelect(`${int.title} — ${int.provider}`)}
+                            onClick={() => handleSelect(`${int.overview.title} — ${int.overview.provider}`)}
                             className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                           >
-                            {int.title} — {int.provider}
+                            {int.overview.title} — {int.overview.provider}
                           </li>
                         ))}
                       </ul>
@@ -323,23 +323,23 @@ export default function ReportPage() {
                       <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm">
                         {(() => {
                           const selected = internships.find(
-                            (int) => `${int.title} — ${int.provider}` === searchTerm
+                            (int) => `${int.overview.title} — ${int.overview.provider}` === searchTerm
                           );
                           if (!selected) return "Not available";
 
                           switch (incorrectInfoType) {
                             case "internshipName":
-                              return selected.title;
+                              return selected.overview.title;
                             case "provider":
-                              return selected.provider;
+                              return selected.overview.provider;
                             case "location":
-                              return selected.location.map((loc) => `${loc.city}, ${loc.state}`).join("; ");
+                              return selected.locations.locations.map((loc) => `${loc.city}, ${loc.state}`).join("; ");
                             case "dates":
-                              return selected.dates.map((d) =>
+                              return selected.dates.dates.map((d) =>
                                 `${d.start ? new Date(d.start).toLocaleDateString() : "N/A"} - ${d.end ? new Date(d.end).toLocaleDateString() : "N/A"}`
                               ).join("; ");
                             case "link":
-                              return `Current Link - ${selected.link}` || "No link provided";
+                              return `Current Link - ${selected.overview.link}` || "No link provided";
                             default:
                               return "Not available";
                           }

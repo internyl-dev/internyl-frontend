@@ -34,7 +34,7 @@ export default function ManageInternships() {
     async function fetchData() {
       setLoading(true);
       try {
-        const colRef = collection(db, "internships");
+        const colRef = collection(db, "internships-history");
         const snapshot = await getDocs(colRef);
         const data = snapshot.docs.map((d) => d.data() as InternshipCards);
         setInternships(data);
@@ -154,11 +154,15 @@ export default function ManageInternships() {
                   <TableCell sx={{ fontFamily: "monospace", fontSize: 13 }}>
                     {internship.id}
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>{internship.title}</TableCell>
-                  <TableCell>{internship.provider}</TableCell>
-                  <TableCell>{internship.subject || "-"}</TableCell>
-                  <TableCell>{internship.duration_weeks ?? "-"}</TableCell>
-                  <TableCell>{internship.cost}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{internship.overview.title}</TableCell>
+                  <TableCell>{internship.overview.provider}</TableCell>
+                  <TableCell>{internship.overview.subject.map((subjects) => (
+                    <span key={subjects} className="inline-block px-2 py-1 text-sm bg-blue-100 text-blue-700 rounded-2xl m-1e mr-1">
+                      {subjects}
+                    </span>
+                  ))}</TableCell>
+                  <TableCell>{internship.dates.duration_weeks ?? "-"}</TableCell>
+                  <TableCell>{internship.costs.stipend.amount || "invalid"}</TableCell>
                   <TableCell align="center">
                     <Stack direction="row" spacing={1} justifyContent="center">
                       <IconButton
@@ -166,7 +170,7 @@ export default function ManageInternships() {
                         onClick={() =>
                           router.push(`/admin/manage-internships/${internship.id}`)
                         }
-                        aria-label={`Edit internship ${internship.title}`}
+                        aria-label={`Edit internship ${internship.overview.title}`}
                         size="medium"
                         sx={{
                           bgcolor: theme.palette.primary.light,
@@ -180,7 +184,7 @@ export default function ManageInternships() {
                       <IconButton
                         color="error"
                         onClick={() => handleDelete(internship.id)}
-                        aria-label={`Delete internship ${internship.title}`}
+                        aria-label={`Delete internship ${internship.overview.title}`}
                         size="medium"
                         sx={{
                           bgcolor: theme.palette.error.light,

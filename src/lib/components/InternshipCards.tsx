@@ -50,6 +50,14 @@ export default function InternshipCards({
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const [isLayoutCalculated, setIsLayoutCalculated] = useState<boolean>(false);
   const [isInitialRender, setIsInitialRender] = useState<boolean>(true);
+  const [expandedSubjects, setExpandedSubjects] = useState<{ [key: string]: boolean }>({});
+
+  const capitalizeWords = (text: string) =>
+    text
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
 
   // Configuration
   const itemWidth = 350; // Fixed width for each card
@@ -83,7 +91,7 @@ export default function InternshipCards({
     const totalColumnsWidth = newColumnCount * itemWidth + (newColumnCount - 1) * gap;
     const startX = Math.max(0, (availableWidth - totalColumnsWidth) / 2);
 
-    internships.forEach((internship, index) => {
+    internships.forEach((internship) => {
       const internshipId = internship.id;
       const cardElement = cardRefs.current[internshipId];
 
@@ -102,7 +110,7 @@ export default function InternshipCards({
       positions[internshipId] = {
         x,
         y,
-        height: cardHeight
+        height: cardHeight,
       };
 
       // Update column height
@@ -115,7 +123,7 @@ export default function InternshipCards({
     if (isInitialRender) {
       setIsInitialRender(false);
     }
-  }, [internships, itemWidth, gap]);
+  }, [internships, itemWidth, gap, isInitialRender]);
 
   // Initial layout calculation after cards are rendered
   useEffect(() => {
@@ -129,13 +137,11 @@ export default function InternshipCards({
 
   useEffect(() => {
     const handleResize = () => {
-      // Don't hide cards on resize, just recalculate
       setTimeout(() => {
         calculateMasonryLayout();
-      }, 50); // Reduced delay
+      }, 50);
     };
 
-    // Use ResizeObserver for better performance if available
     if (typeof window !== "undefined" && window.ResizeObserver) {
       const resizeObserver = new ResizeObserver(handleResize);
       if (containerRef.current) {
@@ -143,9 +149,8 @@ export default function InternshipCards({
       }
       return () => resizeObserver.disconnect();
     } else {
-      // Fallback to window resize event
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
     }
   }, [calculateMasonryLayout]);
 
@@ -163,19 +168,30 @@ export default function InternshipCards({
         className="mt-10 relative"
         style={{
           height: `${containerHeight}px`,
-          transition: 'height 0.3s ease-out',
-          minWidth: '382px', // itemWidth + gap to prevent squishing
-          // overflowX: 'auto' // Allow horizontal scroll if needed
+          transition: "height 0.3s ease-out",
+          minWidth: "382px", // itemWidth + gap to prevent squishing
         }}
       >
         {internships.map((internship) => {
           const internshipId = internship.id;
-          const daysRemaining = getDaysRemaining(
-            internship.deadlines[0]?.date ?? null
-          );
+
+          // Safely get first deadline date or null
+          const firstDeadlineDateString = internship.dates.deadlines?.[0]?.date ?? null;
+          const firstDeadlineDate = firstDeadlineDateString && firstDeadlineDateString !== "not provided"
+            ? new Date(firstDeadlineDateString)
+            : null;
+
+          const daysRemaining = getDaysRemaining(firstDeadlineDate);
           const dueTextClass = getDueColorClass(daysRemaining);
           const iconColor = getIconColor(daysRemaining);
           const position = cardPositions[internshipId];
+
+          // Eligibility: grades and age display
+          const gradesArray =
+            internship.eligibility?.eligibility?.grades || [];
+          const ageRange =
+            internship.eligibility?.eligibility?.age || null;
+
 
           return (
             <div
@@ -185,68 +201,84 @@ export default function InternshipCards({
               }}
               className="absolute w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border border-black/30 flex flex-col hover:shadow-xl transition-all duration-300"
               style={{
-                left: position ? `${position.x}px` : '0px',
-                top: position ? `${position.y}px` : '0px',
-                transform: position ? 'translate3d(0, 0, 0)' : 'translate3d(0, 0, 0)',
-                opacity: isInitialRender ? 0 : 1, // Only hide on initial render
-                transition: isInitialRender ? 'opacity 0.3s ease-out' : 'all 0.3s ease-out',
+                left: position ? `${position.x}px` : "0px",
+                top: position ? `${position.y}px` : "0px",
+                transform: position ? "translate3d(0, 0, 0)" : "translate3d(0, 0, 0)",
+                opacity: isInitialRender ? 0 : 1,
+                transition: isInitialRender ? "opacity 0.3s ease-out" : "all 0.3s ease-out",
                 width: `${itemWidth}px`,
-                zIndex: 1
+                zIndex: 1,
               }}
             >
               <div>
                 <h3 className="text-sm font-semibold text-[#8D8DAC] pb-2">
-                  {internship.provider}
+                  {internship.overview?.provider}
                 </h3>
                 <h2 className="text-[2.5rem] leading-[45px] font-regular capitalize bg-gradient-to-t from-[#2F2F3A] to-[#5F5F74] bg-clip-text text-transparent pb-2 break-words">
-                  {internship.title}
+                  {internship.overview?.title || 'none'}
                 </h2>
-                <p
-                  className={`text-base font-medium flex items-center text-[1.2rem] ${dueTextClass}`}
-                >
-                  <TimeIcon
-                    className="mr-2"
-                    sx={{ color: iconColor, fontSize: 26 }}
-                  />
+                <p className={`text-base font-medium flex items-center text-[1.2rem] ${dueTextClass}`}>
+                  <TimeIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
                   <span className="font-bold">Due: </span>
                   <span className="ml-1">
-                    {/* {typeof window !== "undefined" &&
-                      internship.deadlines[0]?.date
-                      ? internship.deadlines[0].date.toLocaleDateString()
-                      : internship.deadlines[0]?.date?.toString() ||
-                      "Date not provided"} */}
-                    {typeof window !== "undefined" && internship.deadlines[0]?.date
-                      ? new Date(internship.deadlines[0].date).toLocaleDateString()
+                    {firstDeadlineDate
+                      ? firstDeadlineDate.toLocaleDateString()
                       : "Date not provided"}
-
                   </span>
                 </p>
               </div>
 
               <div className="mt-4 flex flex-col gap-y-[6px]">
-                <p className="text-base flex items-center text-[1.2rem] text-[#3C66C2]">
-                  <WorkIcon className="mr-2" fontSize="small" />
-                  <span>{internship.subject}</span>
-                </p>
+                <div className="text-base flex items-start text-[1.2rem] text-[#3C66C2]">
+                  <WorkIcon className="mr-2 mt-[6px]" fontSize="small" />
+                  <div className="flex flex-wrap gap-2">
+                    {(Array.isArray(internship.overview?.subject)
+                      ? (expandedSubjects[internshipId]
+                        ? internship.overview.subject
+                        : internship.overview.subject.slice(0, 3))
+                      : []
+                    ).map((subj, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full"
+                      >
+                        {capitalizeWords(subj)}
+                      </span>
+                    ))}
+
+                    {Array.isArray(internship.overview?.subject) &&
+                      internship.overview.subject.length > 3 &&
+                      !expandedSubjects[internshipId] && (
+                        <button
+                          onClick={() =>
+                            setExpandedSubjects((prev) => ({ ...prev, [internshipId]: true }))
+                          }
+                          className="bg-blue-200 text-blue-900 text-xs font-semibold px-3 py-1 rounded-full hover:bg-blue-300 transition"
+                        >
+                          ➤ View all
+                        </button>
+                      )}
+                  </div>
+                </div>
+
                 <p className="text-base flex items-center text-[1.2rem] text-[#E66646]">
                   <SchoolIcon className="mr-2" fontSize="small" />
                   <span>
-                    {internship.eligibility?.rising ? "Rising " : ""}
-                    {internship.eligibility?.grades
-                      ?.map(
-                        (grade) =>
-                          grade.charAt(0).toUpperCase() + grade.slice(1)
-                      )
-                      .join(", ")}
+                    {gradesArray.length > 0
+                      ? gradesArray.map((g) => g.charAt(0).toUpperCase() + g.slice(1)).join(", ")
+                      : "Grades not provided"}
+                    <br />
+                    {ageRange?.minimum !== "not provided" && ageRange?.maximum !== "not provided"
+                      ? `Ages ${ageRange?.minimum} - ${ageRange?.maximum}`
+                      : "Age not provided"}
                   </span>
                 </p>
 
                 <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
                   <MoneyIcon className="mr-2" fontSize="small" />
                   <span>
-                    {internship.stipend?.available &&
-                      internship.stipend.amount !== null
-                      ? `$${internship.stipend.amount}`
+                    {internship.costs?.stipend?.available && internship.costs?.stipend?.amount !== "not provided"
+                      ? `$${internship.costs.stipend.amount}`
                       : "Free"}
                   </span>
                 </p>
@@ -255,23 +287,23 @@ export default function InternshipCards({
               <div className="mt-4 flex justify-between items-center">
                 <a
                   href={
-                    !internship.link
+                    !internship.overview?.link
                       ? "/pages/report"
-                      : internship.link.startsWith("http")
-                        ? internship.link
-                        : `https://${internship.link}`
+                      : internship.overview.link.startsWith("http")
+                        ? internship.overview.link
+                        : `https://${internship.overview.link}`
                   }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#4A90E2] hover:text-[#ffffff] hover:bg-[#4A90E2] p-2 rounded-full transition-all duration-200 cursor-pointer"
-                  aria-label={`Visit ${internship.title} website`}
+                  aria-label={`Visit ${internship.overview?.title || 'website'} website`}
                 >
                   <LaunchIcon fontSize="medium" />
                 </a>
                 <button
                   onClick={() => toggleBookmark(internshipId)}
                   className="text-[#8D8DAC] hover:text-[#2F2F3A] cursor-pointer p-1 rounded-full hover:bg-black/5 active:bg-black/10 transition-all duration-200"
-                  aria-label={`${bookmarked[internshipId] ? 'Remove' : 'Add'} bookmark for ${internship.title}`}
+                  aria-label={`${bookmarked[internshipId] ? "Remove" : "Add"} bookmark for ${internship.overview?.title || 'this internship'}`}
                 >
                   {bookmarked[internshipId] ? (
                     <BookmarkFilledIcon
@@ -279,7 +311,7 @@ export default function InternshipCards({
                       className="text-[#2F2F3A]"
                       sx={{
                         ...bookmarkButtonStyles,
-                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+                        filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.1))",
                       }}
                     />
                   ) : (

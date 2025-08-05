@@ -1,81 +1,117 @@
-export interface Deadline {
-  name: string; // e.g. "application deadline" or "none"
-  priority: "high" | "medium" | "low" | "none";
-  date: Date | null; // Use Date object or null if "not provided"
-  rollingBasis: boolean;
-  time: string; // e.g. "morning", "12:30 PM", or "not provided"
-  timeRemaining?: string;
+// OVERVIEW
+export interface Overview {
+  title: string;
+  provider: string;
+  description: string;
+  link: string;
+  subject: string[];
+  tags: string[];
 }
 
-export type Grade = "freshman" | "sophomore" | "junior" | "senior" | "undergraduate" | "not provided";
+// REQUIREMENTS
+export interface Requirements {
+  essay_required: boolean | "not provided";
+  recommendation_required: boolean | "not provided";
+  transcript_required: boolean | "not provided";
+  other: string[];
+}
+
+// ELIGIBILITY
+export type Grade =
+  | "freshman"
+  | "sophomore"
+  | "junior"
+  | "senior"
+  | "undergraduate"
+  | "not provided";
 
 export interface AgeRange {
-  minimum: number | null; // null if none or not provided
-  maximum: number | null;
+  minimum: number | "not provided";
+  maximum: number | "not provided";
 }
 
-export interface Eligibility {
-  rising: boolean;
+export interface EligibilityDetails {
   grades: Grade[];
   age: AgeRange;
 }
 
-export interface Location {
-  virtual: boolean;
-  state: string;   // e.g. "NY", or "none", or "not provided"
-  city: string;    // same options
-  address: string; // same options
+export interface EligibilitySection {
+  requirements: Requirements;
+  eligibility: EligibilityDetails;
 }
 
+// DEADLINE
+export interface Deadline {
+  name: string;
+  priority: "high" | "medium" | "low" | "none" | "not provided";
+  term: string; // e.g. "spring", "Session A Summer 2025", etc.
+  date: string | "not provided"; // e.g. "06-30-2025"
+  rolling_basis: boolean | "not provided";
+  time: string;
+}
+
+// DATES
 export interface DateRange {
-  term: "spring" | "summer" | "fall" | "winter" | string; // string to allow <other> or "not provided"
-  start: Date | null;  // Date object or null if "not provided"
-  end: Date | null;
+  term: string;
+  start: string | "not provided";
+  end: string | "not provided";
+}
+
+export interface DatesSection {
+  deadlines: Deadline[];
+  dates: DateRange[];
+  duration_weeks: number | "not provided";
+}
+
+// LOCATION
+export interface Location {
+  virtual: boolean | "not provided";
+  state: string;
+  city: string;
+  address: string;
+}
+
+export interface LocationsSection {
+  locations: Location[];
+}
+
+// COSTS
+export interface CostItem {
+  name: string;
+  free: boolean | "not provided";
+  lowest: number | "not provided";
+  highest: number | "not provided";
+  "financial-aid-available": boolean | "not provided";
 }
 
 export interface Stipend {
-  available: boolean;
-  amount: number | null; // null if "not provided"
+  available: boolean | "not provided";
+  amount: number | "not provided";
 }
 
-export interface Requirements {
-  essay_required: boolean;
-  recommendation_required: boolean;
-  transcript_required: boolean;
-  other: string[] | ["not provided"];
+export interface CostsSection {
+  costs: CostItem[];
+  stipend: Stipend;
 }
 
+// CONTACT
+export interface ContactInfo {
+  email: string;
+  phone: string;
+}
+
+export interface ContactSection {
+  contact: ContactInfo;
+}
+
+// FULL INTERNSHIP TYPE
 export interface InternshipCards {
   id: string;
   
-  title: string;
-  provider: string; // or "not provided"
-  description: string;
-  
-  deadlines: Deadline[];
-
-  subject: string; // or "not provided"
-
-  eligibility: Eligibility;
-
-  location: Location[];
-
-  dates: DateRange[];
-
-  duration_weeks: number | null; // null if "not provided"
-
-  cost: number | "free" | "not provided" | string;
-
-  stipend: Stipend;
-
-  requirements: Requirements;
-
-  tags: string[];
-
-  link: string;
-
-  contact: {
-    email: string;  // or "not provided"
-    phone: string;  // or "not provided"
-  };
+  overview: Overview;
+  eligibility: EligibilitySection;
+  dates: DatesSection;
+  locations: LocationsSection;
+  costs: CostsSection;
+  contact: ContactSection;
 }
