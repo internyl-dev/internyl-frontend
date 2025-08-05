@@ -12,7 +12,6 @@ import { InternshipCards as InternshipType, Deadline, CostsSection } from "@/lib
 import { auth, db } from "@/lib/config/firebaseConfig";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
-// import { Timestamp } from "firebase/firestore";
 
 const filterData = [
   {
@@ -25,7 +24,7 @@ const filterData = [
     label: "Subject",
     color: "bg-[#e4e8f6]",
     icon: BookmarkCheck,
-    options: ["Engineering", "Math", "Computer Science", "Art", "Business"],
+    options: ["Engineering", "Math", "Computer Science", "Art", "Business", "Medicine", "Science", "Technology", "Research", "Leadership", "Journalism", "Psychology"],
   },
   {
     label: "Cost",
@@ -37,7 +36,7 @@ const filterData = [
     label: "Eligibility",
     color: "bg-[#f9e4cb]",
     icon: Users,
-    options: ["Rising Sophomores", "Juniors", "Seniors", "College Students"],
+    options: ["Freshman", "Sophomores", "Juniors", "Seniors", "College Students"],
   },
   {
     label: "Duration",
@@ -95,8 +94,10 @@ function InternshipsContent() {
   const router = useRouter();
 
   function getEarliestDeadlineDate(deadlines: Deadline[]): Date | null {
+    if (!deadlines || deadlines.length === 0) return null;
+    
     const validDates = deadlines
-      .map((d) => (d.date !== "not provided" ? new Date(d.date) : null))
+      .map((d) => (d.date && d.date !== "not provided" ? new Date(d.date) : null))
       .filter((date): date is Date => !!date && !isNaN(date.getTime()));
 
     if (validDates.length === 0) return null;
@@ -107,11 +108,15 @@ function InternshipsContent() {
   }
 
   function getCostValue(costs: CostsSection): number {
+    if (!costs || !costs.costs || costs.costs.length === 0) {
+      return 0; // Consider as free if no cost data
+    }
+
     const allCosts = costs.costs
-      .filter((item) => item.lowest !== "not provided")
+      .filter((item) => typeof item.lowest === "number")
       .map((item) => item.lowest as number);
 
-    if (allCosts.length === 0) return Number.MAX_SAFE_INTEGER;
+    if (allCosts.length === 0) return 0; // Consider as free if no numeric costs
 
     return Math.min(...allCosts);
   }
@@ -136,7 +141,7 @@ function InternshipsContent() {
       }
     };
     window.addEventListener('resize', handleResize);
-    return () => window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   function isTimestamp(value: unknown): value is { toDate: () => Date } {
@@ -289,20 +294,21 @@ function InternshipsContent() {
     if (!searchTerm) return 1; // No search term, all equally relevant
 
     const search = searchTerm.toLowerCase().trim();
-    const title = internship.overview.title.toLowerCase();
-    const provider = internship.overview.provider.toLowerCase();
-    const description = (internship.overview.description || '').toLowerCase();
+    const title = (internship.overview?.title || '').toLowerCase();
+    const provider = (internship.overview?.provider || '').toLowerCase();
+    const description = (internship.overview?.description || '').toLowerCase();
 
-    // Normalize subjects to lowercase strings
-    const subjects: string[] = Array.isArray(internship.overview.subject)
-      ? internship.overview.subject.map(s => (typeof s === "string" ? s.toLowerCase() : ""))
-      : [];
+    // Handle subjects - can be array or empty
+    let subjects: string[] = [];
+    if (internship.overview?.subject && Array.isArray(internship.overview.subject)) {
+      subjects = internship.overview.subject.map(s => String(s).toLowerCase());
+    }
 
     let score = 0;
 
     // Title matches (highest weight)
     if (title.includes(search)) {
-      score += title.startsWith(search) ? 10 : 5; // Exact start match gets highest score
+      score += title.startsWith(search) ? 10 : 5;
     }
 
     // Provider matches
@@ -310,7 +316,7 @@ function InternshipsContent() {
       score += provider.startsWith(search) ? 4 : 2;
     }
 
-    // Subject Search - score subject match
+    // Subject matches
     if (subjects.some(s => s.includes(search))) {
       const isExact = subjects.some(s => s === search);
       score += isExact ? 6 : 3;
@@ -326,17 +332,16 @@ function InternshipsContent() {
     searchWords.forEach(word => {
       if (title.includes(word)) score += 2;
       if (provider.includes(word)) score += 1;
-      if (subjects.some(s => s.includes(word))) score += 1.5;  // Use subjects array here!
+      if (subjects.some(s => s.includes(word))) score += 1.5;
     });
 
-    // Boost bookmarked items slightly (assumes bookmarked is in scope and indexed by internship.id)
-    if (typeof bookmarked === 'object' && bookmarked[internship.id]) score += 1;
+    // Boost bookmarked items slightly
+    if (bookmarked[internship.id]) score += 1;
 
-    // Penalty for very long titles (usually less relevant)
+    // Penalty for very long titles
     if (title.length > 60) score *= 0.9;
 
     // Boost if multiple fields match
-    // Check which fields include the whole search term
     const fieldsMatched = [title, provider, description, ...subjects].filter(field => field.includes(search)).length;
     if (fieldsMatched > 1) score *= 1.2;
 
@@ -349,8 +354,8 @@ function InternshipsContent() {
     switch (sortBy) {
       case "deadline":
         return sorted.sort((a, b) => {
-          const aDate = getEarliestDeadlineDate(a.dates.deadlines);
-          const bDate = getEarliestDeadlineDate(b.dates.deadlines);
+          const aDate = getEarliestDeadlineDate(a.dates?.deadlines || []);
+          const bDate = getEarliestDeadlineDate(b.dates?.deadlines || []);
           if (!aDate && !bDate) return 0;
           if (!aDate) return 1;
           if (!bDate) return -1;
@@ -373,13 +378,13 @@ function InternshipsContent() {
 
       case "duration":
         return sorted.sort((a, b) => {
-          const aDuration = typeof a.dates.duration_weeks === "number" ? a.dates.duration_weeks : 0;
-          const bDuration = typeof b.dates.duration_weeks === "number" ? b.dates.duration_weeks : 0;
+          const aDuration = typeof a.dates?.duration_weeks === "number" ? a.dates.duration_weeks : 0;
+          const bDuration = typeof b.dates?.duration_weeks === "number" ? b.dates.duration_weeks : 0;
           return aDuration - bDuration;
         });
 
       case "alphabetical":
-        return sorted.sort((a, b) => a.overview.title.localeCompare(b.overview.title));
+        return sorted.sort((a, b) => (a.overview?.title || '').localeCompare(b.overview?.title || ''));
 
       case "relevance":
       default:
@@ -387,7 +392,7 @@ function InternshipsContent() {
           const aScore = calculateRelevanceScore(a, searchTerm);
           const bScore = calculateRelevanceScore(b, searchTerm);
           if (bScore !== aScore) return bScore - aScore;
-          return a.overview.title.localeCompare(b.overview.title);
+          return (a.overview?.title || '').localeCompare(b.overview?.title || '');
         });
     }
   };
@@ -395,7 +400,11 @@ function InternshipsContent() {
   const filteredAndSortedInternships = useMemo(() => {
     const filtered = internships.filter((internship) => {
       // Search filter
-      const searchableText = `${internship.overview.title} ${internship.overview.provider} ${internship.overview.subject.join(" ")}`.toLowerCase();
+      const title = internship.overview?.title || '';
+      const provider = internship.overview?.provider || '';
+      const subjects = Array.isArray(internship.overview?.subject) ? internship.overview.subject : [];
+      
+      const searchableText = `${title} ${provider} ${subjects.join(" ")}`.toLowerCase();
       if (searchTerm && !searchableText.includes(searchTerm.toLowerCase())) {
         return false;
       }
@@ -410,67 +419,110 @@ function InternshipsContent() {
         if (selectedOptions.length === 0) return true;
 
         switch (category) {
-          case "Due in":
-            const dateString = internship.dates.deadlines?.[0]?.date ?? null;
-            const dateObj = dateString && dateString !== "not provided" ? new Date(dateString) : null;
-            const dueCategory = getDueCategory(dateObj);
-            return selectedOptions.includes(dueCategory);
-
-          case "Subject":
-            return selectedOptions.some(opt => internship.overview.subject.includes(opt));
-
-          case "Cost": {
-            const costsArray = internship.costs.costs;
-            if (!costsArray || costsArray.length === 0) return false;
-
-            // Filter out "not provided" and non-numeric lowest costs, keep only numbers
-            const numericCosts = costsArray
-              .map((item) => (typeof item.lowest === "number" ? item.lowest : null))
-              .filter((val): val is number => val !== null);
-
-            if (numericCosts.length === 0) {
-              // No numeric cost info
+          case "Due in": {
+            const deadlines = internship.dates?.deadlines || [];
+            if (deadlines.length === 0) return false;
+            
+            const firstDeadline = deadlines[0];
+            if (!firstDeadline || !firstDeadline.date || firstDeadline.date === "not provided") {
               return false;
             }
+            
+            const dateObj = new Date(firstDeadline.date);
+            if (isNaN(dateObj.getTime())) return false;
+            
+            const dueCategory = getDueCategory(dateObj);
+            return selectedOptions.includes(dueCategory);
+          }
 
-            // Find the minimum cost number
-            const costNum = Math.min(...numericCosts);
+          case "Subject": {
+            const subjects = internship.overview?.subject || [];
+            if (!Array.isArray(subjects) || subjects.length === 0) return false;
+            
+            return selectedOptions.some(selectedSubject => 
+              subjects.some(internshipSubject => {
+                const subjectStr = String(internshipSubject).toLowerCase();
+                const selectedStr = selectedSubject.toLowerCase();
+                return subjectStr.includes(selectedStr) || selectedStr.includes(subjectStr);
+              })
+            );
+          }
+
+          case "Cost": {
+            const costs = internship.costs?.costs || [];
+            
+            // Get all numeric cost values
+            const numericCosts = costs
+              .filter(item => typeof item.lowest === "number")
+              .map(item => item.lowest as number);
+
+            // If no costs or all costs are 0, consider it free
+            const minCost = numericCosts.length === 0 ? 0 : Math.min(...numericCosts);
 
             return selectedOptions.some((opt) => {
-              if (opt === "Free") return costNum === 0;
-              if (opt === "Under $1000") return costNum > 0 && costNum < 1000;
-              if (opt === "$1000–$3000") return costNum >= 1000 && costNum <= 3000;
-              if (opt === "$3000+") return costNum > 3000;
-              return false;
+              switch (opt) {
+                case "Free":
+                  return minCost === 0;
+                case "Under $1000":
+                  return minCost > 0 && minCost < 1000;
+                case "$1000–$3000":
+                  return minCost >= 1000 && minCost <= 3000;
+                case "$3000+":
+                  return minCost > 3000;
+                default:
+                  return false;
+              }
             });
           }
 
           case "Eligibility": {
-            type Grade = "sophomore" | "junior" | "senior" | "undergraduate";
-            const gradeMap: { [key: string]: Grade } = {
-              "Rising Sophomores": "sophomore",
-              "Juniors": "junior",
-              "Seniors": "senior",
-              "College Students": "undergraduate",
-            };
+            const grades = internship.eligibility?.eligibility?.grades || [];
 
             return selectedOptions.some((opt) => {
-              const mappedGrade = gradeMap[opt];
-              return mappedGrade && internship.eligibility.eligibility.grades.includes(mappedGrade);
+              switch (opt) {
+                case "Freshman":
+                  return grades.some(grade => 
+                    String(grade).toLowerCase() === "freshman"
+                  );
+                case "Sophomores":
+                  return grades.some(grade => 
+                    String(grade).toLowerCase() === "sophomore"
+                  );
+                case "Juniors":
+                  return grades.some(grade => 
+                    String(grade).toLowerCase() === "junior"
+                  );
+                case "Seniors":
+                  return grades.some(grade => 
+                    String(grade).toLowerCase() === "senior"
+                  );
+                case "College Students":
+                  return grades.some(grade => 
+                    String(grade).toLowerCase() === "undergraduate" || String(grade).toLowerCase() === "college"
+                  );
+                default:
+                  return false;
+              }
             });
           }
 
           case "Duration": {
-            const duration = internship.dates.duration_weeks;
-
-            if (typeof duration !== "number") return false; // skip if not a number
+            const duration = internship.dates?.duration_weeks;
+            if (typeof duration !== "number") return false;
 
             return selectedOptions.some((opt) => {
-              if (opt === "1 week") return duration <= 1;
-              if (opt === "2–4 weeks") return duration > 1 && duration <= 4;
-              if (opt === "1–2 months") return duration > 4 && duration <= 8;
-              if (opt === "Full Summer") return duration > 8;
-              return false;
+              switch (opt) {
+                case "1 week":
+                  return duration <= 1;
+                case "2–4 weeks":
+                  return duration > 1 && duration <= 4;
+                case "1–2 months":
+                  return duration > 4 && duration <= 8;
+                case "Full Summer":
+                  return duration > 8;
+                default:
+                  return false;
+              }
             });
           }
 
@@ -481,7 +533,7 @@ function InternshipsContent() {
     });
 
     return sortInternships(filtered, sortBy, searchTerm);
-  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime, sortInternships]);
+  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime]);
 
   const totalActiveFilters = Object.values(activeFilters).reduce((acc, arr) => acc + arr.length, 0);
   const hasBookmarkedInternships = Object.values(bookmarked).some(Boolean);
