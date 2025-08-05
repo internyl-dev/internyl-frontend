@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Sora } from "next/font/google";
 import "./globals.css";
 
-import Navbar from "@/lib/components/Navbar"; ``
+import Navbar from "@/lib/components/Navbar";
+import Footer from "@/lib/components/Footer";
+import { AuthProvider } from "@/lib/config/context/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 const sora = Sora({
   variable: "--font-sora",
@@ -23,9 +26,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={sora.className}>
-      <body>
-        <Navbar/>
-        {children}
+      <body className="min-h-screen flex flex-col">
+        <AuthProvider>
+          <Navbar/>
+          <Toaster position="top-center" />
+          
+          {/* Main content area with proper spacing for fixed navbar */}
+          <main className="flex-grow pt-16 sm:pt-20">
+            {children}
+          </main>
+          
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,3 +1,7 @@
+"use client";
+
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { InternshipCards as InternshipType } from "../types/internshipCards";
 import {
   AccessTimeOutlined as TimeIcon,
   WorkOutlineOutlined as WorkIcon,
@@ -6,85 +10,327 @@ import {
   BookmarkOutlined as BookmarkFilledIcon,
   SchoolOutlined as SchoolIcon,
 } from "@mui/icons-material";
-
 import { getDaysRemaining } from "../modules/getTimeRemaining";
 import { getDueColorClass } from "../modules/getDueDateTextColor";
 import { getIconColor } from "../modules/getDueDateIconColor";
-import { InternshipCards as InternshipType } from "../types/internshipCards";
+import LaunchIcon from '@mui/icons-material/Launch';
 
 interface Props {
   internships: InternshipType[];
-  bookmarked: { [key: number]: boolean };
-  toggleBookmark: (idx: number) => void;
+  bookmarked: { [key: string]: boolean };
+  toggleBookmark: (internshipId: string) => void;
 }
 
-export default function InternshipCards({ internships, bookmarked, toggleBookmark }: Props) {
+interface CardPosition {
+  x: number;
+  y: number;
+  height: number;
+}
+
+const bookmarkButtonStyles = {
+  animation: "bookmarkAnimation 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
+  "@keyframes bookmarkAnimation": {
+    "0%": { transform: "scale(1) rotate(0deg)" },
+    "35%": { transform: "scale(1.15) rotate(-8deg)" },
+    "65%": { transform: "scale(1.25) rotate(5deg)" },
+    "85%": { transform: "scale(1.1) rotate(-2deg)" },
+    "100%": { transform: "scale(1) rotate(0deg)" },
+  },
+};
+
+export default function InternshipCards({
+  internships,
+  bookmarked,
+  toggleBookmark,
+}: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const [columnCount, setColumnCount] = useState<number>(1);
+  const [cardPositions, setCardPositions] = useState<{ [key: string]: CardPosition }>({});
+  const [containerHeight, setContainerHeight] = useState<number>(0);
+  const [isLayoutCalculated, setIsLayoutCalculated] = useState<boolean>(false);
+  const [isInitialRender, setIsInitialRender] = useState<boolean>(true);
+  const [expandedSubjects, setExpandedSubjects] = useState<{ [key: string]: boolean }>({});
+
+  const capitalizeWords = (text: string) =>
+    text
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+
+  // Configuration
+  const itemWidth = 350; // Fixed width for each card
+  const gap = 32; // Gap between cards
+
+  const calculateMasonryLayout = useCallback(() => {
+    if (!containerRef.current || internships.length === 0) return;
+
+    const container = containerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const availableWidth = containerRect.width;
+
+    // Calculate how many columns can fit
+    const totalItemWidth = itemWidth + gap;
+    const maxColumns = Math.floor((availableWidth + gap) / totalItemWidth);
+    let newColumnCount = Math.max(1, maxColumns);
+
+    // Add minimum spacing enforcement to prevent squishing
+    const actualTotalWidth = newColumnCount * itemWidth + (newColumnCount - 1) * gap;
+    if (actualTotalWidth > availableWidth && newColumnCount > 1) {
+      newColumnCount = Math.max(1, newColumnCount - 1);
+    }
+
+    setColumnCount(newColumnCount);
+
+    // Calculate positions for masonry layout
+    const positions: { [key: string]: CardPosition } = {};
+    const columnHeights: number[] = new Array(newColumnCount).fill(0);
+
+    // Center the columns if there's extra space
+    const totalColumnsWidth = newColumnCount * itemWidth + (newColumnCount - 1) * gap;
+    const startX = Math.max(0, (availableWidth - totalColumnsWidth) / 2);
+
+    internships.forEach((internship) => {
+      const internshipId = internship.id;
+      const cardElement = cardRefs.current[internshipId];
+
+      if (!cardElement) return;
+
+      // Get the actual height of the card
+      const cardHeight = cardElement.offsetHeight || 300; // fallback height
+
+      // Find the shortest column
+      const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights));
+
+      // Calculate position
+      const x = startX + shortestColumnIndex * (itemWidth + gap);
+      const y = columnHeights[shortestColumnIndex];
+
+      positions[internshipId] = {
+        x,
+        y,
+        height: cardHeight,
+      };
+
+      // Update column height
+      columnHeights[shortestColumnIndex] += cardHeight + gap;
+    });
+
+    setCardPositions(positions);
+    setContainerHeight(Math.max(...columnHeights) - gap); // Remove last gap
+    setIsLayoutCalculated(true);
+    if (isInitialRender) {
+      setIsInitialRender(false);
+    }
+  }, [internships, itemWidth, gap, isInitialRender]);
+
+  // Initial layout calculation after cards are rendered
+  useEffect(() => {
+    // Wait for cards to be rendered and measured
+    const timer = setTimeout(() => {
+      calculateMasonryLayout();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [calculateMasonryLayout]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setTimeout(() => {
+        calculateMasonryLayout();
+      }, 50);
+    };
+
+    if (typeof window !== "undefined" && window.ResizeObserver) {
+      const resizeObserver = new ResizeObserver(handleResize);
+      if (containerRef.current) {
+        resizeObserver.observe(containerRef.current);
+      }
+      return () => resizeObserver.disconnect();
+    } else {
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, [calculateMasonryLayout]);
+
+  // Recalculate layout when cards change
+  useEffect(() => {
+    if (Object.keys(cardRefs.current).length === internships.length) {
+      calculateMasonryLayout();
+    }
+  }, [internships.length, calculateMasonryLayout]);
+
   return (
-    <div className="flex flex-wrap justify-center items-start gap-8 mt-10">
-      {internships.map((internship, idx) => {
-        const daysRemaining = getDaysRemaining(internship.deadlines[0]?.date ?? null);
-        const dueTextClass = getDueColorClass(daysRemaining);
-        const iconColor = getIconColor(daysRemaining);
+    <div className="px-0 sm:px-4 lg:px-8">
+      <div
+        ref={containerRef}
+        className="mt-10 relative"
+        style={{
+          height: `${containerHeight}px`,
+          transition: "height 0.3s ease-out",
+          minWidth: "382px", // itemWidth + gap to prevent squishing
+        }}
+      >
+        {internships.map((internship) => {
+          const internshipId = internship.id;
 
-        return (
-          <div
-            key={internship.id || idx}
-            className="w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border border-black/30 flex flex-col"
-          >
-            <div>
-              <h3 className="text-sm font-semibold text-[#8D8DAC] pb-2">
-                {internship.provider}
-              </h3>
-              <h2 className="text-[2.5rem] leading-[45px] font-regular capitalize bg-gradient-to-t from-[_#2F2F3A] to-[_#5F5F74] bg-clip-text text-transparent pb-2 break-words">
-                {internship.title}
-              </h2>
-              <p className={`text-base font-medium flex items-center text-[1.2rem] ${dueTextClass}`}>
-                <TimeIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
-                <span className="font-bold">Due: </span>
-                <span className="ml-1">
-                  {internship.deadlines[0]?.date
-                    ? internship.deadlines[0].date.toLocaleDateString()
-                    : "Date not provided"}
-                </span>
-              </p>
-            </div>
+          // Safely get first deadline date or null
+          const firstDeadlineDateString = internship.dates.deadlines?.[0]?.date ?? null;
+          const firstDeadlineDate = firstDeadlineDateString && firstDeadlineDateString !== "not provided"
+            ? new Date(firstDeadlineDateString)
+            : null;
 
-            <div className="mt-4 flex flex-col gap-y-[6px]">
-              <p className="text-base flex items-center text-[1.2rem] text-[#3C66C2]">
-                <WorkIcon className="mr-2" fontSize="small" />
-                <span>{internship.subject}</span>
-              </p>
-              <p className="text-base flex items-center text-[1.2rem] text-[#E66646]">
-                <SchoolIcon className="mr-2" fontSize="small" />
-                <span>
-                  {internship.eligibility.rising ? "Rising " : ""}
-                  {internship.eligibility.grades
-                    .map((grade) => grade.charAt(0).toUpperCase() + grade.slice(1))
-                    .join(", ")}
-                </span>
-              </p>
-              <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
-                <MoneyIcon className="mr-2" fontSize="small" />
-                <span>
-                  {internship.stipend.available && internship.stipend.amount !== null
-                    ? `$${internship.stipend.amount}`
-                    : "Free"}
-                </span>
-              </p>
-            </div>
+          const daysRemaining = getDaysRemaining(firstDeadlineDate);
+          const dueTextClass = getDueColorClass(daysRemaining);
+          const iconColor = getIconColor(daysRemaining);
+          const position = cardPositions[internshipId];
 
-            <div className="mt-4 text-right">
-              <button onClick={() => toggleBookmark(idx)} className="text-[#8D8DAC] hover:text-[#2F2F3A] transition-colors cursor-pointer">
-                {bookmarked[idx] ? (
-                  <BookmarkFilledIcon fontSize="medium" className="text-[#2F2F3A]"/>
-                ) : (
-                  <BookmarkBorderIcon fontSize="medium" />
-                )}
-              </button>
+          // Eligibility: grades and age display
+          const gradesArray =
+            internship.eligibility?.eligibility?.grades || [];
+          const ageRange =
+            internship.eligibility?.eligibility?.age || null;
+
+
+          return (
+            <div
+              key={internshipId}
+              ref={(el) => {
+                cardRefs.current[internshipId] = el;
+              }}
+              className="absolute w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border border-black/30 flex flex-col hover:shadow-xl transition-all duration-300"
+              style={{
+                left: position ? `${position.x}px` : "0px",
+                top: position ? `${position.y}px` : "0px",
+                transform: position ? "translate3d(0, 0, 0)" : "translate3d(0, 0, 0)",
+                opacity: isInitialRender ? 0 : 1,
+                transition: isInitialRender ? "opacity 0.3s ease-out" : "all 0.3s ease-out",
+                width: `${itemWidth}px`,
+                zIndex: 1,
+              }}
+            >
+              <div>
+                <h3 className="text-sm font-semibold text-[#8D8DAC] pb-2">
+                  {internship.overview?.provider}
+                </h3>
+                <h2 className="text-[2.5rem] leading-[45px] font-regular capitalize bg-gradient-to-t from-[#2F2F3A] to-[#5F5F74] bg-clip-text text-transparent pb-2 break-words">
+                  {internship.overview?.title || 'none'}
+                </h2>
+                <p className={`text-base font-medium flex items-center text-[1.2rem] ${dueTextClass}`}>
+                  <TimeIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
+                  <span className="font-bold">Due: </span>
+                  <span className="ml-1">
+                    {firstDeadlineDate
+                      ? firstDeadlineDate.toLocaleDateString()
+                      : "Date not provided"}
+                  </span>
+                </p>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-y-[6px]">
+                <div className="text-base flex items-start text-[1.2rem] text-[#3C66C2]">
+                  <WorkIcon className="mr-2 mt-[6px]" fontSize="small" />
+                  <div className="flex flex-wrap gap-2">
+                    {(Array.isArray(internship.overview?.subject)
+                      ? (expandedSubjects[internshipId]
+                        ? internship.overview.subject
+                        : internship.overview.subject.slice(0, 3))
+                      : []
+                    ).map((subj, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full"
+                      >
+                        {capitalizeWords(subj)}
+                      </span>
+                    ))}
+
+                    {Array.isArray(internship.overview?.subject) &&
+                      internship.overview.subject.length > 3 &&
+                      !expandedSubjects[internshipId] && (
+                        <button
+                          onClick={() =>
+                            setExpandedSubjects((prev) => ({ ...prev, [internshipId]: true }))
+                          }
+                          className="bg-blue-200 text-blue-900 text-xs font-semibold px-3 py-1 rounded-full hover:bg-blue-300 transition"
+                        >
+                          ➤ View all
+                        </button>
+                      )}
+                  </div>
+                </div>
+
+                <p className="text-base flex items-center text-[1.2rem] text-[#E66646]">
+                  <SchoolIcon className="mr-2" fontSize="small" />
+                  <span>
+                    {gradesArray.length > 0
+                      ? gradesArray.map((g) => g.charAt(0).toUpperCase() + g.slice(1)).join(", ")
+                      : "Grades not provided"}
+                    <br />
+                    {ageRange?.minimum !== "not provided" && ageRange?.maximum !== "not provided"
+                      ? `Ages ${ageRange?.minimum} - ${ageRange?.maximum}`
+                      : "Age not provided"}
+                  </span>
+                </p>
+
+                <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                  <MoneyIcon className="mr-2" fontSize="small" />
+                  <span>
+                    {internship.costs?.stipend?.available && internship.costs?.stipend?.amount !== "not provided"
+                      ? `$${internship.costs.stipend.amount}`
+                      : "Free"}
+                  </span>
+                </p>
+              </div>
+
+              <div className="mt-4 flex justify-between items-center">
+                <a
+                  href={
+                    !internship.overview?.link
+                      ? "/pages/report"
+                      : internship.overview.link.startsWith("http")
+                        ? internship.overview.link
+                        : `https://${internship.overview.link}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#4A90E2] hover:text-[#ffffff] hover:bg-[#4A90E2] p-2 rounded-full transition-all duration-200 cursor-pointer"
+                  aria-label={`Visit ${internship.overview?.title || 'website'} website`}
+                >
+                  <LaunchIcon fontSize="medium" />
+                </a>
+                <button
+                  onClick={() => toggleBookmark(internshipId)}
+                  className="text-[#8D8DAC] hover:text-[#2F2F3A] cursor-pointer p-1 rounded-full hover:bg-black/5 active:bg-black/10 transition-all duration-200"
+                  aria-label={`${bookmarked[internshipId] ? "Remove" : "Add"} bookmark for ${internship.overview?.title || 'this internship'}`}
+                >
+                  {bookmarked[internshipId] ? (
+                    <BookmarkFilledIcon
+                      fontSize="medium"
+                      className="text-[#2F2F3A]"
+                      sx={{
+                        ...bookmarkButtonStyles,
+                        filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.1))",
+                      }}
+                    />
+                  ) : (
+                    <BookmarkBorderIcon
+                      fontSize="medium"
+                      sx={{
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        "&:hover": {
+                          transform: "scale(1.1)",
+                        },
+                      }}
+                    />
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
