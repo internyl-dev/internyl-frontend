@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, X, Filter, Search, SlidersHorizontal, BookmarkCheck, Clock, Users, DollarSign, Calendar, RotateCcw } from "lucide-react";
 import SearchBar from "@/lib/components/SearchBar";
@@ -495,217 +495,219 @@ export default function Internships() {
   }
 
   return (
-    <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
-      <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
+    <Suspense>
+      <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
+        <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
 
-      {/* Sort and View Options */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4 mt-8">
-        {/* Sort Dropdown */}
-        <div className="relative sort-dropdown-container">
-          <button
-            onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
-            className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border text-sm font-medium hover:bg-gray-50 transition-colors"
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            Sort: {sortOptions.find(opt => opt.value === sortBy)?.label}
-            <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
-          </button>
+        {/* Sort and View Options */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4 mt-8">
+          {/* Sort Dropdown */}
+          <div className="relative sort-dropdown-container">
+            <button
+              onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
+              className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border text-sm font-medium hover:bg-gray-50 transition-colors"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Sort: {sortOptions.find(opt => opt.value === sortBy)?.label}
+              <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
+            </button>
 
-          {openDropdown === 'sort' && (
-            <div className="absolute top-12 left-0 w-56 bg-white rounded-xl shadow-lg p-2 z-20 border">
-              {sortOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSortBy(option.value);
-                    setOpenDropdown(null);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${sortBy === option.value ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
-                    }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+            {openDropdown === 'sort' && (
+              <div className="absolute top-12 left-0 w-56 bg-white rounded-xl shadow-lg p-2 z-20 border">
+                {sortOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSortBy(option.value);
+                      setOpenDropdown(null);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${sortBy === option.value ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
+                      }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Bookmarked Only Toggle */}
+          {user && hasBookmarkedInternships && (
+            <button
+              onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${showBookmarkedOnly
+                ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                : 'bg-white text-gray-700 border hover:bg-gray-50'
+                }`}
+            >
+              <BookmarkCheck className="w-4 h-4" />
+              Bookmarked Only
+              {showBookmarkedOnly && (
+                <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {Object.values(bookmarked).filter(Boolean).length}
+                </span>
+              )}
+            </button>
           )}
         </div>
 
-        {/* Bookmarked Only Toggle */}
-        {user && hasBookmarkedInternships && (
-          <button
-            onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${showBookmarkedOnly
-              ? 'bg-blue-100 text-blue-700 border border-blue-200'
-              : 'bg-white text-gray-700 border hover:bg-gray-50'
-              }`}
-          >
-            <BookmarkCheck className="w-4 h-4" />
-            Bookmarked Only
-            {showBookmarkedOnly && (
-              <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {Object.values(bookmarked).filter(Boolean).length}
-              </span>
-            )}
-          </button>
-        )}
-      </div>
-
-      {/* Active Filters Display */}
-      {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
-        <div className="flex flex-wrap items-center gap-2 mb-4 justify-center">
-          {searchTerm && (
-            <div className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
-              <Search className="w-3 h-3" />
-              <span>&quot;{searchTerm}&quot;</span>
-              <button
-                onClick={() => setSearchTerm("")}
-                className="hover:bg-gray-300 rounded-full p-0.5 transition-colors"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          )}
-          {showBookmarkedOnly && (
-            <div className="flex items-center gap-1 px-3 py-1 bg-blue-100 rounded-full text-sm text-blue-700">
-              <BookmarkCheck className="w-3 h-3" />
-              <span>Bookmarked</span>
-              <button
-                onClick={() => setShowBookmarkedOnly(false)}
-                className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          )}
-          {Object.entries(activeFilters).map(([category, options]) =>
-            options.map((option) => (
-              <div
-                key={`${category}-${option}`}
-                className={`flex items-center gap-1 px-3 py-1 ${getFilterColor(category)} rounded-full text-sm text-black`}
-              >
-                <span>{category}: {option}</span>
+        {/* Active Filters Display */}
+        {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
+          <div className="flex flex-wrap items-center gap-2 mb-4 justify-center">
+            {searchTerm && (
+              <div className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
+                <Search className="w-3 h-3" />
+                <span>&quot;{searchTerm}&quot;</span>
                 <button
-                  onClick={() => toggleFilterOption(category, option)}
-                  className="hover:brightness-90 rounded-full p-0.5 transition-colors"
+                  onClick={() => setSearchTerm("")}
+                  className="hover:bg-gray-300 rounded-full p-0.5 transition-colors"
                 >
                   <X className="w-3 h-3" />
                 </button>
               </div>
-            ))
-          )}
-          {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
-            <button
-              onClick={clearAllFilters}
-              className="flex items-center gap-1 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-full text-sm font-medium transition-colors"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Clear all
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Mobile Filter Toggle */}
-      <div className="md:hidden flex justify-center mb-4">
-        <button
-          onClick={() => setShowMobileFilters(!showMobileFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm text-sm font-medium transition-colors ${showMobileFilters ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-white text-gray-700'
-            } border`}
-        >
-          <Filter className="w-4 h-4" />
-          Filters
-          {totalActiveFilters > 0 && (
-            <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              {totalActiveFilters}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div className={`${showMobileFilters ? 'block' : 'hidden md:block'}`}>
-        <div className="flex flex-wrap justify-center gap-4 mt-6 relative z-10">
-          {filterData.map((filter) => {
-            const hasActiveOptions = activeFilters[filter.label]?.length > 0;
-            const Icon = filter.icon;
-            return (
-              <div key={filter.label} className="relative filter-dropdown">
+            )}
+            {showBookmarkedOnly && (
+              <div className="flex items-center gap-1 px-3 py-1 bg-blue-100 rounded-full text-sm text-blue-700">
+                <BookmarkCheck className="w-3 h-3" />
+                <span>Bookmarked</span>
                 <button
-                  onClick={() =>
-                    setOpenDropdown((prev) => (prev === filter.label ? null : filter.label))
-                  }
-                  className={`filter-button flex items-center gap-2 px-4 py-2 rounded-full ${filter.color} text-black text-sm font-semibold shadow-sm hover:brightness-95 transition ${hasActiveOptions ? 'ring-2 ring-blue-400 ring-offset-1' : ''
-                    }`}
+                  onClick={() => setShowBookmarkedOnly(false)}
+                  className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{filter.label}</span>
-                  {hasActiveOptions && (
-                    <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {activeFilters[filter.label].length}
-                    </span>
-                  )}
-                  <ChevronDown className={`w-4 h-4 mt-[1px] transition-transform ${openDropdown === filter.label ? 'rotate-180' : ''
-                    }`} />
+                  <X className="w-3 h-3" />
                 </button>
-
-                {openDropdown === filter.label && (
-                  <div className="absolute top-12 left-0 w-48 bg-white rounded-xl shadow-lg p-3 space-y-2 z-20 border">
-                    <div className="flex items-center justify-between mb-2 pb-2 border-b">
-                      <span className="text-sm font-medium text-gray-700">{filter.label}</span>
-                      {hasActiveOptions && (
-                        <button
-                          onClick={() => clearCategoryFilter(filter.label)}
-                          className="text-xs text-blue-600 hover:text-blue-800 underline"
-                        >
-                          Clear
-                        </button>
-                      )}
-                    </div>
-                    {filter.options.map((option) => (
-                      <label key={option} className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1 rounded transition-colors cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={activeFilters[filter.label]?.includes(option) || false}
-                          onChange={() => toggleFilterOption(filter.label, option)}
-                          className="accent-blue-500"
-                        />
-                        {option}
-                      </label>
-                    ))}
-                  </div>
-                )}
               </div>
-            );
-          })}
+            )}
+            {Object.entries(activeFilters).map(([category, options]) =>
+              options.map((option) => (
+                <div
+                  key={`${category}-${option}`}
+                  className={`flex items-center gap-1 px-3 py-1 ${getFilterColor(category)} rounded-full text-sm text-black`}
+                >
+                  <span>{category}: {option}</span>
+                  <button
+                    onClick={() => toggleFilterOption(category, option)}
+                    className="hover:brightness-90 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))
+            )}
+            {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
+              <button
+                onClick={clearAllFilters}
+                className="flex items-center gap-1 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-full text-sm font-medium transition-colors"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Clear all
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Mobile Filter Toggle */}
+        <div className="md:hidden flex justify-center mb-4">
+          <button
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm text-sm font-medium transition-colors ${showMobileFilters ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-white text-gray-700'
+              } border`}
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+            {totalActiveFilters > 0 && (
+              <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {totalActiveFilters}
+              </span>
+            )}
+          </button>
         </div>
+
+        {/* Filters */}
+        <div className={`${showMobileFilters ? 'block' : 'hidden md:block'}`}>
+          <div className="flex flex-wrap justify-center gap-4 mt-6 relative z-10">
+            {filterData.map((filter) => {
+              const hasActiveOptions = activeFilters[filter.label]?.length > 0;
+              const Icon = filter.icon;
+              return (
+                <div key={filter.label} className="relative filter-dropdown">
+                  <button
+                    onClick={() =>
+                      setOpenDropdown((prev) => (prev === filter.label ? null : filter.label))
+                    }
+                    className={`filter-button flex items-center gap-2 px-4 py-2 rounded-full ${filter.color} text-black text-sm font-semibold shadow-sm hover:brightness-95 transition ${hasActiveOptions ? 'ring-2 ring-blue-400 ring-offset-1' : ''
+                      }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{filter.label}</span>
+                    {hasActiveOptions && (
+                      <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {activeFilters[filter.label].length}
+                      </span>
+                    )}
+                    <ChevronDown className={`w-4 h-4 mt-[1px] transition-transform ${openDropdown === filter.label ? 'rotate-180' : ''
+                      }`} />
+                  </button>
+
+                  {openDropdown === filter.label && (
+                    <div className="absolute top-12 left-0 w-48 bg-white rounded-xl shadow-lg p-3 space-y-2 z-20 border">
+                      <div className="flex items-center justify-between mb-2 pb-2 border-b">
+                        <span className="text-sm font-medium text-gray-700">{filter.label}</span>
+                        {hasActiveOptions && (
+                          <button
+                            onClick={() => clearCategoryFilter(filter.label)}
+                            className="text-xs text-blue-600 hover:text-blue-800 underline"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      {filter.options.map((option) => (
+                        <label key={option} className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1 rounded transition-colors cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={activeFilters[filter.label]?.includes(option) || false}
+                            onChange={() => toggleFilterOption(filter.label, option)}
+                            className="accent-blue-500"
+                          />
+                          {option}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* No Results Message */}
+        {filteredAndSortedInternships.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-gray-500 text-lg mb-2">No internships found</div>
+            <p className="text-gray-400 text-sm mb-4">
+              {showBookmarkedOnly
+                ? "You don&apos;t have any bookmarked internships matching these filters"
+                : "Try adjusting your search terms or filters"}
+            </p>
+            {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
+              <button
+                onClick={clearAllFilters}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+        )}
+
+        <InternshipCards
+          internships={filteredAndSortedInternships}
+          bookmarked={bookmarked}
+          toggleBookmark={toggleBookmark}
+        />
       </div>
-
-      {/* No Results Message */}
-      {filteredAndSortedInternships.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-500 text-lg mb-2">No internships found</div>
-          <p className="text-gray-400 text-sm mb-4">
-            {showBookmarkedOnly
-              ? "You don&apos;t have any bookmarked internships matching these filters"
-              : "Try adjusting your search terms or filters"}
-          </p>
-          {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
-            <button
-              onClick={clearAllFilters}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
-            >
-              Clear all filters
-            </button>
-          )}
-        </div>
-      )}
-
-      <InternshipCards
-        internships={filteredAndSortedInternships}
-        bookmarked={bookmarked}
-        toggleBookmark={toggleBookmark}
-      />
-    </div>
+    </Suspense>
   );
 }
