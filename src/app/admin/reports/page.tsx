@@ -17,6 +17,31 @@ import toast from "react-hot-toast";
 import { Report } from "@/lib/types/report";
 import AdminLayout from "../layout/AdminLayout";
 
+// Define more specific types for different report types
+interface InfoReport extends Report {
+    reportType: 'info';
+    internship?: string;
+    incorrectInfoType?: string;
+    correctInfo?: string;
+    comments?: string;
+}
+
+interface BugReport extends Report {
+    reportType: 'bug';
+    bugTitle?: string;
+    bugDescription?: string;
+    bugSteps?: string;
+    bugSeverity?: 'Critical' | 'High' | 'Medium' | 'Low';
+}
+
+interface OtherReport extends Report {
+    reportType: 'other';
+    otherSubject?: string;
+    otherDescription?: string;
+}
+
+type ExtendedReport = InfoReport | BugReport | OtherReport;
+
 const STATUS_OPTIONS: Report["status"][] = ["pending", "resolved", "rejected"];
 const PRIORITY_OPTIONS: NonNullable<Report["priority"]>[] = ["low", "medium", "high"];
 
@@ -54,32 +79,33 @@ function getPriorityBadgeColor(priority: NonNullable<Report["priority"]>) {
 }
 
 // Component to display report-specific details
-function ReportDetailsView({ report }: { report: Report }) {
+function ReportDetailsView({ report }: { report: ExtendedReport }) {
     if (report.reportType === 'info') {
+        const infoReport = report as InfoReport;
         return (
             <div className="space-y-4">
-                {(report as any).internship && (
+                {infoReport.internship && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Internship:</label>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{(report as any).internship}</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{infoReport.internship}</p>
                     </div>
                 )}
-                {(report as any).incorrectInfoType && (
+                {infoReport.incorrectInfoType && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Incorrect Info Type:</label>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded capitalize">{(report as any).incorrectInfoType}</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded capitalize">{infoReport.incorrectInfoType}</p>
                     </div>
                 )}
-                {report.correctInfo && (
+                {infoReport.correctInfo && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Correct Info:</label>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{report.correctInfo}</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{infoReport.correctInfo}</p>
                     </div>
                 )}
-                {report.comments && (
+                {infoReport.comments && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Comments:</label>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{report.comments}</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{infoReport.comments}</p>
                     </div>
                 )}
             </div>
@@ -87,35 +113,36 @@ function ReportDetailsView({ report }: { report: Report }) {
     }
 
     if (report.reportType === 'bug') {
+        const bugReport = report as BugReport;
         return (
             <div className="space-y-4">
-                {(report as any).bugTitle && (
+                {bugReport.bugTitle && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Bug Title:</label>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{(report as any).bugTitle}</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{bugReport.bugTitle}</p>
                     </div>
                 )}
-                {(report as any).bugDescription && (
+                {bugReport.bugDescription && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Description:</label>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{(report as any).bugDescription}</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{bugReport.bugDescription}</p>
                     </div>
                 )}
-                {(report as any).bugSteps && (
+                {bugReport.bugSteps && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Steps to Reproduce:</label>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded whitespace-pre-line">{(report as any).bugSteps}</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded whitespace-pre-line">{bugReport.bugSteps}</p>
                     </div>
                 )}
-                {(report as any).bugSeverity && (
+                {bugReport.bugSeverity && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Severity: &nbsp;</label>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${(report as any).bugSeverity === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
-                            (report as any).bugSeverity === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                                (report as any).bugSeverity === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                                    'bg-blue-100 text-blue-800 border-blue-200'
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${bugReport.bugSeverity === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
+                                bugReport.bugSeverity === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                    bugReport.bugSeverity === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                                        'bg-blue-100 text-blue-800 border-blue-200'
                             }`}>
-                            {(report as any).bugSeverity}
+                            {bugReport.bugSeverity}
                         </span>
                     </div>
                 )}
@@ -124,18 +151,19 @@ function ReportDetailsView({ report }: { report: Report }) {
     }
 
     if (report.reportType === 'other') {
+        const otherReport = report as OtherReport;
         return (
             <div className="space-y-4">
-                {(report as any).otherSubject && (
+                {otherReport.otherSubject && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Subject:</label>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{(report as any).otherSubject}</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{otherReport.otherSubject}</p>
                     </div>
                 )}
-                {(report as any).otherDescription && (
+                {otherReport.otherDescription && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Description:</label>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{(report as any).otherDescription}</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{otherReport.otherDescription}</p>
                     </div>
                 )}
             </div>
@@ -148,10 +176,9 @@ function ReportDetailsView({ report }: { report: Report }) {
 }
 
 export default function AdminReports() {
-    const [reports, setReports] = useState<Report[]>([]);
+    const [reports, setReports] = useState<ExtendedReport[]>([]);
     const [loading, setLoading] = useState(false);
     const [expandedReportId, setExpandedReportId] = useState<string | null>(null);
-
     const [editingReportId, setEditingReportId] = useState<string | null>(null);
 
     // Editable fields
@@ -171,8 +198,8 @@ export default function AdminReports() {
             const snapshot = await getDocs(q);
 
             // Convert Firestore Timestamps to JS Dates
-            const fetched: Report[] = snapshot.docs.map((doc) => {
-                const data = doc.data() as Omit<Report, "id">;
+            const fetched: ExtendedReport[] = snapshot.docs.map((doc) => {
+                const data = doc.data() as Omit<ExtendedReport, "id">;
                 return {
                     id: doc.id,
                     ...data,
@@ -190,7 +217,7 @@ export default function AdminReports() {
         setLoading(false);
     }
 
-    function startEditing(report: Report) {
+    function startEditing(report: ExtendedReport) {
         setEditingReportId(report.id);
         setEditStatus(report.status);
         setEditPriority(report.priority ?? "medium");
@@ -224,29 +251,28 @@ export default function AdminReports() {
         try {
             const reportRef = doc(db, "reports", editingReportId);
 
-            const updates: Partial<Report> = {
-                status: editStatus,
-                priority: editPriority,
-            };
+            const firestoreUpdates: Record<string, any> = {};
 
             if (editNotes.trim()) {
-                updates.notes = editNotes.trim();
+                firestoreUpdates.notes = editNotes.trim();
             }
 
             if (editStatus === "resolved") {
-                updates.resolvedAt = Timestamp.now();      // set resolvedAt to current timestamp
-                updates.rejectedAt = deleteField() as any;        // remove rejectedAt field
-                updates.rejectionReason = deleteField() as any;   // remove rejectionReason field
+                firestoreUpdates.resolvedAt = Timestamp.now();
+                firestoreUpdates.rejectedAt = deleteField();
+                firestoreUpdates.rejectionReason = deleteField();
             } else if (editStatus === "rejected") {
-                updates.rejectedAt = Timestamp.now();      // set rejectedAt to current timestamp
-                updates.rejectionReason = editRejectionReason.trim() || "No reason provided"; // set reason
-                updates.resolvedAt = deleteField() as any;        // remove resolvedAt field
+                firestoreUpdates.rejectedAt = Timestamp.now();
+                firestoreUpdates.rejectionReason = editRejectionReason.trim() || "No reason provided";
+                firestoreUpdates.resolvedAt = deleteField();
             } else {
-                // status neither resolved nor rejected, remove these timestamp/reason fields
-                updates.resolvedAt = deleteField() as any;
-                updates.rejectedAt = deleteField() as any;
-                updates.rejectionReason = deleteField() as any;
+                firestoreUpdates.resolvedAt = deleteField();
+                firestoreUpdates.rejectedAt = deleteField();
+                firestoreUpdates.rejectionReason = deleteField();
             }
+
+
+            await updateDoc(reportRef, firestoreUpdates);
 
             // Fetch the updated document after the update
             const updatedDocSnap = await getDoc(reportRef);
@@ -255,11 +281,11 @@ export default function AdminReports() {
                 return;
             }
 
-            const updatedData = updatedDocSnap.data() as Report;
+            const updatedData = updatedDocSnap.data() as ExtendedReport;
 
-            const reportToNotify = {
+            const reportToNotify: ExtendedReport = {
                 ...updatedData,
-                id: editingReportId,  // put this AFTER spreading updatedData to override duplicate id error
+                id: editingReportId,
                 createdAt:
                     updatedData.createdAt && "toDate" in updatedData.createdAt
                         ? updatedData.createdAt.toDate()
@@ -275,7 +301,6 @@ export default function AdminReports() {
                 notes: updatedData.notes || "",
                 rejectionReason: updatedData.rejectionReason || "",
             };
-
 
             // Send POST request to notify API
             const res = await fetch("/api/notify-report-update", {
@@ -343,7 +368,7 @@ export default function AdminReports() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-200">
-                                                {reports.map((report, index) => {
+                                                {reports.map((report) => {
                                                     const isEditing = editingReportId === report.id;
                                                     const isExpanded = expandedReportId === report.id;
                                                     return (

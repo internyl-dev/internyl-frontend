@@ -15,7 +15,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
 
 export default function Footer() {
-  const [hoveredSocial, setHoveredSocial] = useState<string | null>(null);
+  const [_hoveredSocial, setHoveredSocial] = useState<string | null>(null);
 
   return (
     <>

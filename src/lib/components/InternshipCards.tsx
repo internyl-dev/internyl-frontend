@@ -45,10 +45,10 @@ export default function InternshipCards({
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const [columnCount, setColumnCount] = useState<number>(1);
+  const [_columnCount, setColumnCount] = useState<number>(1);
   const [cardPositions, setCardPositions] = useState<{ [key: string]: CardPosition }>({});
   const [containerHeight, setContainerHeight] = useState<number>(0);
-  const [isLayoutCalculated, setIsLayoutCalculated] = useState<boolean>(false);
+  const [_isLayoutCalculated, setIsLayoutCalculated] = useState<boolean>(false);
   const [isInitialRender, setIsInitialRender] = useState<boolean>(true);
   const [expandedSubjects, setExpandedSubjects] = useState<{ [key: string]: boolean }>({});
 

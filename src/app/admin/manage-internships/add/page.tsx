@@ -56,19 +56,19 @@ export default function AddInternshipPage() {
     },
   });
 
-  const handleChange = <K extends keyof InternshipCards>(
-    section: K,
-    field: string,
-    value: string | string[] | boolean
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [section]: {
-        ...(prev[section] as object),
-        [field]: value,
-      },
-    }));
-  };
+  // const handleChange = <K extends keyof InternshipCards>(
+  //   section: K,
+  //   field: string,
+  //   value: string | string[] | boolean
+  // ) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [section]: {
+  //       ...(prev[section] as object),
+  //       [field]: value,
+  //     },
+  //   }));
+  // };
 
   const handleSubmit = async () => {
     try {

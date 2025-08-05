@@ -64,7 +64,7 @@ export default function Login() {
       }
 
       router.push("/");
-    } catch (error) {
+    } catch { {/* (error) */}
       setStatus("Invalid email or password.");
     } finally {
       setIsLoading(false);
@@ -92,7 +92,7 @@ export default function Login() {
       }
 
       router.push("/");
-    } catch (error) {
+    } catch { {/* (error) */}
       setStatus("Google sign-in failed.");
     }
   };
@@ -106,7 +106,7 @@ export default function Login() {
     try {
       await sendPasswordResetEmail(auth, email);
       setStatus("Password reset email sent.");
-    } catch (error) {
+    } catch { {/* (error) */}
       setStatus("Failed to send reset email. Try again.");
     }
   };

@@ -18,7 +18,7 @@ export default function ReportPage() {
 
   // Common fields & Missing fields
   const [reportDetails, setReportDetails] = useState("");
-  const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [_missingFields, _setMissingFields] = useState<string[]>([]);
 
   // Incorrect info specific
   const [internships, setInternships] = useState<InternshipCards[]>([]);

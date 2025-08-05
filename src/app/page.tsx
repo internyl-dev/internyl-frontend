@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "@/lib/config/firebaseConfig";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
@@ -22,8 +21,19 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import InternshipCards from "@/lib/components/InternshipCards";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
 import { InternshipCards as Internship } from "@/lib/types/internshipCards";
-import InternshipReccommendations from "@/lib/components/InternshipRecommendations";
-import { useInternshipsWithFallback, useRecommendedInternships } from "@/lib/hooks/useRecommendedInternships";
+import { useInternshipsWithFallback } from "@/lib/hooks/useRecommendedInternships";
+
+// Define user data type
+interface UserData {
+  displayName?: string;
+  savedInternships?: string[];
+}
+
+// Define deadline type
+interface Deadline {
+  date: Date | null;
+  [key: string]: unknown;
+}
 
 const inter = Inter({
   subsets: ['latin'],
@@ -120,7 +130,7 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [internships, setInternships] = useState<Internship[]>([]);
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
@@ -128,8 +138,7 @@ export default function Home() {
 
   const router = useRouter();
 
-  const recommendedInternships = useRecommendedInternships();
-  const { internshipsToShow, loading } = useInternshipsWithFallback(bookmarked);
+  const { internshipsToShow } = useInternshipsWithFallback(bookmarked);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -137,6 +146,17 @@ export default function Home() {
       router.push(`/pages/internships?search=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
+
+  // Helper to safely convert Firestore Timestamp to JS Date
+  function toDateIfTimestamp(value: any): Date | null {
+    if (value && typeof value.toDate === "function") {
+      return value.toDate();
+    }
+    if (value instanceof Date) {
+      return value;
+    }
+    return null;
+  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -148,7 +168,7 @@ export default function Home() {
         const snapshot = await getDoc(docRef);
 
         if (snapshot.exists()) {
-          const data = snapshot.data();
+          const data = snapshot.data() as UserData;
           setUserData(data);
 
           const saved: string[] = data.savedInternships || [];
@@ -164,9 +184,9 @@ export default function Home() {
           const data = doc.data();
 
           if (Array.isArray(data.deadlines)) {
-            data.deadlines = data.deadlines.map((d: any) => ({
+            data.deadlines = data.deadlines.map((d: Deadline) => ({
               ...d,
-              date: d.date?.toDate?.() ?? d.date ?? null,
+              date: toDateIfTimestamp(d.date),
             }));
           }
 
@@ -221,7 +241,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ") || "Intern"}
+                Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ")[0] || "Intern"}
               </motion.h1>
               <motion.p
                 className={`text-left text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className} drop-shadow-md`}
@@ -280,8 +300,8 @@ export default function Home() {
               ))}
             </div>
           </div>
-
         </motion.div>
+
         {/* Suggested Internships Section */}
         <motion.div
           className="relative bg-white/40 backdrop-blur-xl rounded-tl-[30px] rounded-bl-[30px] mt-10 mx-2 sm:mx-4 text-[#2F2F3A] flex flex-col max-w-full shadow-2xl border border-white/20"
@@ -299,7 +319,7 @@ export default function Home() {
               </h2>
             </div>
             <Link
-              href="/pages/internships" // or wherever your full internships page is
+              href="/pages/internships"
               className="group inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-[18px] font-medium text-white bg-gradient-to-r from-[#E26262] to-[#F07575] rounded-full gap-2 sm:gap-3.5 hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl transform hover:scale-105 whitespace-nowrap mt-4 md:mt-0 border border-white/20"
             >
               see all
