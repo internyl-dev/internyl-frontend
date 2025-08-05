@@ -9,34 +9,43 @@ export function scoreInternship(
 
   let score = 0;
 
+  const userSubjects = prefs.subjects || [];
+  const userTags = prefs.tags || [];
+  const userGrades = prefs.preferredGrades || [];
+  const userStates = prefs.preferredLocation?.states || [];
+  const userCities = prefs.preferredLocation?.cities || [];
+  const userVirtual = prefs.preferredLocation?.virtual || false;
+
   // Subject
-  if (prefs.subjects?.includes(internship.subject)) {
+  if (
+    userSubjects.some(subject => internship.overview.subject.includes(subject))
+  ) {
     score += 3;
   }
 
   // Tags
-  const matchingTags = internship.tags?.filter(tag =>
-    prefs.tags.includes(tag)
+  const matchingTags = internship.overview.tags?.filter(tag =>
+    userTags.includes(tag)
   );
   score += (matchingTags?.length || 0) * 2;
 
   // Grade eligibility
-  const matchingGrades = internship.eligibility.grades?.filter(grade =>
-    prefs.preferredGrades.includes(grade)
+  const matchingGrades = internship.eligibility.eligibility.grades?.filter(grade =>
+    userGrades.includes(grade)
   );
   score += (matchingGrades?.length || 0) * 2;
 
   // Location
-  for (const loc of internship.location || []) {
-    if (prefs.preferredLocation.virtual && loc.virtual) {
+  for (const loc of internship.locations.locations || []) {
+    if (userVirtual && loc.virtual) {
       score += 2;
       break;
     }
-    if (prefs.preferredLocation.states.includes(loc.state)) {
+    if (userStates.includes(loc.state)) {
       score += 2;
       break;
     }
-    if (prefs.preferredLocation.cities.includes(loc.city)) {
+    if (userCities.includes(loc.city)) {
       score += 2;
       break;
     }
@@ -45,16 +54,18 @@ export function scoreInternship(
   // Duration
   if (
     prefs.minDurationWeeks != null &&
-    internship.duration_weeks != null &&
-    internship.duration_weeks >= prefs.minDurationWeeks
+    internship.dates.duration_weeks != null &&
+    typeof internship.dates.duration_weeks === "number" &&
+    internship.dates.duration_weeks >= prefs.minDurationWeeks
   ) {
     score += 1;
   }
 
+
   // Stipend
-  if (prefs.stipendRequired && internship.stipend.available) {
+  if (prefs.stipendRequired && internship.costs.stipend.available) {
     score += 3;
-  } else if (prefs.stipendRequired && !internship.stipend.available) {
+  } else if (prefs.stipendRequired && !internship.costs.stipend.available) {
     score -= 5;
   }
 

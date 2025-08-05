@@ -14,7 +14,7 @@ export default function SearchBar({ setSearch, initialValue }: SearchBarProps) {
       setLocalSearch(initialValue);
       setSearch(initialValue);
     }
-  }, [initialValue]);
+  }, [initialValue, setSearch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

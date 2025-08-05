@@ -6,17 +6,18 @@ import {
     createUserWithEmailAndPassword,
     signInWithPopup,
 } from "firebase/auth";
-import { useAuth } from "@/lib/config/context/AuthContext";
+// import { useAuth } from "@/lib/config/context/AuthContext";
 
 import { db } from "@/lib/config/firebaseConfig";
-import { collection, addDoc, setDoc, doc } from "firebase/firestore";
+import { setDoc, doc } from "firebase/firestore";
 
 import { useRouter } from "next/navigation";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export default function SignUp() {
-    const { user } = useAuth();
+    // const { user } = useAuth();
 
     const [signUpName, setSignUpName] = useState("");
     const [signUpUsername, setSignUserName] = useState("");
@@ -49,13 +50,17 @@ export default function SignUp() {
                 username: signUpUsername,
                 email: signUpEmail,
                 createdAt: new Date(),
-            })
+            });
 
             setStatus("Account created successfully!");
 
             router.push("/");
-        } catch (err: any) {
-            setStatus(err.message);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setStatus(err.message);
+            } else {
+                setStatus("An unknown error occurred.");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -67,17 +72,22 @@ export default function SignUp() {
             const user = userCredential.user;
 
             await setDoc(doc(db, "users", user.uid), {
-                uid: user.uid,displayName: signUpName,
+                uid: user.uid,
+                displayName: signUpName,
                 username: signUpUsername,
                 email: signUpEmail,
                 createdAt: new Date(),
-            })
+            });
 
             setStatus("Account created successfully!");
 
             router.push("/");
-        } catch (err: any) {
-            setStatus(err.message);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setStatus(err.message);
+            } else {
+                setStatus("An unknown error occurred.");
+            }
         }
     };
 
@@ -189,12 +199,12 @@ export default function SignUp() {
 
                 <div className="text-sm text-center text-gray-600">
                     Already have an account?{" "}
-                    <a
-                        href="/pages/login"
+                    <Link
+                        href="/login"
                         className="text-[#3C66C2] font-medium hover:underline transition"
                     >
                         Login here.
-                    </a>
+                    </Link>
                 </div>
             </form>
         </div>

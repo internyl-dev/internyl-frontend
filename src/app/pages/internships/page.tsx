@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, X, Filter, Search, SlidersHorizontal, BookmarkCheck, Clock, Users, DollarSign, Calendar, RotateCcw } from "lucide-react";
 import SearchBar from "@/lib/components/SearchBar";
@@ -12,6 +12,7 @@ import { InternshipCards as InternshipType, Deadline, CostsSection } from "@/lib
 import { auth, db } from "@/lib/config/firebaseConfig";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
+// import { Timestamp } from "firebase/firestore";
 
 const filterData = [
   {
@@ -77,7 +78,7 @@ function getDueCategory(date: Date | null): string {
   return "Later";
 }
 
-export default function Internships() {
+function InternshipsContent() {
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string[] }>({});
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
@@ -115,7 +116,6 @@ export default function Internships() {
     return Math.min(...allCosts);
   }
 
-
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -136,8 +136,17 @@ export default function Internships() {
       }
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => window.addEventListener('resize', handleResize);
   }, []);
+
+  function isTimestamp(value: unknown): value is { toDate: () => Date } {
+    return (
+      value !== null &&
+      typeof value === "object" &&
+      "toDate" in value &&
+      typeof (value as { toDate?: unknown }).toDate === "function"
+    );
+  }
 
   useEffect(() => {
     async function fetchInternships() {
@@ -148,13 +157,20 @@ export default function Internships() {
         const fetchedInternships = snapshot.docs.map((doc) => {
           const data = doc.data();
 
-          // Convert deadlines inside dates
-          const deadlines = (data.dates?.deadlines ?? []).map((deadline: any) => ({
-            ...deadline,
-            date: deadline.date?.toDate ? deadline.date.toDate().toISOString().split('T')[0] : deadline.date,
-          }));
+          // Defensive check: deadlines might be undefined
+          const deadlines = (data.dates?.deadlines ?? []).map((deadline: Deadline) => {
+            const dateVal = deadline.date;
 
-          // Rebuild dates with converted deadlines
+            return {
+              ...deadline,
+              date: isTimestamp(dateVal)
+                ? dateVal.toDate().toISOString().split("T")[0]
+                : typeof dateVal === "string"
+                  ? dateVal
+                  : null,
+            };
+          });
+
           const dates = {
             ...data.dates,
             deadlines,
@@ -178,7 +194,6 @@ export default function Internships() {
     }
 
     fetchInternships();
-
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -328,7 +343,6 @@ export default function Internships() {
     return score;
   };
 
-
   const sortInternships = (internships: InternshipType[], sortBy: string, searchTerm: string) => {
     const sorted = [...internships];
 
@@ -378,9 +392,8 @@ export default function Internships() {
     }
   };
 
-
   const filteredAndSortedInternships = useMemo(() => {
-    let filtered = internships.filter((internship) => {
+    const filtered = internships.filter((internship) => {
       // Search filter
       const searchableText = `${internship.overview.title} ${internship.overview.provider} ${internship.overview.subject.join(" ")}`.toLowerCase();
       if (searchTerm && !searchableText.includes(searchTerm.toLowerCase())) {
@@ -403,9 +416,8 @@ export default function Internships() {
             const dueCategory = getDueCategory(dateObj);
             return selectedOptions.includes(dueCategory);
 
-
           case "Subject":
-            return selectedOptions.includes(internship.overview.subject.join(" "));
+            return selectedOptions.some(opt => internship.overview.subject.includes(opt));
 
           case "Cost": {
             const costsArray = internship.costs.costs;
@@ -469,7 +481,7 @@ export default function Internships() {
     });
 
     return sortInternships(filtered, sortBy, searchTerm);
-  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime]);
+  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime, sortInternships]);
 
   const totalActiveFilters = Object.values(activeFilters).reduce((acc, arr) => acc + arr.length, 0);
   const hasBookmarkedInternships = Object.values(bookmarked).some(Boolean);
@@ -545,7 +557,7 @@ export default function Internships() {
           {searchTerm && (
             <div className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
               <Search className="w-3 h-3" />
-              <span>"{searchTerm}"</span>
+              <span>&quot;{searchTerm}&quot;</span>
               <button
                 onClick={() => setSearchTerm("")}
                 className="hover:bg-gray-300 rounded-full p-0.5 transition-colors"
@@ -675,9 +687,8 @@ export default function Internships() {
           <div className="text-gray-500 text-lg mb-2">No internships found</div>
           <p className="text-gray-400 text-sm mb-4">
             {showBookmarkedOnly
-              ? "You don't have any bookmarked internships matching these filters"
-              : "Try adjusting your search terms or filters"
-            }
+              ? "You don&apos;t have any bookmarked internships matching these filters"
+              : "Try adjusting your search terms or filters"}
           </p>
           {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
             <button
@@ -696,5 +707,13 @@ export default function Internships() {
         toggleBookmark={toggleBookmark}
       />
     </div>
+  );
+}
+
+export default function Internships() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InternshipsContent />
+    </Suspense>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { auth, db } from "@/lib/config/firebaseConfig";
 import {
   updatePassword,
@@ -12,6 +13,7 @@ import {
   reauthenticateWithCredential,
 } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { FirebaseError } from "firebase/app";
 
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 
@@ -26,7 +28,7 @@ export default function Account() {
   const [statusType, setStatusType] = useState<"success" | "error" | null>(null);
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [status, setStatus] = useState("");
+  // Removed unused [status, setStatus]
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -39,7 +41,7 @@ export default function Account() {
         const snapshot = await getDoc(docRef);
         if (snapshot.exists()) {
           setDisplayName(snapshot.data().displayName || "");
-          setUsername(snapshot.data().username)
+          setUsername(snapshot.data().username);
         }
       }
     });
@@ -52,9 +54,11 @@ export default function Account() {
       try {
         await updateEmail(user, email);
         setStatusMessage("✅ Email updated.");
+        setStatusType("success");
       } catch (err) {
         console.error(err);
         setStatusMessage("❌ Error updating email.");
+        setStatusType("error");
       }
     }
   };
@@ -90,11 +94,12 @@ export default function Account() {
       setStatusMessage("Password successfully updated!");
       setNewPassword("");
       setCurrentPassword("");
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: unknown) {
+      const error = err as FirebaseError;
+      console.error(error);
       setStatusType("error");
       setStatusMessage(
-        err.code === "auth/wrong-password"
+        error.code === "auth/wrong-password"
           ? "Current password is incorrect"
           : "Error updating password. Please try again."
       );
@@ -109,9 +114,11 @@ export default function Account() {
         const docRef = doc(db, "users", user.uid);
         await updateDoc(docRef, { displayName });
         setStatusMessage("✅ Display name updated.");
+        setStatusType("success");
       } catch (err) {
         console.error(err);
         setStatusMessage("❌ Error updating display name.");
+        setStatusType("error");
       }
     }
   };
@@ -122,9 +129,11 @@ export default function Account() {
         const docRef = doc(db, "users", user.uid);
         await updateDoc(docRef, { username });
         setStatusMessage("✅ Username updated.");
+        setStatusType("success");
       } catch (err) {
         console.error(err);
         setStatusMessage("❌ Error updating username.");
+        setStatusType("error");
       }
     }
   };
@@ -145,10 +154,12 @@ export default function Account() {
             {photoURL && (
               <div className="flex justify-center mb-10">
                 <div className="relative group">
-                  <img
+                  <Image
                     src={photoURL}
                     alt="Profile"
-                    className="w-32 h-32 rounded-full object-cover ring-4 ring-white shadow-xl transition-transform duration-300 group-hover:scale-105"
+                    width={128}
+                    height={128}
+                    className="rounded-full object-cover ring-4 ring-white shadow-xl transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 rounded-full shadow-inner"></div>
                 </div>
@@ -213,7 +224,6 @@ export default function Account() {
                   </div>
                 </div>
               </div>
-
 
               {/* Security Section */}
               <div className="bg-white/40 rounded-2xl p-6 shadow-lg border border-white/50">
@@ -280,12 +290,16 @@ export default function Account() {
 
                 {/* Status Message */}
                 {statusMessage && (
-                  <div className={`mt-4 p-4 rounded-xl backdrop-blur-md ${statusType === 'success'
-                    ? 'bg-green-50 border border-green-200 text-green-800'
-                    : 'bg-red-50 border border-red-200 text-red-800'
-                    } shadow-lg transition-all duration-300`}>
+                  <div
+                    className={`mt-4 p-4 rounded-xl backdrop-blur-md ${
+                      statusType === "success"
+                        ? "bg-green-50 border border-green-200 text-green-800"
+                        : "bg-red-50 border border-red-200 text-red-800"
+                    } shadow-lg transition-all duration-300`}
+                  >
                     <p className="text-sm font-medium text-center">
-                      {statusType === 'success' ? '✅ ' : '❌ '}{statusMessage}
+                      {statusType === "success" ? "✅ " : "❌ "}
+                      {statusMessage}
                     </p>
                   </div>
                 )}

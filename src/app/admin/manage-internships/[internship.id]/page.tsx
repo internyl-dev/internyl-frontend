@@ -8,16 +8,11 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { CircularProgress } from "@mui/material";
 
 export default function EditInternship() {
-  const { id } = useParams<{ id: string }>(); // Ensure `id` is typed as a string
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
+
   const [loading, setLoading] = useState(true);
-  const [internship, setInternship] = useState<{
-    title: string;
-    provider: string;
-    subject: string;
-    duration_weeks: string;
-    cost: string;
-  }>({
+  const [internship, setInternship] = useState({
     title: "",
     provider: "",
     subject: "",
@@ -72,6 +67,7 @@ export default function EditInternship() {
         setLoading(false);
       }
     }
+
     fetchInternship();
   }, [id]);
 
@@ -84,7 +80,32 @@ export default function EditInternship() {
     try {
       if (!id) throw new Error("Invalid ID");
       const docRef = doc(db, "internships", id);
-      await updateDoc(docRef, internship);
+      await updateDoc(docRef, {
+        ...internship,
+        description,
+        link,
+        tags,
+        eligibility: {
+          grades: eligibilityGrades,
+          age: {
+            minimum: eligibilityAgeMin,
+            maximum: eligibilityAgeMax,
+          },
+        },
+        location: [
+          {
+            state: locationState,
+            city: locationCity,
+            address: locationAddress,
+          },
+        ],
+        dates: [
+          {
+            start: dateStart,
+            end: dateEnd,
+          },
+        ],
+      });
       router.push("/admin/manage-internships");
     } catch (error) {
       console.error("Error updating internship:", error);
@@ -175,6 +196,23 @@ export default function EditInternship() {
               value={tags.join(", ")}
               onChange={(e) =>
                 setTags(e.target.value.split(",").map((tag) => tag.trim()))
+              }
+              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Eligibility Grades (comma separated)
+            </label>
+            <input
+              type="text"
+              name="eligibilityGrades"
+              value={eligibilityGrades.join(", ")}
+              onChange={(e) =>
+                setEligibilityGrades(
+                  e.target.value.split(",").map((grade) => grade.trim())
+                )
               }
               className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300 focus:outline-none"
             />

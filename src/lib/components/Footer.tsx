@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+// import { useState } from "react";
 
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
@@ -15,12 +15,11 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
 
 export default function Footer() {
-  const [hoveredSocial, setHoveredSocial] = useState<string | null>(null);
-
   return (
     <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes footerGlow {
             0%, 100% {
               text-shadow: 0 0 0px rgba(59, 130, 246, 0);
@@ -198,9 +197,10 @@ export default function Footer() {
               padding: 8px;
             }
           }
-        `
-      }} />
-      
+        `,
+        }}
+      />
+
       <footer className="footer-container mt-16">
         <div className="max-w-7xl mx-auto px-5 sm:px-7 py-12">
           {/* Main Footer Content */}
@@ -211,46 +211,39 @@ export default function Footer() {
                 internyl
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed mb-6 max-w-md">
-                Connecting talented students with incredible internship opportunities. 
-                Build your career, gain experience, and make meaningful connections in your field.
+                Connecting talented students with incredible internship
+                opportunities. Build your career, gain experience, and make
+                meaningful connections in your field.
               </p>
               <div className="flex space-x-3">
-                <Link 
-                  href="https://linkedin.com" 
+                <Link
+                  href="https://linkedin.com"
                   target="_blank"
                   className="social-link social-linkedin p-2 rounded-full"
-                  onMouseEnter={() => setHoveredSocial('linkedin')}
-                  onMouseLeave={() => setHoveredSocial(null)}
                   aria-label="Follow us on LinkedIn"
                 >
                   <LinkedInIcon />
                 </Link>
-                <Link 
-                  href="https://twitter.com" 
+                <Link
+                  href="https://twitter.com"
                   target="_blank"
                   className="social-link social-twitter p-2 rounded-full"
-                  onMouseEnter={() => setHoveredSocial('twitter')}
-                  onMouseLeave={() => setHoveredSocial(null)}
                   aria-label="Follow us on Twitter"
                 >
                   <TwitterIcon />
                 </Link>
-                <Link 
-                  href="https://instagram.com" 
+                <Link
+                  href="https://instagram.com"
                   target="_blank"
                   className="social-link social-instagram p-2 rounded-full"
-                  onMouseEnter={() => setHoveredSocial('instagram')}
-                  onMouseLeave={() => setHoveredSocial(null)}
                   aria-label="Follow us on Instagram"
                 >
                   <InstagramIcon />
                 </Link>
-                <Link 
-                  href="https://facebook.com" 
+                <Link
+                  href="https://facebook.com"
                   target="_blank"
                   className="social-link social-facebook p-2 rounded-full"
-                  onMouseEnter={() => setHoveredSocial('facebook')}
-                  onMouseLeave={() => setHoveredSocial(null)}
                   aria-label="Follow us on Facebook"
                 >
                   <FacebookIcon />
@@ -260,22 +253,33 @@ export default function Footer() {
 
             {/* Quick Links */}
             <div className="footer-section">
-              <h4 className="text-gray-900 font-semibold mb-4 text-lg">Quick Links</h4>
+              <h4 className="text-gray-900 font-semibold mb-4 text-lg">
+                Quick Links
+              </h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/" className="footer-link text-gray-600 hover:text-blue-600">
+                  <Link
+                    href="/"
+                    className="footer-link text-gray-600 hover:text-blue-600"
+                  >
                     <InfoOutlinedIcon fontSize="small" />
                     About Us
                   </Link>
                 </li>
                 <li>
-                  <Link href="/pages/internships" className="footer-link text-gray-600 hover:text-emerald-600">
+                  <Link
+                    href="/pages/internships"
+                    className="footer-link text-gray-600 hover:text-emerald-600"
+                  >
                     <BusinessOutlinedIcon fontSize="small" />
                     Browse Internships
                   </Link>
                 </li>
                 <li>
-                  <Link href="/pages/contact" className="footer-link text-gray-600 hover:text-purple-600">
+                  <Link
+                    href="/pages/contact"
+                    className="footer-link text-gray-600 hover:text-purple-600"
+                  >
                     <EmailOutlinedIcon fontSize="small" />
                     Contact Us
                   </Link>
@@ -285,22 +289,33 @@ export default function Footer() {
 
             {/* Support & Legal */}
             <div className="footer-section">
-              <h4 className="text-gray-900 font-semibold mb-4 text-lg">Support & Legal</h4>
+              <h4 className="text-gray-900 font-semibold mb-4 text-lg">
+                Support & Legal
+              </h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/pages/faq" className="footer-link text-gray-600 hover:text-green-600">
+                  <Link
+                    href="/pages/faq"
+                    className="footer-link text-gray-600 hover:text-green-600"
+                  >
                     <HelpOutlineIcon fontSize="small" />
                     FAQ
                   </Link>
                 </li>
                 <li>
-                  <Link href="/pages/guidelines" className="footer-link text-gray-600 hover:text-amber-600">
+                  <Link
+                    href="/pages/guidelines"
+                    className="footer-link text-gray-600 hover:text-amber-600"
+                  >
                     <PolicyOutlinedIcon fontSize="small" />
                     Community Guidelines
                   </Link>
                 </li>
                 <li>
-                  <Link href="/pages/report" className="footer-link text-gray-600 hover:text-red-600">
+                  <Link
+                    href="/pages/report"
+                    className="footer-link text-gray-600 hover:text-red-600"
+                  >
                     <ReportProblemOutlinedIcon fontSize="small" />
                     Report Issue
                   </Link>
@@ -309,7 +324,6 @@ export default function Footer() {
             </div>
           </div>
         </div>
-
       </footer>
     </>
   );

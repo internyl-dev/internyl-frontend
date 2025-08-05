@@ -1,8 +1,10 @@
-export function getDaysRemaining(date: any): number | null {
+import type { Timestamp } from "firebase/firestore";
+
+export function getDaysRemaining(date: Date | Timestamp | null | undefined): number | null {
   if (!date) return null;
 
   // Convert Firebase Timestamp to Date if needed
-  const targetDate = date.toDate ? date.toDate() : date;
+  const targetDate = "toDate" in date ? date.toDate() : date;
 
   const now = new Date();
   const diffMs = targetDate.getTime() - now.getTime();
