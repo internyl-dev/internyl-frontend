@@ -6,7 +6,7 @@ import {
     createUserWithEmailAndPassword,
     signInWithPopup,
 } from "firebase/auth";
-import { useAuth } from "@/lib/config/context/AuthContext";
+// import { useAuth } from "@/lib/config/context/AuthContext";
 
 import { db } from "@/lib/config/firebaseConfig";
 import { setDoc, doc } from "firebase/firestore";

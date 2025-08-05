@@ -12,6 +12,7 @@ import {
     updateDoc,
     deleteField,
     Timestamp,
+    FieldValue,
 } from "firebase/firestore";
 import toast from "react-hot-toast";
 import { Report } from "@/lib/types/report";
@@ -138,9 +139,9 @@ function ReportDetailsView({ report }: { report: ExtendedReport }) {
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Severity: &nbsp;</label>
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${bugReport.bugSeverity === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
-                                bugReport.bugSeverity === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                                    bugReport.bugSeverity === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                                        'bg-blue-100 text-blue-800 border-blue-200'
+                            bugReport.bugSeverity === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                bugReport.bugSeverity === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                                    'bg-blue-100 text-blue-800 border-blue-200'
                             }`}>
                             {bugReport.bugSeverity}
                         </span>
@@ -186,7 +187,9 @@ export default function AdminReports() {
     const [editPriority, setEditPriority] = useState<NonNullable<Report["priority"]>>("medium");
     const [editNotes, setEditNotes] = useState("");
     const [editRejectionReason, setEditRejectionReason] = useState("");
-
+    
+    type FirestoreUpdateValue = string | Timestamp | FieldValue | null | undefined;
+    
     useEffect(() => {
         fetchReports();
     }, []);
@@ -251,7 +254,7 @@ export default function AdminReports() {
         try {
             const reportRef = doc(db, "reports", editingReportId);
 
-            const firestoreUpdates: Record<string, any> = {};
+            const firestoreUpdates: Record<string, FirestoreUpdateValue> = {};
 
             if (editNotes.trim()) {
                 firestoreUpdates.notes = editNotes.trim();
@@ -270,7 +273,6 @@ export default function AdminReports() {
                 firestoreUpdates.rejectedAt = deleteField();
                 firestoreUpdates.rejectionReason = deleteField();
             }
-
 
             await updateDoc(reportRef, firestoreUpdates);
 

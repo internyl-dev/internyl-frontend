@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "@/lib/config/firebaseConfig";
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, Timestamp } from "firebase/firestore";
 import { motion, useInView } from "framer-motion";
 
 import { Inter, Caveat } from "next/font/google";
@@ -148,9 +148,9 @@ export default function Home() {
   };
 
   // Helper to safely convert Firestore Timestamp to JS Date
-  function toDateIfTimestamp(value: any): Date | null {
-    if (value && typeof value.toDate === "function") {
-      return value.toDate();
+  function toDateIfTimestamp(value: Date | Timestamp | null | undefined): Date | null {
+    if (value && typeof (value as Timestamp).toDate === "function") {
+      return (value as Timestamp).toDate();
     }
     if (value instanceof Date) {
       return value;

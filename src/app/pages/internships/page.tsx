@@ -12,7 +12,7 @@ import { InternshipCards as InternshipType, Deadline, CostsSection } from "@/lib
 import { auth, db } from "@/lib/config/firebaseConfig";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { Timestamp } from "firebase/firestore";
+// import { Timestamp } from "firebase/firestore";
 
 const filterData = [
   {
@@ -139,6 +139,14 @@ export default function Internships() {
     return () => window.addEventListener('resize', handleResize);
   }, []);
 
+  function isTimestamp(value: unknown): value is { toDate: () => Date } {
+    return (
+      value !== null &&
+      typeof value === "object" &&
+      "toDate" in value &&
+      typeof (value as { toDate?: unknown }).toDate === "function"
+    );
+  }
 
   useEffect(() => {
     async function fetchInternships() {
@@ -153,13 +161,10 @@ export default function Internships() {
           const deadlines = (data.dates?.deadlines ?? []).map((deadline: Deadline) => {
             const dateVal = deadline.date;
 
-            const isTimestamp = dateVal && typeof dateVal === "object" &&
-              "toDate" in dateVal && typeof (dateVal as any).toDate === "function";
-
             return {
               ...deadline,
-              date: isTimestamp
-                ? (dateVal as any).toDate().toISOString().split("T")[0]
+              date: isTimestamp(dateVal)
+                ? dateVal.toDate().toISOString().split("T")[0]
                 : typeof dateVal === "string"
                   ? dateVal
                   : null,

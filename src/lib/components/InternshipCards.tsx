@@ -45,9 +45,12 @@ export default function InternshipCards({
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_columnCount, setColumnCount] = useState<number>(1);
   const [cardPositions, setCardPositions] = useState<{ [key: string]: CardPosition }>({});
   const [containerHeight, setContainerHeight] = useState<number>(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_isLayoutCalculated, setIsLayoutCalculated] = useState<boolean>(false);
   const [isInitialRender, setIsInitialRender] = useState<boolean>(true);
   const [expandedSubjects, setExpandedSubjects] = useState<{ [key: string]: boolean }>({});
