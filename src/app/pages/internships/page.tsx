@@ -495,7 +495,7 @@ export default function Internships() {
   }
 
   return (
-    <Suspense>
+    <Suspense fallback={<div>Loading...</div>}>
       <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
         <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
 

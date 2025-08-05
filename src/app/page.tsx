@@ -225,7 +225,7 @@ export default function Home() {
     );
 
     return (
-      <Suspense>
+      <Suspense fallback={<div>Loading...</div>}>
         <div className="overflow-hidden">
           {/* Top Section with enhanced gradient */}
           <div className="bg-gradient-to-br from-[#9381FF] via-[#A891FF] to-[#9381FF] text-white relative">
@@ -360,7 +360,7 @@ export default function Home() {
 
   // Enhanced Public Landing Page
   return (
-    <Suspense>
+    <Suspense fallback={<div>Loading...</div>}>
       <div className="text-[#1d1d1f] px-2 sm:px-6 md:px-12 lg:px-20 pt-16 sm:pt-24 pb-20 sm:pb-32 relative overflow-hidden">
         {/* Subtle background decoration */}
         <div className="absolute inset-0 opacity-30">
