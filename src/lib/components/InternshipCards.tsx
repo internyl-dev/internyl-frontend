@@ -157,12 +157,12 @@ export default function InternshipCards({
     }
   }, [calculateMasonryLayout]);
 
-  // Recalculate layout when cards change
+  // Recalculate layout when cards change or when subjects are expanded/collapsed
   useEffect(() => {
     if (Object.keys(cardRefs.current).length === internships.length) {
       calculateMasonryLayout();
     }
-  }, [internships.length, calculateMasonryLayout]);
+  }, [internships.length, expandedSubjects, calculateMasonryLayout]);
 
   return (
     <div className="px-0 sm:px-4 lg:px-8">
@@ -250,15 +250,17 @@ export default function InternshipCards({
                     ))}
 
                     {Array.isArray(internship.overview?.subject) &&
-                      internship.overview.subject.length > 3 &&
-                      !expandedSubjects[internshipId] && (
+                      internship.overview.subject.length > 3 && (
                         <button
                           onClick={() =>
-                            setExpandedSubjects((prev) => ({ ...prev, [internshipId]: true }))
+                            setExpandedSubjects((prev) => ({
+                              ...prev,
+                              [internshipId]: !prev[internshipId]
+                            }))
                           }
                           className="bg-blue-200 text-blue-900 text-xs font-semibold px-3 py-1 rounded-full hover:bg-blue-300 transition"
                         >
-                          ➤ View all
+                          {expandedSubjects[internshipId] ? "➤ Show less" : "➤ View all"}
                         </button>
                       )}
                   </div>
