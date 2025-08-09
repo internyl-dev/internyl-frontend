@@ -427,7 +427,6 @@ function HomeContent() {
                   className="group mx-auto bg-gradient-to-r from-[#ec6464] to-[#f07575] hover:from-[#d65050] hover:to-[#e66666] text-white px-8 py-4 rounded-2xl font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center whitespace-nowrap text-base min-w-[180px] min-h-[56px] shadow-xl hover:shadow-2xl transform hover:scale-105 border border-white/20"
                 >
                   <span className="inline-flex items-center gap-2">
-                    <RocketLaunchIcon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
                     begin search
                     <ArrowForwardIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
