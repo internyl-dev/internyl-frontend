@@ -13,39 +13,6 @@ import { auth, db } from "@/lib/config/firebaseConfig";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 
-const filterData = [
-  {
-    label: "Due in",
-    color: "bg-[#f7d7db]",
-    icon: Clock,
-    options: ["Past Due", "Due Today", "Due This Week", "Due This Month"],
-  },
-  {
-    label: "Subject",
-    color: "bg-[#e4e8f6]",
-    icon: BookmarkCheck,
-    options: ["Engineering", "Math", "Computer Science", "Art", "Business", "Medicine", "Science", "Technology", "Research", "Leadership", "Journalism", "Psychology"],
-  },
-  {
-    label: "Cost",
-    color: "bg-[#f4e3f2]",
-    icon: DollarSign,
-    options: ["Free", "Under $1000", "$1000–$3000", "$3000+"],
-  },
-  {
-    label: "Eligibility",
-    color: "bg-[#f9e4cb]",
-    icon: Users,
-    options: ["Freshman", "Sophomores", "Juniors", "Seniors", "College Students"],
-  },
-  {
-    label: "Duration",
-    color: "bg-[#def0ea]",
-    icon: Calendar,
-    options: ["1 week", "2–4 weeks", "1–2 months", "Full Summer"],
-  },
-];
-
 const sortOptions = [
   { value: "relevance", label: "Best Match" },
   { value: "deadline", label: "Deadline (Soonest)" },
@@ -88,10 +55,44 @@ function InternshipsContent() {
   const [sortBy, setSortBy] = useState("relevance");
   const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
   const [lastSearchTime, setLastSearchTime] = useState(Date.now());
+  const [dynamicSubjects, setDynamicSubjects] = useState<string[]>([]);
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const router = useRouter();
+
+  const filterData = [
+    {
+      label: "Due in",
+      color: "bg-[#f7d7db]",
+      icon: Clock,
+      options: ["Past Due", "Due Today", "Due This Week", "Due This Month"],
+    },
+    {
+      label: "Subject",
+      color: "bg-[#e4e8f6]",
+      icon: BookmarkCheck,
+      options: dynamicSubjects,
+    },
+    {
+      label: "Cost",
+      color: "bg-[#f4e3f2]",
+      icon: DollarSign,
+      options: ["Free", "Under $1000", "$1000–$3000", "$3000+"],
+    },
+    {
+      label: "Eligibility",
+      color: "bg-[#f9e4cb]",
+      icon: Users,
+      options: ["Freshman", "Sophomores", "Juniors", "Seniors", "College Students"],
+    },
+    {
+      label: "Duration",
+      color: "bg-[#def0ea]",
+      icon: Calendar,
+      options: ["1 week", "2–4 weeks", "1–2 months", "Full Summer"],
+    },
+  ];
 
   function getEarliestDeadlineDate(deadlines: Deadline[]): Date | null {
     if (!deadlines || deadlines.length === 0) return null;
@@ -192,6 +193,26 @@ function InternshipsContent() {
           } as InternshipType;
         });
 
+        // Extract unique subjects from all internships
+        const subjectsSet = new Set<string>();
+        fetchedInternships.forEach((internship) => {
+          if (internship.overview?.subject && Array.isArray(internship.overview.subject)) {
+            internship.overview.subject.forEach((subject) => {
+              if (subject && typeof subject === 'string') {
+                // Capitalize first letter and clean up the subject
+                const cleanSubject = subject.trim();
+                if (cleanSubject) {
+                  const capitalizedSubject = cleanSubject.charAt(0).toUpperCase() + cleanSubject.slice(1).toLowerCase();
+                  subjectsSet.add(capitalizedSubject);
+                }
+              }
+            });
+          }
+        });
+
+        // Convert to sorted array
+        const uniqueSubjects = Array.from(subjectsSet).sort();
+        setDynamicSubjects(uniqueSubjects);
         setInternships(fetchedInternships);
       } catch (error) {
         console.error("Error fetching internships:", error);
