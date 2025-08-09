@@ -295,7 +295,7 @@ function HomeContent() {
                 <motion.div
                   key={internship.id}
                   className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm"
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 1, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
@@ -344,7 +344,7 @@ function HomeContent() {
                   <motion.div
                     key={internship.id}
                     className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm"
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 1, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
@@ -439,7 +439,7 @@ function HomeContent() {
                 </button>
               </form>
               <motion.div
-                className="flex justify-center w-full"
+                className="flex justify-end w-[120%] ml-4"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
@@ -448,7 +448,7 @@ function HomeContent() {
                   width={200}
                   height={54}
                   alt="Free to use"
-                  className="mt-2 sm:mt-3 w-auto h-12 sm:h-14 drop-shadow-xl hover:drop-shadow-2xl transition-all duration-300"
+                  className="-mt-2 sm:-mt-1 w-auto h-12 sm:h-14 drop-shadow-xl hover:drop-shadow-2xl transition-all duration-300"
                   style={{ filter: 'drop-shadow(0 4px 20px rgba(236,100,100,0.15))' }}
                 />
               </motion.div>
