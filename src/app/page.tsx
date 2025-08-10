@@ -53,6 +53,7 @@ const kalam = Kalam({
   variable: "--font-kalam",
 });
 
+// hi
 // Animated Strikethrough List Component with enhanced animations
 const AnimatedStrikethroughList = () => {
   const ref = useRef(null);
