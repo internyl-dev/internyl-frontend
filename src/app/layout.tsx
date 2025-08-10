@@ -26,6 +26,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={sora.className}>
+      <head>
+        <script 
+          src="https://analytics.ahrefs.com/analytics.js" 
+          data-key="ZGhqb0L0Wu3sMwp1GgSe/Q" 
+          async
+        ></script>
+      </head>
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
           <Navbar/>
