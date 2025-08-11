@@ -9,6 +9,7 @@ import {
   BookmarkBorder as BookmarkBorderIcon,
   BookmarkOutlined as BookmarkFilledIcon,
   SchoolOutlined as SchoolIcon,
+  CalendarTodayOutlined as CalendarIcon,
 } from "@mui/icons-material";
 import { getDaysRemaining } from "../modules/getTimeRemaining";
 import { getDueColorClass } from "../modules/getDueDateTextColor";
@@ -61,6 +62,25 @@ export default function InternshipCards({
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
 
+  // Function to format duration
+  const formatDuration = (duration: any): string => {
+    if (duration === null || duration === undefined || duration === "not provided" || duration === "") {
+      return "Not provided";
+    }
+    
+    // If it's a number (integer), add "weeks"
+    if (typeof duration === 'number' || (typeof duration === 'string' && !isNaN(Number(duration)))) {
+      const weeks = typeof duration === 'number' ? duration : Number(duration);
+      return `${weeks} weeks`;
+    }
+    
+    // If it's already a string with descriptive text, return as is
+    if (typeof duration === 'string') {
+      return duration;
+    }
+    
+    return "Not provided";
+  };
 
   // Configuration
   const itemWidth = 350; // Fixed width for each card
@@ -179,7 +199,7 @@ export default function InternshipCards({
           const internshipId = internship.id;
 
           // Safely get first deadline date or null
-          const firstDeadlineDateString = internship.dates.deadlines?.[0]?.date ?? null;
+          const firstDeadlineDateString = internship.dates?.deadlines?.[0]?.date ?? null;
           const firstDeadlineDate = firstDeadlineDateString && firstDeadlineDateString !== "not provided"
             ? new Date(firstDeadlineDateString)
             : null;
@@ -195,6 +215,9 @@ export default function InternshipCards({
           const ageRange =
             internship.eligibility?.eligibility?.age || null;
 
+          // Duration from dates.duration_weeks
+          const duration = internship.dates?.duration_weeks;
+          const formattedDuration = formatDuration(duration);
 
           return (
             <div
@@ -276,6 +299,13 @@ export default function InternshipCards({
                     {ageRange?.minimum !== "not provided" && ageRange?.maximum !== "not provided"
                       ? `Ages ${ageRange?.minimum} - ${ageRange?.maximum}`
                       : "Age not provided"}
+                  </span>
+                </p>
+
+                <p className="text-base flex items-center text-[1.2rem] text-[#9B59B6]">
+                  <CalendarIcon className="mr-2" fontSize="small" />
+                  <span>
+                    Duration: {formattedDuration}
                   </span>
                 </p>
 
