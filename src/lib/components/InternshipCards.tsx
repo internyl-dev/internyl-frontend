@@ -542,80 +542,93 @@ export default function InternshipCards({
                   <h2 className="text-[2.5rem] leading-[45px] font-regular capitalize bg-gradient-to-t from-[#2F2F3A] to-[#5F5F74] bg-clip-text text-transparent pb-2 break-words">
                     {internship.overview?.title || 'none'}
                   </h2>
-                  <p className={`text-base font-medium flex items-center text-[1.2rem] ${dueTextClass}`}>
-                    <TimeIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
-                    <span className="font-bold">Due: </span>
-                    <span className="ml-1">
-                      {firstDeadlineDate
-                        ? firstDeadlineDate.toLocaleDateString()
-                        : "Date not provided"}
-                    </span>
-                  </p>
+                  {firstDeadlineDate && (
+                    <p className={`text-base font-medium flex items-center text-[1.2rem] ${dueTextClass}`}>
+                      <TimeIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
+                      <span className="font-bold">Due: </span>
+                      <span className="ml-1">
+                        {firstDeadlineDate.toLocaleDateString()}
+                      </span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-4 flex flex-col gap-y-[6px]">
-                  <div className="text-base flex items-start text-[1.2rem] text-[#3C66C2]">
-                    <WorkIcon className="mr-2 mt-[6px]" fontSize="small" />
-                    <div className="flex flex-wrap gap-2">
-                      {(Array.isArray(internship.overview?.subject)
-                        ? (expandedSubjects[internshipId]
-                          ? internship.overview.subject
-                          : internship.overview.subject.slice(0, 3))
-                        : []
-                      ).map((subj, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full"
-                        >
-                          {capitalizeWords(subj)}
-                        </span>
-                      ))}
+                  {Array.isArray(internship.overview?.subject) &&
+                    internship.overview.subject.length > 0 &&
+                    internship.overview.subject.some(subj => isValidValue(subj)) && (
+                      <div className="text-base flex items-start text-[1.2rem] text-[#3C66C2]">
+                        <WorkIcon className="mr-2 mt-[6px]" fontSize="small" />
+                        <div className="flex flex-wrap gap-2">
+                          {(expandedSubjects[internshipId]
+                            ? internship.overview.subject.filter(subj => isValidValue(subj))
+                            : internship.overview.subject.filter(subj => isValidValue(subj)).slice(0, 3)
+                          ).map((subj, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full"
+                            >
+                              {capitalizeWords(subj)}
+                            </span>
+                          ))}
 
-                      {Array.isArray(internship.overview?.subject) &&
-                        internship.overview.subject.length > 3 && (
-                          <button
-                            onClick={() =>
-                              setExpandedSubjects((prev) => ({
-                                ...prev,
-                                [internshipId]: !prev[internshipId]
-                              }))
-                            }
-                            className="bg-blue-200 text-blue-900 text-xs font-semibold px-3 py-1 rounded-full hover:bg-blue-300 transition"
-                          >
-                            {expandedSubjects[internshipId] ? "➤ Show less" : "➤ View all"}
-                          </button>
+                          {internship.overview.subject.filter(subj => isValidValue(subj)).length > 3 && (
+                            <button
+                              onClick={() =>
+                                setExpandedSubjects((prev) => ({
+                                  ...prev,
+                                  [internshipId]: !prev[internshipId]
+                                }))
+                              }
+                              className="bg-blue-200 text-blue-900 text-xs font-semibold px-3 py-1 rounded-full hover:bg-blue-300 transition"
+                            >
+                              {expandedSubjects[internshipId] ? "➤ Show less" : "➤ View all"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {(validGrades.length > 0 || isValidValue(ageRange?.minimum) || isValidValue(ageRange?.maximum)) && (
+                    <p className="text-base flex items-center text-[1.2rem] text-[#E66646]">
+                      <SchoolIcon className="mr-2" fontSize="small" />
+                      <span>
+                        {validGrades.length > 0 && (
+                          <>
+                            {validGrades.map((g) => g.charAt(0).toUpperCase() + g.slice(1)).join(", ")}
+                            {(isValidValue(ageRange?.minimum) || isValidValue(ageRange?.maximum)) && <br />}
+                          </>
                         )}
-                    </div>
-                  </div>
+                        {(isValidValue(ageRange?.minimum) || isValidValue(ageRange?.maximum)) && (
+                          <>
+                            {isValidValue(ageRange?.minimum) && isValidValue(ageRange?.maximum)
+                              ? `Ages ${ageRange?.minimum} - ${ageRange?.maximum}`
+                              : isValidValue(ageRange?.minimum)
+                                ? `Ages ${ageRange?.minimum}+`
+                                : `Ages up to ${ageRange?.maximum}`}
+                          </>
+                        )}
+                      </span>
+                    </p>
+                  )}
 
-                  <p className="text-base flex items-center text-[1.2rem] text-[#E66646]">
-                    <SchoolIcon className="mr-2" fontSize="small" />
-                    <span>
-                      {validGrades.length > 0
-                        ? validGrades.map((g) => g.charAt(0).toUpperCase() + g.slice(1)).join(", ")
-                        : "Grades not provided"}
-                      <br />
-                      {isValidValue(ageRange?.minimum) && isValidValue(ageRange?.maximum)
-                        ? `Ages ${ageRange?.minimum} - ${ageRange?.maximum}`
-                        : isValidValue(ageRange?.minimum)
-                          ? `Ages ${ageRange?.minimum}+`
-                          : "Age not provided"}
-                    </span>
-                  </p>
+                  {formattedDuration !== "Not provided" && (
+                    <p className="text-base flex items-center text-[1.2rem] text-[#9B59B6]">
+                      <CalendarIcon className="mr-2" fontSize="small" />
+                      <span>
+                        Duration: {formattedDuration}
+                      </span>
+                    </p>
+                  )}
 
-                  <p className="text-base flex items-center text-[1.2rem] text-[#9B59B6]">
-                    <CalendarIcon className="mr-2" fontSize="small" />
-                    <span>
-                      Duration: {formattedDuration}
-                    </span>
-                  </p>
-
-                  <p className="text-base flex items-center text-[1.2rem]" style={{ color: '#fcba03' }}>
-                    <LocationIcon className="mr-2" fontSize="small" />
-                    <span>
-                      {locationInfo}
-                    </span>
-                  </p>
+                  {locationInfo !== "Location not provided" && (
+                    <p className="text-base flex items-center text-[1.2rem]" style={{ color: '#fcba03' }}>
+                      <LocationIcon className="mr-2" fontSize="small" />
+                      <span>
+                        {locationInfo}
+                      </span>
+                    </p>
+                  )}
 
                   <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
                     <MoneyIcon className="mr-2" fontSize="small" />
