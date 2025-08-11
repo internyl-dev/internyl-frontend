@@ -20,8 +20,9 @@ export default function VerifyEmailPage() {
       setLoading(true);
       await sendEmailVerification(auth.currentUser);
       setStatus("Verification email resent! Please check your inbox.");
-    } catch (error: any) {
-      setStatus(error.message || "Failed to resend email.");
+    } catch (error: unknown) {
+      const errorMessage = (error as Error)?.message ?? "Failed to send verification email";
+      setStatus(errorMessage || "Failed to resend email.");
     } finally {
       setLoading(false);
     }
