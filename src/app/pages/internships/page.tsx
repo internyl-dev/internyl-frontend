@@ -187,7 +187,7 @@ function InternshipsContent() {
           };
           // Find highest cost
           if (data.costs?.costs && Array.isArray(data.costs.costs)) {
-            data.costs.costs.forEach((item: any) => {
+            data.costs.costs.forEach((item: { lowest?: number; highest?: number; [key: string]: any }) => {
               if (typeof item.highest === 'number' && item.highest > highestCost) {
                 highestCost = item.highest;
               } else if (typeof item.lowest === 'number' && item.lowest > highestCost) {
@@ -290,6 +290,10 @@ function InternshipsContent() {
       const selected = new Set(prev[category] || []);
       if (selected.has(option)) {
         selected.delete(option);
+        // Reset custom cost range when unchecking Custom Range
+        if (option === "Custom Range") {
+          setShowCustomCostInput(false);
+        }
       } else {
         selected.add(option);
       }
@@ -503,11 +507,18 @@ function InternshipsContent() {
                   return !isFree && minCost >= 1000 && minCost <= 3000;
                 case "$3000+":
                   return !isFree && minCost > 3000;
-                case "Custom Range": {
-                  const min = customCostRange[0];
-                  const max = customCostRange[1];
-                  return !isFree && minCost >= min && minCost <= max;
-                }
+                  case "Custom Range": {
+                    const min = customCostRange[0];
+                    const max = customCostRange[1];
+                    
+                    // If the range starts at 0, include free internships
+                    if (min === 0 && isFree) {
+                      return true;
+                    }
+                    
+                    // For non-free internships, check if they fall within the range
+                    return !isFree && minCost >= min && minCost <= max;
+                  }
                 default:
                   return false;
               }
@@ -691,7 +702,7 @@ function InternshipsContent() {
                 key={`${category}-${option}`}
                 className={`flex items-center gap-1 px-3 py-1 ${getFilterColor(category)} rounded-full text-sm text-black`}
               >
-                <span>{category}: {option}</span>
+                <span>{category}: {option === "Custom Range" ? `$${customCostRange[0]} - $${customCostRange[1]}` : option}</span>
                 <button
                   onClick={() => toggleFilterOption(category, option)}
                   className="hover:brightness-90 rounded-full p-0.5 transition-colors"
@@ -818,7 +829,7 @@ function InternshipsContent() {
                               {option}
                             </label>
                             {option === "Custom Range" && showCustomCostInput && activeFilters[filter.label]?.includes("Custom Range") && (
-                              <div className="ml-0 mt-2 space-y-2 w-[180px]">
+                              <div className="ml-0 mt-2 space-y-2 w-[180px]" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex flex-col gap-2 items-start w-full">
                                   <div className="flex items-center justify-start w-full mb-1 pr-1ok">
                                     <div className="flex flex-col items-start w-[80px]">
@@ -870,6 +881,7 @@ function InternshipsContent() {
                                         onChange={(value) => {
                                           if (Array.isArray(value)) {
                                             setCustomCostRange(value as [number, number]);
+                                            setLastSearchTime(Date.now()); // Trigger immediate re-filtering
                                           }
                                         }}
                                         allowCross={false}
