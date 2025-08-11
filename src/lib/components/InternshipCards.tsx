@@ -278,38 +278,33 @@ export default function InternshipCards({
       });
     }
     
-    // Cost details
-    if (internship.costs?.costs && Array.isArray(internship.costs.costs)) {
+    // Cost details (for modal):
+    if (internship.costs?.costs && Array.isArray(internship.costs.costs) && internship.costs.costs[0]) {
       const costInfo = internship.costs.costs[0];
-      if (costInfo) {
-        let costStr = "";
-        if (isTruthyValue(costInfo.free)) {
-          costStr = "Free program";
-        } else {
-          const costParts = [];
-          if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {
-            costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
-          } else if (isValidValue(costInfo.lowest)) {
-            costParts.push(`Starting at $${costInfo.lowest}`);
-          } else if (isValidValue(costInfo.highest)) {
-            costParts.push(`Up to $${costInfo.highest}`);
-          }
-          
-          if (costParts.length > 0) {
-            costStr = costParts.join(", ");
-          }
+      let costStr = "";
+      if (isTruthyValue(costInfo.free)) {
+        costStr = "Free program";
+      } else {
+        const costParts = [];
+        if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {
+          costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
+        } else if (isValidValue(costInfo.lowest)) {
+          costParts.push(`Starting at $${costInfo.lowest}`);
+        } else if (isValidValue(costInfo.highest)) {
+          costParts.push(`Up to $${costInfo.highest}`);
         }
-        
-        if (isTruthyValue(costInfo["financial-aid-available"])) {
-          costStr += (costStr ? " • " : "") + "Financial aid available";
+        if (costParts.length > 0) {
+          costStr = costParts.join(", ");
         }
-        
-        if (costStr) {
-          info.push({
-            label: "Program Cost",
-            value: costStr
-          });
-        }
+      }
+      if (isTruthyValue(costInfo["financial-aid-available"])) {
+        costStr += (costStr ? " • " : "") + "Financial aid available";
+      }
+      if (costStr) {
+        info.push({
+          label: "Program Cost",
+          value: costStr
+        });
       }
     }
     
@@ -487,18 +482,17 @@ export default function InternshipCards({
 
             // Safely get first deadline date or null
             const firstDeadlineDateString = internship.dates?.deadlines?.[0]?.date ?? null;
-            const firstDeadlineDate = firstDeadlineDateString && 
-              isValidValue(firstDeadlineDateString)
-                ? (() => {
-                    try {
-                      return new Date(firstDeadlineDateString);
-                    } catch {
-                      return null;
-                    }
-                  })()
-                : null;
+            // Debug: log raw date string to console
+            if (firstDeadlineDateString) {
+              console.log('Raw deadline date:', firstDeadlineDateString);
+            }
+              const firstDeadlineDate = firstDeadlineDateString && 
+                isValidValue(firstDeadlineDateString)
+                  ? formatDate(firstDeadlineDateString)
+                  : null;
 
-            const daysRemaining = getDaysRemaining(firstDeadlineDate);
+            // For daysRemaining, use robust parsing (now supported in getDaysRemaining)
+            const daysRemaining = getDaysRemaining(firstDeadlineDateString);
             const dueTextClass = getDueColorClass(daysRemaining);
             const iconColor = getIconColor(daysRemaining);
             const position = cardPositions[internshipId];
@@ -554,7 +548,7 @@ export default function InternshipCards({
                       <TimeIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
                       <span className="font-bold">Due: </span>
                       <span className="ml-1">
-                        {firstDeadlineDate.toLocaleDateString()}
+                        {firstDeadlineDate}
                       </span>
                     </p>
                   )}
@@ -637,60 +631,60 @@ export default function InternshipCards({
                     </p>
                   )}
 
-                    {/* Cost/Stipend logic: show cost first, stipend next line if both; else show only one; else show nothing */}
-                    {(() => {
-                      const hasCost = internship.costs?.costs && Array.isArray(internship.costs.costs) && internship.costs.costs[0];
-                      const hasStipend = isTruthyValue(internship.costs?.stipend?.available) && isValidValue(internship.costs?.stipend?.amount);
-                      let costStr = "";
-                      if (hasCost) {
-                        const costInfo = internship.costs.costs[0];
-                        if (isTruthyValue(costInfo.free)) {
-                          costStr = "Free program";
-                        } else {
-                          const costParts = [];
-                          if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {
-                            costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
-                          } else if (isValidValue(costInfo.lowest)) {
-                            costParts.push(`Starting at $${costInfo.lowest}`);
-                          } else if (isValidValue(costInfo.highest)) {
-                            costParts.push(`Up to $${costInfo.highest}`);
-                          }
-                          if (costParts.length > 0) {
-                            costStr = costParts.join(", ");
-                          }
+                  {/* Cost/Stipend logic: show cost first, stipend next line if both; else show only one; else show nothing */}
+                  {(() => {
+                    const hasCost = internship.costs?.costs && Array.isArray(internship.costs.costs) && internship.costs.costs[0];
+                    const hasStipend = isTruthyValue(internship.costs?.stipend?.available) && isValidValue(internship.costs?.stipend?.amount);
+                    let costStr = "";
+                    if (hasCost) {
+                      const costInfo = internship.costs.costs[0];
+                      if (isTruthyValue(costInfo.free)) {
+                        costStr = "Free program";
+                      } else {
+                        const costParts = [];
+                        if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {
+                          costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
+                        } else if (isValidValue(costInfo.lowest)) {
+                          costParts.push(`Starting at $${costInfo.lowest}`);
+                        } else if (isValidValue(costInfo.highest)) {
+                          costParts.push(`Up to $${costInfo.highest}`);
                         }
-                        if (isTruthyValue(costInfo["financial-aid-available"])) {
-                          costStr += (costStr ? " • " : "") + "Financial aid available";
+                        if (costParts.length > 0) {
+                          costStr = costParts.join(", ");
                         }
                       }
-                      if (hasCost && hasStipend) {
-                        return <>
-                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
-                            <MoneyIcon className="mr-2" fontSize="small" />
-                            <span>{costStr}</span>
-                          </p>
-                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
-                            <MoneyIcon className="mr-2" fontSize="small" />
-                            <span>Stipend: ${internship.costs.stipend.amount}</span>
-                          </p>
-                        </>;
-                      } else if (hasCost) {
-                        return costStr ? (
-                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
-                            <MoneyIcon className="mr-2" fontSize="small" />
-                            <span>{costStr}</span>
-                          </p>
-                        ) : null;
-                      } else if (hasStipend) {
-                        return (
-                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
-                            <MoneyIcon className="mr-2" fontSize="small" />
-                            <span>Stipend: ${internship.costs.stipend.amount}</span>
-                          </p>
-                        );
+                      if (isTruthyValue(costInfo["financial-aid-available"])) {
+                        costStr += (costStr ? " • " : "") + "Financial aid available";
                       }
-                      return null;
-                    })()}
+                    }
+                    if (hasCost && hasStipend) {
+                      return <>
+                        <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                          <MoneyIcon className="mr-2" fontSize="small" />
+                          <span>{costStr}</span>
+                        </p>
+                        <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                          <MoneyIcon className="mr-2" fontSize="small" />
+                          <span>Stipend: ${internship.costs.stipend.amount}</span>
+                        </p>
+                      </>;
+                    } else if (hasCost && costStr) {
+                      return (
+                        <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                          <MoneyIcon className="mr-2" fontSize="small" />
+                          <span>{costStr}</span>
+                        </p>
+                      );
+                    } else if (hasStipend) {
+                      return (
+                        <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                          <MoneyIcon className="mr-2" fontSize="small" />
+                          <span>Stipend: ${internship.costs.stipend.amount}</span>
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
 
                 <div className="mt-4 flex justify-between items-center">
