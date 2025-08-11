@@ -10,6 +10,7 @@ import {
   BookmarkOutlined as BookmarkFilledIcon,
   SchoolOutlined as SchoolIcon,
   CalendarTodayOutlined as CalendarIcon,
+  InfoOutlined as InfoIcon,
 } from "@mui/icons-material";
 import { getDaysRemaining } from "../modules/getTimeRemaining";
 import { getDueColorClass } from "../modules/getDueDateTextColor";
@@ -55,6 +56,7 @@ export default function InternshipCards({
   const [_isLayoutCalculated, setIsLayoutCalculated] = useState<boolean>(false);
   const [isInitialRender, setIsInitialRender] = useState<boolean>(true);
   const [expandedSubjects, setExpandedSubjects] = useState<{ [key: string]: boolean }>({});
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
 
   const capitalizeWords = (text: string) =>
     text
@@ -63,7 +65,7 @@ export default function InternshipCards({
       .join(" ");
 
   // Function to format duration
-  const formatDuration = (duration: any): string => {
+  const formatDuration = (duration: string | number | null | undefined): string => {
     if (duration === null || duration === undefined || duration === "not provided" || duration === "") {
       return "Not provided";
     }
@@ -80,6 +82,220 @@ export default function InternshipCards({
     }
     
     return "Not provided";
+  };
+
+  // Helper function to check if value is valid (not "not provided", null, undefined, or empty)
+  const isValidValue = (value: any): boolean => {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') {
+      return value.trim() !== "" && value !== "not provided";
+    }
+    if (typeof value === 'number') return true;
+    if (typeof value === 'boolean') return true;
+    return false;
+  };
+
+  // Helper function to check if value is truthy (for yes/no fields)
+  const isTruthyValue = (value: any): boolean => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      const lower = value.toLowerCase();
+      return lower === 'yes' || lower === 'true' || lower === '1';
+    }
+    return false;
+  };
+
+  // Function to get additional info not displayed on card
+  const getAdditionalInfo = (internship: InternshipType) => {
+    const info: { label: string; value: string }[] = [];
+    
+    // Description - most important, shown first
+    if (isValidValue(internship.overview?.description)) {
+      info.push({
+        label: "Description",
+        value: internship.overview.description
+      });
+    }
+    
+    // Location information
+    if (internship.locations?.locations && Array.isArray(internship.locations.locations)) {
+      const location = internship.locations.locations[0];
+      if (location) {
+        const locationParts = [];
+        if (isValidValue(location.city)) {
+          locationParts.push(location.city);
+        }
+        if (isValidValue(location.state)) {
+          locationParts.push(location.state);
+        }
+        if (isValidValue(location.virtual)) {
+          locationParts.push(`Virtual: ${location.virtual}`);
+        }
+        if (isValidValue(location.address)) {
+          locationParts.push(location.address);
+        }
+        
+        if (locationParts.length > 0) {
+          info.push({
+            label: "Location",
+            value: locationParts.join(", ")
+          });
+        }
+      }
+    }
+    
+    // Tags (online, hybrid, in-person)
+    if (internship.overview?.tags && Array.isArray(internship.overview.tags)) {
+      const validTags = internship.overview.tags.filter(tag => isValidValue(tag));
+      if (validTags.length > 0) {
+        info.push({
+          label: "Format",
+          value: validTags.map(tag => capitalizeWords(tag)).join(", ")
+        });
+      }
+    }
+    
+    // All deadlines with details
+    if (internship.dates?.deadlines && Array.isArray(internship.dates.deadlines)) {
+      const deadlines = internship.dates.deadlines
+        .filter(deadline => isValidValue(deadline.name))
+        .map(deadline => {
+          let deadlineStr = deadline.name;
+          if (isValidValue(deadline.date)) {
+            try {
+              deadlineStr += `: ${new Date(deadline.date).toLocaleDateString()}`;
+            } catch {
+              deadlineStr += `: ${deadline.date}`;
+            }
+          }
+          if (isValidValue(deadline.priority)) {
+            deadlineStr += ` (${deadline.priority} priority)`;
+          }
+          if (isValidValue(deadline.term)) {
+            deadlineStr += ` - ${deadline.term}`;
+          }
+          return deadlineStr;
+        });
+      
+      if (deadlines.length > 0) {
+        info.push({
+          label: deadlines.length === 1 ? "Deadline" : "Deadlines",
+          value: deadlines.join(" • ")
+        });
+      }
+    }
+    
+    // Program dates
+    if (internship.dates?.dates && Array.isArray(internship.dates.dates)) {
+      const programDates = internship.dates.dates
+        .filter(dateItem => isValidValue(dateItem.term))
+        .map(dateItem => {
+          let dateStr = dateItem.term;
+          if (isValidValue(dateItem.start) && isValidValue(dateItem.end)) {
+            try {
+              const startDate = new Date(dateItem.start).toLocaleDateString();
+              const endDate = new Date(dateItem.end).toLocaleDateString();
+              dateStr += `: ${startDate} - ${endDate}`;
+            } catch {
+              dateStr += `: ${dateItem.start} - ${dateItem.end}`;
+            }
+          }
+          return dateStr;
+        });
+      
+      if (programDates.length > 0) {
+        info.push({
+          label: "Program Dates",
+          value: programDates.join(" • ")
+        });
+      }
+    }
+    
+    // Eligibility requirements from "other" array
+    if (internship.eligibility?.requirements?.other && Array.isArray(internship.eligibility.requirements.other)) {
+      const requirements = internship.eligibility.requirements.other
+        .filter(req => isValidValue(req));
+      if (requirements.length > 0) {
+        info.push({
+          label: "Requirements",
+          value: requirements.join(" • ")
+        });
+      }
+    }
+    
+    // Application requirements
+    const appRequirements = [];
+    if (isTruthyValue(internship.eligibility?.requirements?.essay_required)) {
+      appRequirements.push("Essay required");
+    }
+    if (isTruthyValue(internship.eligibility?.requirements?.recommendation_required)) {
+      appRequirements.push("Recommendation required");
+    }
+    if (isTruthyValue(internship.eligibility?.requirements?.transcript_required)) {
+      appRequirements.push("Transcript required");
+    }
+    
+    if (appRequirements.length > 0) {
+      info.push({
+        label: "Application Requirements",
+        value: appRequirements.join(" • ")
+      });
+    }
+    
+    // Cost details
+    if (internship.costs?.costs && Array.isArray(internship.costs.costs)) {
+      const costInfo = internship.costs.costs[0];
+      if (costInfo) {
+        let costStr = "";
+        if (isTruthyValue(costInfo.free)) {
+          costStr = "Free program";
+        } else {
+          const costParts = [];
+          if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {
+            costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
+          } else if (isValidValue(costInfo.lowest)) {
+            costParts.push(`Starting at $${costInfo.lowest}`);
+          } else if (isValidValue(costInfo.highest)) {
+            costParts.push(`Up to $${costInfo.highest}`);
+          }
+          
+          if (costParts.length > 0) {
+            costStr = costParts.join(", ");
+          }
+        }
+        
+        if (isTruthyValue(costInfo["financial-aid-available"])) {
+          costStr += (costStr ? " • " : "") + "Financial aid available";
+        }
+        
+        if (costStr) {
+          info.push({
+            label: "Program Cost",
+            value: costStr
+          });
+        }
+      }
+    }
+    
+    // Contact information
+    if (internship.contact?.contact) {
+      const contactInfo = [];
+      if (isValidValue(internship.contact.contact.email)) {
+        contactInfo.push(`Email: ${internship.contact.contact.email}`);
+      }
+      if (isValidValue(internship.contact.contact.phone)) {
+        contactInfo.push(`Phone: ${internship.contact.contact.phone}`);
+      }
+      
+      if (contactInfo.length > 0) {
+        info.push({
+          label: "Contact",
+          value: contactInfo.join(" • ")
+        });
+      }
+    }
+    
+    return info;
   };
 
   // Configuration
@@ -200,9 +416,16 @@ export default function InternshipCards({
 
           // Safely get first deadline date or null
           const firstDeadlineDateString = internship.dates?.deadlines?.[0]?.date ?? null;
-          const firstDeadlineDate = firstDeadlineDateString && firstDeadlineDateString !== "not provided"
-            ? new Date(firstDeadlineDateString)
-            : null;
+          const firstDeadlineDate = firstDeadlineDateString && 
+            isValidValue(firstDeadlineDateString)
+              ? (() => {
+                  try {
+                    return new Date(firstDeadlineDateString);
+                  } catch {
+                    return null;
+                  }
+                })()
+              : null;
 
           const daysRemaining = getDaysRemaining(firstDeadlineDate);
           const dueTextClass = getDueColorClass(daysRemaining);
@@ -210,14 +433,16 @@ export default function InternshipCards({
           const position = cardPositions[internshipId];
 
           // Eligibility: grades and age display
-          const gradesArray =
-            internship.eligibility?.eligibility?.grades || [];
-          const ageRange =
-            internship.eligibility?.eligibility?.age || null;
+          const gradesArray = internship.eligibility?.eligibility?.grades || [];
+          const validGrades = gradesArray.filter(grade => isValidValue(grade));
+          const ageRange = internship.eligibility?.eligibility?.age || null;
 
           // Duration from dates.duration_weeks
           const duration = internship.dates?.duration_weeks;
           const formattedDuration = formatDuration(duration);
+
+          // Get additional info for tooltip
+          const additionalInfo = getAdditionalInfo(internship);
 
           return (
             <div
@@ -233,9 +458,41 @@ export default function InternshipCards({
                 opacity: isInitialRender ? 0 : 1,
                 transition: isInitialRender ? "opacity 0.3s ease-out" : "all 0.3s ease-out",
                 width: `${itemWidth}px`,
-                zIndex: 1,
+                zIndex: activeTooltip === internshipId ? 1000 : 1,
               }}
             >
+              {/* Info Icon - Top Right */}
+              <div className="absolute top-4 right-4">
+                <div 
+                  className="relative"
+                  onMouseEnter={() => setActiveTooltip(internshipId)}
+                  onMouseLeave={() => setActiveTooltip(null)}
+                >
+                  <button
+                    className="text-[#8D8DAC] hover:text-[#2F2F3A] cursor-pointer p-2 rounded-full hover:bg-black/5 transition-all duration-200"
+                    aria-label={`More information about ${internship.overview?.title || 'this internship'}`}
+                  >
+                    <InfoIcon fontSize="small" />
+                  </button>
+                  
+                  {/* Tooltip */}
+                  {activeTooltip === internshipId && additionalInfo.length > 0 && (
+                    <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50 max-h-96 overflow-y-auto">
+                      <div className="space-y-3">
+                        {additionalInfo.map((info, index) => (
+                          <div key={index} className="text-sm">
+                            <div className="font-semibold text-gray-800 mb-1">{info.label}:</div>
+                            <div className="text-gray-700 leading-relaxed">{info.value}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Arrow pointing up */}
+                      <div className="absolute -top-2 right-6 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <h3 className="text-sm font-semibold text-[#8D8DAC] pb-2">
                   {internship.overview?.provider}
@@ -292,13 +549,15 @@ export default function InternshipCards({
                 <p className="text-base flex items-center text-[1.2rem] text-[#E66646]">
                   <SchoolIcon className="mr-2" fontSize="small" />
                   <span>
-                    {gradesArray.length > 0
-                      ? gradesArray.map((g) => g.charAt(0).toUpperCase() + g.slice(1)).join(", ")
+                    {validGrades.length > 0
+                      ? validGrades.map((g) => g.charAt(0).toUpperCase() + g.slice(1)).join(", ")
                       : "Grades not provided"}
                     <br />
-                    {ageRange?.minimum !== "not provided" && ageRange?.maximum !== "not provided"
+                    {isValidValue(ageRange?.minimum) && isValidValue(ageRange?.maximum)
                       ? `Ages ${ageRange?.minimum} - ${ageRange?.maximum}`
-                      : "Age not provided"}
+                      : isValidValue(ageRange?.minimum)
+                        ? `Ages ${ageRange?.minimum}+`
+                        : "Age not provided"}
                   </span>
                 </p>
 
@@ -312,7 +571,7 @@ export default function InternshipCards({
                 <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
                   <MoneyIcon className="mr-2" fontSize="small" />
                   <span>
-                    {internship.costs?.stipend?.available && internship.costs?.stipend?.amount !== "not provided"
+                    {isTruthyValue(internship.costs?.stipend?.available) && isValidValue(internship.costs?.stipend?.amount)
                       ? `$${internship.costs.stipend.amount}`
                       : "Free"}
                   </span>
