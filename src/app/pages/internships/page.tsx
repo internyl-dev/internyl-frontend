@@ -555,7 +555,7 @@ function InternshipsContent() {
     });
 
     return sortInternships(filtered, sortBy, searchTerm);
-  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime]);
+  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime, sortInternships]);
 
   const totalActiveFilters = Object.values(activeFilters).reduce((acc, arr) => acc + arr.length, 0);
   const hasBookmarkedInternships = Object.values(bookmarked).some(Boolean);

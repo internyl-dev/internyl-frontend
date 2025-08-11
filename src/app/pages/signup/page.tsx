@@ -66,9 +66,10 @@ export default function SignUp() {
                 await auth.signOut();
                 router.push("/pages/verify-email");
                 return;
-            } catch (sendErr: any) {
+            } catch (sendErr: unknown) {
                 // console.error("sendEmailVerification error:", sendErr);
-                setStatus(sendErr?.message ?? "Failed to send verification email");
+                const errorMessage = (sendErr as Error)?.message ?? "Failed to send verification email";
+                setStatus(errorMessage);
                 // don't sign the user out if sending failed
                 // return;
             }
@@ -106,9 +107,10 @@ export default function SignUp() {
                 await auth.signOut();
                 router.push("/pages/verify-email");
                 return;
-            } catch (sendErr: any) {
+            } catch (sendErr: unknown) {
                 // console.error("sendEmailVerification error:", sendErr);
-                setStatus(sendErr?.message ?? "Failed to send verification email");
+                const errorMessage = (sendErr as Error)?.message ?? "Failed to send verification email";
+                setStatus(errorMessage);
                 // don't sign the user out if sending failed
                 // return;
             }
