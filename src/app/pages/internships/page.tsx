@@ -48,6 +48,8 @@ function InternshipsContent() {
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string[] }>({});
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [subjectSearch, setSubjectSearch] = useState("");
+  const [customCostRange, setCustomCostRange] = useState({ min: "", max: "" });
+  const [showCustomCostInput, setShowCustomCostInput] = useState(false);
   const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +81,7 @@ function InternshipsContent() {
       label: "Cost",
       color: "bg-[#f4e3f2]",
       icon: DollarSign,
-      options: ["Free", "Under $1000", "$1000–$3000", "$3000+"],
+      options: ["Free", "Under $1000", "$1000–$3000", "$3000+", "Custom Range"],
     },
     {
       label: "Eligibility",
@@ -97,7 +99,7 @@ function InternshipsContent() {
 
   function getEarliestDeadlineDate(deadlines: Deadline[]): Date | null {
     if (!deadlines || deadlines.length === 0) return null;
-    
+
     const validDates = deadlines
       .map((d) => (d.date && d.date !== "not provided" ? new Date(d.date) : null))
       .filter((date): date is Date => !!date && !isNaN(date.getTime()));
@@ -298,6 +300,8 @@ function InternshipsContent() {
     setSearchTerm("");
     setShowBookmarkedOnly(false);
     setSortBy("relevance");
+    setCustomCostRange({ min: "", max: "" });
+    setShowCustomCostInput(false);
   };
 
   const clearCategoryFilter = (category: string) => {
@@ -425,7 +429,7 @@ function InternshipsContent() {
       const title = internship.overview?.title || '';
       const provider = internship.overview?.provider || '';
       const subjects = Array.isArray(internship.overview?.subject) ? internship.overview.subject : [];
-      
+
       const searchableText = `${title} ${provider} ${subjects.join(" ")}`.toLowerCase();
       if (searchTerm && !searchableText.includes(searchTerm.toLowerCase())) {
         return false;
@@ -444,15 +448,15 @@ function InternshipsContent() {
           case "Due in": {
             const deadlines = internship.dates?.deadlines || [];
             if (deadlines.length === 0) return false;
-            
+
             const firstDeadline = deadlines[0];
             if (!firstDeadline || !firstDeadline.date || firstDeadline.date === "not provided") {
               return false;
             }
-            
+
             const dateObj = new Date(firstDeadline.date);
             if (isNaN(dateObj.getTime())) return false;
-            
+
             const dueCategory = getDueCategory(dateObj);
             return selectedOptions.includes(dueCategory);
           }
@@ -460,8 +464,8 @@ function InternshipsContent() {
           case "Subject": {
             const subjects = internship.overview?.subject || [];
             if (!Array.isArray(subjects) || subjects.length === 0) return false;
-            
-            return selectedOptions.some(selectedSubject => 
+
+            return selectedOptions.some(selectedSubject =>
               subjects.some(internshipSubject => {
                 const subjectStr = String(internshipSubject).toLowerCase();
                 const selectedStr = selectedSubject.toLowerCase();
@@ -472,7 +476,7 @@ function InternshipsContent() {
 
           case "Cost": {
             const costs = internship.costs?.costs || [];
-            
+
             // Get all numeric cost values
             const numericCosts = costs
               .filter(item => typeof item.lowest === "number")
@@ -491,6 +495,11 @@ function InternshipsContent() {
                   return minCost >= 1000 && minCost <= 3000;
                 case "$3000+":
                   return minCost > 3000;
+                case "Custom Range": {
+                  const min = parseFloat(customCostRange.min) || 0;
+                  const max = parseFloat(customCostRange.max) || Infinity;
+                  return minCost >= min && minCost <= max;
+                }
                 default:
                   return false;
               }
@@ -503,23 +512,23 @@ function InternshipsContent() {
             return selectedOptions.some((opt) => {
               switch (opt) {
                 case "Freshman":
-                  return grades.some(grade => 
+                  return grades.some(grade =>
                     String(grade).toLowerCase() === "freshman"
                   );
                 case "Sophomores":
-                  return grades.some(grade => 
+                  return grades.some(grade =>
                     String(grade).toLowerCase() === "sophomore"
                   );
                 case "Juniors":
-                  return grades.some(grade => 
+                  return grades.some(grade =>
                     String(grade).toLowerCase() === "junior"
                   );
                 case "Seniors":
-                  return grades.some(grade => 
+                  return grades.some(grade =>
                     String(grade).toLowerCase() === "senior"
                   );
                 case "College Students":
-                  return grades.some(grade => 
+                  return grades.some(grade =>
                     String(grade).toLowerCase() === "undergraduate" || String(grade).toLowerCase() === "college"
                   );
                 default:
@@ -769,15 +778,46 @@ function InternshipsContent() {
                     ) : (
                       <div className="flex flex-col gap-2">
                         {filter.options.map(option => (
-                          <label key={option} className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1 rounded transition-colors cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={activeFilters[filter.label]?.includes(option) || false}
-                              onChange={() => toggleFilterOption(filter.label, option)}
-                              className="accent-blue-500"
-                            />
-                            {option}
-                          </label>
+                          <div key={option}>
+                            <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1 rounded transition-colors cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={activeFilters[filter.label]?.includes(option) || false}
+                                onChange={() => {
+                                  if (option === "Custom Range") {
+                                    setShowCustomCostInput(!showCustomCostInput);
+                                  }
+                                  toggleFilterOption(filter.label, option);
+                                }}
+                                className="accent-blue-500"
+                              />
+                              {option}
+                            </label>
+                            {option === "Custom Range" && showCustomCostInput && activeFilters[filter.label]?.includes("Custom Range") && (
+                              <div className="ml-6 mt-2 space-y-2">
+                                <div className="flex gap-2 items-center">
+                                  <input
+                                    type="number"
+                                    placeholder="Min"
+                                    value={customCostRange.min}
+                                    onChange={(e) => setCustomCostRange(prev => ({ ...prev, min: e.target.value }))}
+                                    className="w-16 px-2 py-1 border rounded text-xs"
+                                    min="0"
+                                  />
+                                  <span className="text-xs text-gray-500">to</span>
+                                  <input
+                                    type="number"
+                                    placeholder="Max"
+                                    value={customCostRange.max}
+                                    onChange={(e) => setCustomCostRange(prev => ({ ...prev, max: e.target.value }))}
+                                    className="w-16 px-2 py-1 border rounded text-xs"
+                                    min="0"
+                                  />
+                                </div>
+                                <div className="text-xs text-gray-400">Enter range in USD</div>
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </div>
                     )}
