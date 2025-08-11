@@ -47,6 +47,7 @@ function getDueCategory(date: Date | null): string {
 function InternshipsContent() {
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string[] }>({});
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [subjectSearch, setSubjectSearch] = useState("");
   const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -735,17 +736,51 @@ function InternshipsContent() {
                         </button>
                       )}
                     </div>
-                    {filter.options.map((option) => (
-                      <label key={option} className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1 rounded transition-colors cursor-pointer">
+                    {/* Subject dropdown: add search and limit display */}
+                    {filter.label === "Subject" ? (
+                      <>
                         <input
-                          type="checkbox"
-                          checked={activeFilters[filter.label]?.includes(option) || false}
-                          onChange={() => toggleFilterOption(filter.label, option)}
-                          className="accent-blue-500"
+                          type="text"
+                          value={subjectSearch}
+                          onChange={e => setSubjectSearch(e.target.value)}
+                          placeholder="Search subjects..."
+                          className="w-full mb-2 px-2 py-1 border rounded text-sm"
+                          autoFocus
                         />
-                        {option}
-                      </label>
-                    ))}
+                        <div style={{ maxHeight: "180px", overflowY: "auto" }}>
+                          {filter.options
+                            .filter(option => option.toLowerCase().includes(subjectSearch.toLowerCase()))
+                            .map(option => (
+                              <label key={option} className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1 rounded transition-colors cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={activeFilters[filter.label]?.includes(option) || false}
+                                  onChange={() => toggleFilterOption(filter.label, option)}
+                                  className="accent-blue-500"
+                                />
+                                {option}
+                              </label>
+                            ))}
+                          {filter.options.filter(option => option.toLowerCase().includes(subjectSearch.toLowerCase())).length === 0 && (
+                            <div className="text-xs text-gray-400 px-2 py-1">No subjects found</div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {filter.options.map(option => (
+                          <label key={option} className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1 rounded transition-colors cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={activeFilters[filter.label]?.includes(option) || false}
+                              onChange={() => toggleFilterOption(filter.label, option)}
+                              className="accent-blue-500"
+                            />
+                            {option}
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

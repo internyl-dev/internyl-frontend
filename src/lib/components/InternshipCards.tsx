@@ -646,14 +646,60 @@ export default function InternshipCards({
                     </p>
                   )}
 
-                  <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
-                    <MoneyIcon className="mr-2" fontSize="small" />
-                    <span>
-                      {isTruthyValue(internship.costs?.stipend?.available) && isValidValue(internship.costs?.stipend?.amount)
-                        ? `$${internship.costs.stipend.amount}`
-                        : "Free"}
-                    </span>
-                  </p>
+                    {/* Cost/Stipend logic: show cost first, stipend next line if both; else show only one; else show nothing */}
+                    {(() => {
+                      const hasCost = internship.costs?.costs && Array.isArray(internship.costs.costs) && internship.costs.costs[0];
+                      const hasStipend = isTruthyValue(internship.costs?.stipend?.available) && isValidValue(internship.costs?.stipend?.amount);
+                      let costStr = "";
+                      if (hasCost) {
+                        const costInfo = internship.costs.costs[0];
+                        if (isTruthyValue(costInfo.free)) {
+                          costStr = "Free program";
+                        } else {
+                          const costParts = [];
+                          if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {
+                            costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
+                          } else if (isValidValue(costInfo.lowest)) {
+                            costParts.push(`Starting at $${costInfo.lowest}`);
+                          } else if (isValidValue(costInfo.highest)) {
+                            costParts.push(`Up to $${costInfo.highest}`);
+                          }
+                          if (costParts.length > 0) {
+                            costStr = costParts.join(", ");
+                          }
+                        }
+                        if (isTruthyValue(costInfo["financial-aid-available"])) {
+                          costStr += (costStr ? " • " : "") + "Financial aid available";
+                        }
+                      }
+                      if (hasCost && hasStipend) {
+                        return <>
+                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                            <MoneyIcon className="mr-2" fontSize="small" />
+                            <span>{costStr}</span>
+                          </p>
+                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                            <MoneyIcon className="mr-2" fontSize="small" />
+                            <span>Stipend: ${internship.costs.stipend.amount}</span>
+                          </p>
+                        </>;
+                      } else if (hasCost) {
+                        return costStr ? (
+                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                            <MoneyIcon className="mr-2" fontSize="small" />
+                            <span>{costStr}</span>
+                          </p>
+                        ) : null;
+                      } else if (hasStipend) {
+                        return (
+                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                            <MoneyIcon className="mr-2" fontSize="small" />
+                            <span>Stipend: ${internship.costs.stipend.amount}</span>
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                 </div>
 
                 <div className="mt-4 flex justify-between items-center">
