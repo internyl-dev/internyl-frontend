@@ -17,7 +17,6 @@ import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 
 import InternshipCards from "@/lib/components/InternshipCards";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
@@ -54,6 +53,7 @@ const kalam = Kalam({
   variable: "--font-kalam",
 });
 
+// hi
 // Animated Strikethrough List Component with enhanced animations
 const AnimatedStrikethroughList = () => {
   const ref = useRef(null);
