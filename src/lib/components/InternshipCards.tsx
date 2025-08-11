@@ -17,6 +17,7 @@ import {
 import { getDaysRemaining } from "../modules/getTimeRemaining";
 import { getDueColorClass } from "../modules/getDueDateTextColor";
 import { getIconColor } from "../modules/getDueDateIconColor";
+import { formatDate } from "../modules/dateUtils";
 import LaunchIcon from '@mui/icons-material/Launch';
 
 interface Props {
@@ -207,11 +208,7 @@ export default function InternshipCards({
         .map(deadline => {
           let deadlineStr = deadline.name;
           if (isValidValue(deadline.date)) {
-            try {
-              deadlineStr += `: ${new Date(deadline.date).toLocaleDateString()}`;
-            } catch {
-              deadlineStr += `: ${deadline.date}`;
-            }
+            deadlineStr += `: ${formatDate(deadline.date)}`;
           }
           if (isValidValue(deadline.priority)) {
             deadlineStr += ` (${deadline.priority} priority)`;
@@ -221,7 +218,6 @@ export default function InternshipCards({
           }
           return deadlineStr;
         });
-      
       if (deadlines.length > 0) {
         info.push({
           label: deadlines.length === 1 ? "Deadline" : "Deadlines",
@@ -237,17 +233,12 @@ export default function InternshipCards({
         .map(dateItem => {
           let dateStr = dateItem.term;
           if (isValidValue(dateItem.start) && isValidValue(dateItem.end)) {
-            try {
-              const startDate = new Date(dateItem.start).toLocaleDateString();
-              const endDate = new Date(dateItem.end).toLocaleDateString();
-              dateStr += `: ${startDate} - ${endDate}`;
-            } catch {
-              dateStr += `: ${dateItem.start} - ${dateItem.end}`;
-            }
+            const startDate = formatDate(dateItem.start);
+            const endDate = formatDate(dateItem.end);
+            dateStr += `: ${startDate} - ${endDate}`;
           }
           return dateStr;
         });
-      
       if (programDates.length > 0) {
         info.push({
           label: "Program Dates",
