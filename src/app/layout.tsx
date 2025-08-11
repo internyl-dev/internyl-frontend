@@ -27,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={sora.className}>
       <head>
+        <meta name="ahrefs-site-verification" content="1bf3eb3cb396b00c795c6feed22093d00dd29b7ce6729827e98eb9f424faf17f" />
         <script 
           src="https://analytics.ahrefs.com/analytics.js" 
           data-key="ZGhqb0L0Wu3sMwp1GgSe/Q" 
