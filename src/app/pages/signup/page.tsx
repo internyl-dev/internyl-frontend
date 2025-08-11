@@ -5,6 +5,7 @@ import { auth, GoogleProvider } from "@/lib/config/firebaseConfig";
 import {
     createUserWithEmailAndPassword,
     signInWithPopup,
+    sendEmailVerification
 } from "firebase/auth";
 // import { useAuth } from "@/lib/config/context/AuthContext";
 
@@ -44,6 +45,11 @@ export default function SignUp() {
             const userCredential = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
             const user = userCredential.user;
 
+            console.log("userCredential.user:", user);
+            console.log("auth.currentUser:", auth.currentUser);
+            console.log("emailVerified:", user.emailVerified, auth.currentUser?.emailVerified);
+
+
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid,
                 displayName: signUpName,
@@ -52,8 +58,23 @@ export default function SignUp() {
                 createdAt: new Date(),
             });
 
-            setStatus("Account created successfully!");
+            // Send email verification
+            try {
+                await sendEmailVerification(auth.currentUser!);
+                // console.log("Email sent to the user: ", auth.currentUser?.email);
 
+                await auth.signOut();
+                router.push("/pages/verify-email");
+                return;
+            } catch (sendErr: unknown) {
+                // console.error("sendEmailVerification error:", sendErr);
+                const errorMessage = (sendErr as Error)?.message ?? "Failed to send verification email";
+                setStatus(errorMessage);
+                // don't sign the user out if sending failed
+                // return;
+            }
+
+            setStatus("Account created successfully!");
             router.push("/");
         } catch (err: unknown) {
             if (err instanceof Error) {
@@ -79,8 +100,22 @@ export default function SignUp() {
                 createdAt: new Date(),
             });
 
-            setStatus("Account created successfully!");
+            // Send email verification
+            try { 
+                await sendEmailVerification(auth.currentUser!);
+                // console.log("Email sent to the user: ", auth.currentUser?.email);
+                await auth.signOut();
+                router.push("/pages/verify-email");
+                return;
+            } catch (sendErr: unknown) {
+                // console.error("sendEmailVerification error:", sendErr);
+                const errorMessage = (sendErr as Error)?.message ?? "Failed to send verification email";
+                setStatus(errorMessage);
+                // don't sign the user out if sending failed
+                // return;
+            }
 
+            setStatus("Account created successfully!");
             router.push("/");
         } catch (err: unknown) {
             if (err instanceof Error) {

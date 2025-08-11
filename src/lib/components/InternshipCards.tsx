@@ -113,19 +113,35 @@ export default function InternshipCards({
       const location = internship.locations.locations[0];
       if (location) {
         const locationParts = [];
+
+        // Add physical location parts first
         if (isValidValue(location.city)) {
           locationParts.push(location.city);
         }
         if (isValidValue(location.state)) {
           locationParts.push(location.state);
         }
-        if (isValidValue(location.virtual)) {
-          locationParts.push(`Virtual: ${location.virtual}`);
-        }
         if (isValidValue(location.address)) {
           locationParts.push(location.address);
         }
-        
+
+        // Handle virtual field
+        if (isValidValue(location.virtual)) {
+          // If there's already a physical location, don't override it
+          if (locationParts.length === 0) {
+            const virtualValue = location.virtual.toString().toLowerCase();
+            if (virtualValue === 'true' || virtualValue === 'yes') {
+              locationParts.push("Virtual");
+            } else if (virtualValue === 'false' || virtualValue === 'no') {
+              locationParts.push("In person");
+            } else if (virtualValue === 'both available' || virtualValue === 'hybrid') {
+              locationParts.push("Virtual & In person");
+            } else {
+              locationParts.push(`Virtual: ${location.virtual}`);
+            }
+          }
+        }
+
         if (locationParts.length > 0) {
           return locationParts.join(", ");
         }
@@ -137,8 +153,8 @@ export default function InternshipCards({
   // Function to get additional info not displayed on card
   const getAdditionalInfo = (internship: InternshipType) => {
     const info: { label: string; value: string }[] = [];
-    
-    // Description - most important, shown first
+
+  // Description - most important, shown first
     if (isValidValue(internship.overview?.description)) {
       info.push({
         label: "Description",
@@ -630,14 +646,60 @@ export default function InternshipCards({
                     </p>
                   )}
 
-                  <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
-                    <MoneyIcon className="mr-2" fontSize="small" />
-                    <span>
-                      {isTruthyValue(internship.costs?.stipend?.available) && isValidValue(internship.costs?.stipend?.amount)
-                        ? `$${internship.costs.stipend.amount}`
-                        : "Free"}
-                    </span>
-                  </p>
+                    {/* Cost/Stipend logic: show cost first, stipend next line if both; else show only one; else show nothing */}
+                    {(() => {
+                      const hasCost = internship.costs?.costs && Array.isArray(internship.costs.costs) && internship.costs.costs[0];
+                      const hasStipend = isTruthyValue(internship.costs?.stipend?.available) && isValidValue(internship.costs?.stipend?.amount);
+                      let costStr = "";
+                      if (hasCost) {
+                        const costInfo = internship.costs.costs[0];
+                        if (isTruthyValue(costInfo.free)) {
+                          costStr = "Free program";
+                        } else {
+                          const costParts = [];
+                          if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {
+                            costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
+                          } else if (isValidValue(costInfo.lowest)) {
+                            costParts.push(`Starting at $${costInfo.lowest}`);
+                          } else if (isValidValue(costInfo.highest)) {
+                            costParts.push(`Up to $${costInfo.highest}`);
+                          }
+                          if (costParts.length > 0) {
+                            costStr = costParts.join(", ");
+                          }
+                        }
+                        if (isTruthyValue(costInfo["financial-aid-available"])) {
+                          costStr += (costStr ? " • " : "") + "Financial aid available";
+                        }
+                      }
+                      if (hasCost && hasStipend) {
+                        return <>
+                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                            <MoneyIcon className="mr-2" fontSize="small" />
+                            <span>{costStr}</span>
+                          </p>
+                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                            <MoneyIcon className="mr-2" fontSize="small" />
+                            <span>Stipend: ${internship.costs.stipend.amount}</span>
+                          </p>
+                        </>;
+                      } else if (hasCost) {
+                        return costStr ? (
+                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                            <MoneyIcon className="mr-2" fontSize="small" />
+                            <span>{costStr}</span>
+                          </p>
+                        ) : null;
+                      } else if (hasStipend) {
+                        return (
+                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                            <MoneyIcon className="mr-2" fontSize="small" />
+                            <span>Stipend: ${internship.costs.stipend.amount}</span>
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                 </div>
 
                 <div className="mt-4 flex justify-between items-center">
