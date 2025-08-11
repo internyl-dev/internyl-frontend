@@ -187,7 +187,7 @@ function InternshipsContent() {
           };
           // Find highest cost
           if (data.costs?.costs && Array.isArray(data.costs.costs)) {
-            data.costs.costs.forEach((item: { lowest?: number; highest?: number; [key: string]: any }) => {
+            data.costs.costs.forEach((item: { lowest?: number; highest?: number; [key: string]: unknown }) => {
               if (typeof item.highest === 'number' && item.highest > highestCost) {
                 highestCost = item.highest;
               } else if (typeof item.lowest === 'number' && item.lowest > highestCost) {
