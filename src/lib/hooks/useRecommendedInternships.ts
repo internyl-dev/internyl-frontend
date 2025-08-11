@@ -2,31 +2,40 @@ import { useEffect, useState } from "react";
 import { db } from "@/lib/config/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 
-import { InternshipCards } from "@/lib/types/internshipCards";
 
-export function useRecommendedInternships(): InternshipCards[] {
+import { InternshipCards } from "@/lib/types/internshipCards";
+import { UserPreferences } from "@/lib/types/userPreferences";
+import { scoreInternship } from "@/lib/modules/scoreInternship.algorithm";
+
+
+// Accept user preferences as argument
+export function useRecommendedInternships(prefs?: UserPreferences): InternshipCards[] {
     const [recommended, setRecommended] = useState<InternshipCards[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
-            // Fetch internships from Firestore
-            const snapshot = await getDocs(collection(db, "internships"));
+            const snapshot = await getDocs(collection(db, "internships-history"));
             const internships = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...doc.data(),
             })) as InternshipCards[];
 
-            // Optionally apply filtering or ranking here
-            setRecommended(internships.slice(0, 5)); // Take top 5 for now
+            // Score and sort internships using user preferences
+            const scored = internships.map((internship) => ({
+                ...internship,
+                score: scoreInternship(internship, prefs),
+            }));
+            scored.sort((a, b) => b.score - a.score);
+            setRecommended(scored.slice(0, 5));
         };
-
         fetchData();
-    }, []);
+    }, [prefs]);
 
     return recommended;
 }
 
-export function useInternshipsWithFallback(bookmarked: { [key: string]: boolean }) {
+
+export function useInternshipsWithFallback(bookmarked: { [key: string]: boolean }, prefs?: UserPreferences) {
     const [recommended, setRecommended] = useState<InternshipCards[]>([]);
     const [allInternships, setAllInternships] = useState<InternshipCards[]>([]);
     const [loading, setLoading] = useState(true);
@@ -34,44 +43,36 @@ export function useInternshipsWithFallback(bookmarked: { [key: string]: boolean 
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
-
-            // Fetch all internships
-            const allSnap = await getDocs(collection(db, "internships"));
+            const allSnap = await getDocs(collection(db, "internships-history"));
             const allInternshipsData = allSnap.docs.map(doc => ({
                 ...(doc.data() as InternshipCards),
                 id: doc.id,
             }));
-
             setAllInternships(allInternshipsData);
 
-            // Dummy scoring function for demo; replace with real scoring
+            // Use real scoring function
             const scored = allInternshipsData.map((internship) => ({
                 ...internship,
-                score: Math.random(),
+                score: scoreInternship(internship, prefs),
             }));
-
             scored.sort((a, b) => b.score - a.score);
 
             // Filter out bookmarked internships and take top 5
             const recommendedFiltered = scored
                 .filter((internship) => !bookmarked[internship.id])
                 .slice(0, 5);
-
             setRecommended(recommendedFiltered);
             setLoading(false);
         }
-
         fetchData();
-    }, [bookmarked]);
+    }, [bookmarked, prefs]);
 
     // Fallback internships excluding bookmarked
     const fallback = allInternships.filter(
         (internship) => !bookmarked[internship.id]
     );
-
     // Show recommended if available, else fallback
     const internshipsToShow =
         recommended.length > 0 ? recommended : fallback.slice(0, 5);
-
     return { internshipsToShow, loading };
 }

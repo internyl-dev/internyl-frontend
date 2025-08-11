@@ -638,8 +638,10 @@ export default function InternshipCards({
                     let costStr = "";
                     if (hasCost) {
                       const costInfo = internship.costs.costs[0];
-                      if (isTruthyValue(costInfo.free)) {
-                        costStr = "Free program";
+                      const hasValidCosts = isValidValue(costInfo.lowest) || isValidValue(costInfo.highest);
+                      
+                      if (isTruthyValue(costInfo.free) || !hasValidCosts) {
+                        costStr = "Free";
                       } else {
                         const costParts = [];
                         if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {

@@ -1,6 +1,8 @@
 import type { Timestamp } from "firebase/firestore";
 import { parseISO } from "date-fns";
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 export function robustParseDate(date: Date | Timestamp | string | number | null | undefined): Date | null {
   if (!date) return null;
   // Firebase Timestamp
@@ -33,7 +35,7 @@ export function robustParseDate(date: Date | Timestamp | string | number | null 
     // Try MM-DD-YYYY
     const dashMatch = trimmed.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
     if (dashMatch) {
-      const [_, mm, dd, yyyy] = dashMatch;
+      const [match, mm, dd, yyyy] = dashMatch;
       d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
       if (!isNaN(d.getTime())) return d;
     }
@@ -41,7 +43,7 @@ export function robustParseDate(date: Date | Timestamp | string | number | null 
     // Try MM/DD/YYYY
     const usMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (usMatch) {
-      const [_, mm, dd, yyyy] = usMatch;
+      const [match, mm, dd, yyyy] = usMatch;
       d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
       if (!isNaN(d.getTime())) return d;
     }
@@ -49,7 +51,7 @@ export function robustParseDate(date: Date | Timestamp | string | number | null 
     // Try European format DD.MM.YYYY
     const euMatch = trimmed.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
     if (euMatch) {
-      const [_, dd, mm, yyyy] = euMatch;
+      const [match, dd, mm, yyyy] = euMatch;
       d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
       if (!isNaN(d.getTime())) return d;
     }
@@ -57,7 +59,7 @@ export function robustParseDate(date: Date | Timestamp | string | number | null 
     // Try YYYY/MM/DD
     const isoMatch = trimmed.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
     if (isoMatch) {
-      const [_, yyyy, mm, dd] = isoMatch;
+      const [match, yyyy, mm, dd] = isoMatch;
       d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
       if (!isNaN(d.getTime())) return d;
     }

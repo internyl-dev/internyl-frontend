@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useMemo, Suspense } from "react";
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, X, Filter, Search, SlidersHorizontal, BookmarkCheck, Clock, Users, DollarSign, Calendar, RotateCcw } from "lucide-react";
 import SearchBar from "@/lib/components/SearchBar";
@@ -48,8 +50,9 @@ function InternshipsContent() {
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string[] }>({});
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [subjectSearch, setSubjectSearch] = useState("");
-  const [customCostRange, setCustomCostRange] = useState({ min: "", max: "" });
+  const [customCostRange, setCustomCostRange] = useState([0, 10000]);
   const [showCustomCostInput, setShowCustomCostInput] = useState(false);
+  const [maxCost, setMaxCost] = useState(10000);
   const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,7 +90,7 @@ function InternshipsContent() {
       label: "Eligibility",
       color: "bg-[#f9e4cb]",
       icon: Users,
-      options: ["Freshman", "Sophomores", "Juniors", "Seniors", "College Students"],
+      options: ["Freshman", "Sophomores", "Juniors", "Seniors", "Rising Freshman", "Rising Sophomore", "Rising Junior", "Rising Senior", "College Students"],
     },
     {
       label: "Duration",
@@ -163,13 +166,12 @@ function InternshipsContent() {
         const internshipsCollection = collection(db, "internships-history");
         const snapshot = await getDocs(internshipsCollection);
 
+        let highestCost = 0;
         const fetchedInternships = snapshot.docs.map((doc) => {
           const data = doc.data();
-
           // Defensive check: deadlines might be undefined
           const deadlines = (data.dates?.deadlines ?? []).map((deadline: Deadline) => {
             const dateVal = deadline.date;
-
             return {
               ...deadline,
               date: isTimestamp(dateVal)
@@ -179,12 +181,20 @@ function InternshipsContent() {
                   : null,
             };
           });
-
           const dates = {
             ...data.dates,
             deadlines,
           };
-
+          // Find highest cost
+          if (data.costs?.costs && Array.isArray(data.costs.costs)) {
+            data.costs.costs.forEach((item: any) => {
+              if (typeof item.highest === 'number' && item.highest > highestCost) {
+                highestCost = item.highest;
+              } else if (typeof item.lowest === 'number' && item.lowest > highestCost) {
+                highestCost = item.lowest;
+              }
+            });
+          }
           return {
             id: doc.id,
             overview: data.overview,
@@ -195,7 +205,8 @@ function InternshipsContent() {
             contact: data.contact,
           } as InternshipType;
         });
-
+        setMaxCost(highestCost > 0 ? highestCost : 10000);
+        setCustomCostRange([0, highestCost > 0 ? highestCost : 10000]);
         // Extract unique subjects from all internships
         const subjectsSet = new Set<string>();
         fetchedInternships.forEach((internship) => {
@@ -212,7 +223,6 @@ function InternshipsContent() {
             });
           }
         });
-
         // Convert to sorted array
         const uniqueSubjects = Array.from(subjectsSet).sort();
         setDynamicSubjects(uniqueSubjects);
@@ -221,9 +231,7 @@ function InternshipsContent() {
         console.error("Error fetching internships:", error);
       }
     }
-
     fetchInternships();
-
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
@@ -238,7 +246,6 @@ function InternshipsContent() {
           });
           setBookmarked(map);
         }
-
         const pendingId = localStorage.getItem("pendingBookmark");
         if (pendingId) {
           await toggleBookmarkInFirestore(pendingId, false);
@@ -248,7 +255,6 @@ function InternshipsContent() {
       }
       setIsLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -300,7 +306,7 @@ function InternshipsContent() {
     setSearchTerm("");
     setShowBookmarkedOnly(false);
     setSortBy("relevance");
-    setCustomCostRange({ min: "", max: "" });
+  setCustomCostRange([0, maxCost]);
     setShowCustomCostInput(false);
   };
 
@@ -476,29 +482,31 @@ function InternshipsContent() {
 
           case "Cost": {
             const costs = internship.costs?.costs || [];
-
             // Get all numeric cost values
             const numericCosts = costs
               .filter(item => typeof item.lowest === "number")
               .map(item => item.lowest as number);
-
-            // If no costs or all costs are 0, consider it free
+            // Robust free detection based on types
+            const isExplicitFree = costs.some(item => item.free === true);
+            const isZeroCost = numericCosts.some(c => c === 0);
+            const isNoCost = costs.length === 0 || costs.every(item => item.lowest === undefined || item.lowest === null || item.lowest === "not provided");
+            const isFree = isExplicitFree || isZeroCost || isNoCost;
+            // Use minCost for other filters
             const minCost = numericCosts.length === 0 ? 0 : Math.min(...numericCosts);
-
             return selectedOptions.some((opt) => {
               switch (opt) {
                 case "Free":
-                  return minCost === 0;
+                  return isFree;
                 case "Under $1000":
-                  return minCost > 0 && minCost < 1000;
+                  return !isFree && minCost > 0 && minCost < 1000;
                 case "$1000–$3000":
-                  return minCost >= 1000 && minCost <= 3000;
+                  return !isFree && minCost >= 1000 && minCost <= 3000;
                 case "$3000+":
-                  return minCost > 3000;
+                  return !isFree && minCost > 3000;
                 case "Custom Range": {
-                  const min = parseFloat(customCostRange.min) || 0;
-                  const max = parseFloat(customCostRange.max) || Infinity;
-                  return minCost >= min && minCost <= max;
+                  const min = customCostRange[0];
+                  const max = customCostRange[1];
+                  return !isFree && minCost >= min && minCost <= max;
                 }
                 default:
                   return false;
@@ -526,6 +534,22 @@ function InternshipsContent() {
                 case "Seniors":
                   return grades.some(grade =>
                     String(grade).toLowerCase() === "senior"
+                  );
+                case "Rising Freshman":
+                  return grades.some(grade =>
+                    String(grade).toLowerCase() === "rising freshman"
+                  );
+                case "Rising Sophomore":
+                  return grades.some(grade =>
+                    String(grade).toLowerCase() === "rising sophomore"
+                  );
+                case "Rising Junior":
+                  return grades.some(grade =>
+                    String(grade).toLowerCase() === "rising junior"
+                  );
+                case "Rising Senior":
+                  return grades.some(grade =>
+                    String(grade).toLowerCase() === "rising senior"
                   );
                 case "College Students":
                   return grades.some(grade =>
@@ -794,27 +818,71 @@ function InternshipsContent() {
                               {option}
                             </label>
                             {option === "Custom Range" && showCustomCostInput && activeFilters[filter.label]?.includes("Custom Range") && (
-                              <div className="ml-6 mt-2 space-y-2">
-                                <div className="flex gap-2 items-center">
-                                  <input
-                                    type="number"
-                                    placeholder="Min"
-                                    value={customCostRange.min}
-                                    onChange={(e) => setCustomCostRange(prev => ({ ...prev, min: e.target.value }))}
-                                    className="w-16 px-2 py-1 border rounded text-xs"
-                                    min="0"
-                                  />
-                                  <span className="text-xs text-gray-500">to</span>
-                                  <input
-                                    type="number"
-                                    placeholder="Max"
-                                    value={customCostRange.max}
-                                    onChange={(e) => setCustomCostRange(prev => ({ ...prev, max: e.target.value }))}
-                                    className="w-16 px-2 py-1 border rounded text-xs"
-                                    min="0"
-                                  />
+                              <div className="ml-0 mt-2 space-y-2 w-[180px]">
+                                <div className="flex flex-col gap-2 items-start w-full">
+                                  <div className="flex items-center justify-start w-full mb-1 pr-1ok">
+                                    <div className="flex flex-col items-start w-[80px]">
+                                      <label htmlFor="minCostInput" className="text-xs text-gray-600 mb-1 ml-1">Min</label>
+                                      <input
+                                        id="minCostInput"
+                                        type="number"
+                                        min={0}
+                                        max={customCostRange[1]}
+                                        value={customCostRange[0]}
+                                        onChange={e => {
+                                          let val = Number(e.target.value);
+                                          if (isNaN(val)) val = 0;
+                                          if (val < 0) val = 0;
+                                          if (val > customCostRange[1]) val = customCostRange[1];
+                                          setCustomCostRange([val, customCostRange[1]]);
+                                        }}
+                                        className="w-full px-2 py-1 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
+                                        style={{ minWidth: '60px' }}
+                                      />
+                                    </div>
+                                    <span className="mx-1 text-gray-400 font-medium">–</span>
+                                    <div className="flex flex-col items-start w-[80px]">
+                                      <label htmlFor="maxCostInput" className="text-xs text-gray-600 mb-1 ml-1">Max</label>
+                                      <input
+                                        id="maxCostInput"
+                                        type="number"
+                                        min={customCostRange[0]}
+                                        max={maxCost}
+                                        value={customCostRange[1]}
+                                        onChange={e => {
+                                          let val = Number(e.target.value);
+                                          if (isNaN(val)) val = customCostRange[0];
+                                          if (val < customCostRange[0]) val = customCostRange[0];
+                                          if (val > maxCost) val = maxCost;
+                                          setCustomCostRange([customCostRange[0], val]);
+                                        }}
+                                        className="w-full px-2 py-1 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
+                                        style={{ minWidth: '60px' }}
+                                      />
+                                    </div>
+                                  </div>
+                                    <div className="w-full flex justify-center items-center">
+                                      <Slider
+                                        range
+                                        min={0}
+                                        max={maxCost}
+                                        value={customCostRange}
+                                        onChange={(value) => {
+                                          if (Array.isArray(value)) {
+                                            setCustomCostRange(value as [number, number]);
+                                          }
+                                        }}
+                                        allowCross={false}
+                                        marks={{ 0: { style: { marginLeft: 0 }, label: '$0' }, [maxCost]: { style: { marginRight: 0 }, label: `$${maxCost}` } }}
+                                        step={100}
+                                        trackStyle={[{ backgroundColor: '#3C66C2', height: 4 }]}
+                                        handleStyle={[{ borderColor: '#3C66C2', height: 14, width: 14, marginTop: -5 }, { borderColor: '#3C66C2', height: 14, width: 14, marginTop: -5 }]}
+                                        railStyle={{ height: 4 }}
+                                        style={{ width: '120px', margin: '0 auto' }}
+                                      />
+                                    </div>
                                 </div>
-                                <div className="text-xs text-gray-400">Enter range in USD</div>
+                                <div className="text-xs text-gray-400 mt-6 text-center">Select range in USD</div>
                               </div>
                             )}
                           </div>
