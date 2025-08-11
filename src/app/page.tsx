@@ -7,7 +7,7 @@ import { auth, db } from "@/lib/config/firebaseConfig";
 import { doc, getDoc, collection, getDocs, Timestamp } from "firebase/firestore";
 import { motion, useInView } from "framer-motion";
 
-import { Inter, Caveat } from "next/font/google";
+import { Inter, Caveat, Kalam } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -17,7 +17,6 @@ import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 
 import InternshipCards from "@/lib/components/InternshipCards";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
@@ -46,6 +45,12 @@ const caveat = Caveat({
   subsets: ["latin"],
   weight: ['600', '700'],
   variable: "--font-caveat",
+});
+
+const kalam = Kalam({
+  subsets: ["latin"],
+  weight: ['400', '700'],
+  variable: "--font-kalam",
 });
 
 // Animated Strikethrough List Component with enhanced animations
@@ -289,7 +294,7 @@ function HomeContent() {
                 <motion.div
                   key={internship.id}
                   className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm"
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 1, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
@@ -338,7 +343,7 @@ function HomeContent() {
                   <motion.div
                     key={internship.id}
                     className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm"
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 1, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
@@ -391,8 +396,8 @@ function HomeContent() {
             >
               <span className={`text-transparent bg-gradient-to-r from-[#ec6464] to-[#f07575] bg-clip-text font-extrabold ${inter.className} drop-shadow-sm`}>Streamline</span><br />
               <span>your search,</span><br />
-              Secure <span className={`italic font-extrabold ${caveat.className} text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#9381FF] to-[#A891FF] bg-clip-text`}>your</span><br />
-              <span className={`italic font-extrabold ${caveat.className} text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#2BA280] to-[#3C66C2] bg-clip-text`}>future</span>
+              Secure <span className={`font-bold ${kalam.className} text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#9381FF] to-[#A891FF] bg-clip-text`}>your</span><br />
+<span className={`font-bold ${kalam.className} text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#2BA280] to-[#3C66C2] bg-clip-text hover:from-[#5865F2] hover:to-[#5865F2] transition-all duration-300 cursor-pointer`}>future</span>
             </motion.h1>
             <motion.p
               className="mt-6 text-lg text-[#1d1d1f]/80 font-medium leading-relaxed"
@@ -427,14 +432,13 @@ function HomeContent() {
                   className="group mx-auto bg-gradient-to-r from-[#ec6464] to-[#f07575] hover:from-[#d65050] hover:to-[#e66666] text-white px-8 py-4 rounded-2xl font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center whitespace-nowrap text-base min-w-[180px] min-h-[56px] shadow-xl hover:shadow-2xl transform hover:scale-105 border border-white/20"
                 >
                   <span className="inline-flex items-center gap-2">
-                    <RocketLaunchIcon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
                     begin search
                     <ArrowForwardIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
                 </button>
               </form>
               <motion.div
-                className="flex justify-center w-full"
+                className="flex justify-end w-[120%] ml-4"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
@@ -443,7 +447,7 @@ function HomeContent() {
                   width={200}
                   height={54}
                   alt="Free to use"
-                  className="mt-2 sm:mt-3 w-auto h-12 sm:h-14 drop-shadow-xl hover:drop-shadow-2xl transition-all duration-300"
+                  className="-mt-2 sm:-mt-1 w-auto h-12 sm:h-14 drop-shadow-xl hover:drop-shadow-2xl transition-all duration-300"
                   style={{ filter: 'drop-shadow(0 4px 20px rgba(236,100,100,0.15))' }}
                 />
               </motion.div>
