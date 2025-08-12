@@ -9,10 +9,8 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import PolicyOutlinedIcon from "@mui/icons-material/PolicyOutlined";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import TwitterIcon from "@mui/icons-material/Twitter";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import FacebookIcon from "@mui/icons-material/Facebook";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import MailOutlineIcon from "@mui/icons-material/MailOutline";
 
 export default function Footer() {
   return (
@@ -145,20 +143,16 @@ export default function Footer() {
             transform: scale(1.1);
           }
           
-          .social-linkedin:hover {
-            color: #0077b5;
+          .social-github:hover {
+            color: #333;
           }
           
-          .social-twitter:hover {
-            color: #1da1f2;
+          .social-mail:hover {
+            color: #ea4335;
           }
           
-          .social-instagram:hover {
-            color: #e4405f;
-          }
-          
-          .social-facebook:hover {
-            color: #1877f2;
+          .social-mail:hover {
+            color: #ea4335;
           }
           
           .footer-section {
@@ -217,36 +211,19 @@ export default function Footer() {
               </p>
               <div className="flex space-x-3">
                 <Link
-                  href="https://linkedin.com"
+                  href="https://github.com/internyl-dev/internyl-frontend"
                   target="_blank"
-                  className="social-link social-linkedin p-2 rounded-full"
-                  aria-label="Follow us on LinkedIn"
+                  className="social-link social-github p-2 rounded-full"
+                  aria-label="View our GitHub repository"
                 >
-                  <LinkedInIcon />
+                  <GitHubIcon />
                 </Link>
                 <Link
-                  href="https://twitter.com"
-                  target="_blank"
-                  className="social-link social-twitter p-2 rounded-full"
-                  aria-label="Follow us on Twitter"
+                  href="mailto:contactinternyl@gmail.com"
+                  className="social-link social-mail p-2 rounded-full"
+                  aria-label="Contact us via email"
                 >
-                  <TwitterIcon />
-                </Link>
-                <Link
-                  href="https://instagram.com"
-                  target="_blank"
-                  className="social-link social-instagram p-2 rounded-full"
-                  aria-label="Follow us on Instagram"
-                >
-                  <InstagramIcon />
-                </Link>
-                <Link
-                  href="https://facebook.com"
-                  target="_blank"
-                  className="social-link social-facebook p-2 rounded-full"
-                  aria-label="Follow us on Facebook"
-                >
-                  <FacebookIcon />
+                  <MailOutlineIcon />
                 </Link>
               </div>
             </div>
@@ -308,7 +285,7 @@ export default function Footer() {
                     className="footer-link text-gray-600 hover:text-amber-600"
                   >
                     <PolicyOutlinedIcon fontSize="small" />
-                    Community Guidelines
+                    <span>Community Guidelines</span>
                   </Link>
                 </li>
                 <li>
