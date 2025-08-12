@@ -345,7 +345,7 @@ export default function FAQ() {
             Still have questions?
           </h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Can't find what you're looking for? We're here to help you find the perfect internship opportunity.
+            Can&apos;t find what you&apos;re looking for? We&apos;re here to help you find the perfect internship opportunity.
           </p>
           <button className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
             Contact Support
