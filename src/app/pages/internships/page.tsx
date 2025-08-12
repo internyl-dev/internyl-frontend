@@ -930,7 +930,7 @@ function InternshipsContent() {
 
           {/* Cat's suggestion */}
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
-            <p className="text-purple-700 text-sm font-medium mb-2">🐱 Meow! Here's a suggestion:</p>
+          <p className="text-purple-700 text-sm font-medium mb-2">🐱 Meow! Here&apos;s a suggestion:</p>
             <p className="text-purple-600 text-sm">
               Try using broader search terms or removing some filters to find more opportunities!
             </p>
