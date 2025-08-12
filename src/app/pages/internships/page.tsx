@@ -912,12 +912,30 @@ function InternshipsContent() {
       {/* No Results Message */}
       {filteredAndSortedInternships.length === 0 && (
         <div className="text-center py-12">
+          {/* Cat Image */}
+          <div className="mb-6">
+            <img
+              src="/cat.svg"
+              alt="No results found"
+              className="w-48 h-48 mx-auto object-contain opacity-80"
+            />
+          </div>
+
           <div className="text-gray-500 text-lg mb-2">No internships found</div>
           <p className="text-gray-400 text-sm mb-4">
             {showBookmarkedOnly
               ? "You don&apos;t have any bookmarked internships matching these filters"
               : "Try adjusting your search terms or filters"}
           </p>
+
+          {/* Cat's suggestion */}
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
+            <p className="text-purple-700 text-sm font-medium mb-2">🐱 Meow! Here's a suggestion:</p>
+            <p className="text-purple-600 text-sm">
+              Try using broader search terms or removing some filters to find more opportunities!
+            </p>
+          </div>
+
           {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
             <button
               onClick={clearAllFilters}
