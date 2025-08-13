@@ -236,7 +236,7 @@ export default function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="/"
+                    href="../pages/about"
                     className="footer-link text-gray-600 hover:text-blue-600"
                   >
                     <InfoOutlinedIcon fontSize="small" />
