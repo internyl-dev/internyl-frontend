@@ -64,7 +64,7 @@ export default function ContactPage() {
                 <div className="text-center mb-24" style={fadeInUp}>
                     <div className="inline-flex items-center gap-2 bg-gray-100 border border-gray-200 text-gray-700 px-6 py-3 rounded-full text-sm font-medium mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
                         <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
-                        We're Here to Help
+                        We&apos;re Here to Help
                     </div>
                     <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
                         Get in{' '}
@@ -73,7 +73,7 @@ export default function ContactPage() {
                         </span>
                     </h1>
                     <p className="text-xl sm:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-8">
-                        We're here to help! Whether you have questions, feedback, or need support, our team is ready to assist you.
+                        We&apos;re here to help! Whether you have questions, feedback, or need support, our team is ready to assist you.
                     </p>
                 </div>
 
@@ -92,7 +92,7 @@ export default function ContactPage() {
                                     <p className="text-lg text-gray-700 leading-relaxed">
                                         For urgent issues, policy violations, or security concerns, please use our 
                                         built-in report system for faster processing. For all other inquiries, 
-                                        we'd love to hear from you through the contact methods below.
+                                        we&apos;d love to hear from you through the contact methods below.
                                     </p>
                                 </div>
                             </div>
@@ -155,9 +155,9 @@ export default function ContactPage() {
                                     <div className="bg-white/20 backdrop-blur-sm p-6 rounded-3xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
                                         <Mail className="w-10 h-10 text-white animate-bounce" />
                                     </div>
-                                    <h2 className="text-4xl font-bold mb-4">Let's Connect</h2>
+                                    <h2 className="text-4xl font-bold mb-4">Let&apos;s Connect</h2>
                                     <p className="text-xl text-blue-100 leading-relaxed">
-                                        Send us an email and we'll get back to you as soon as possible
+                                        Send us an email and we&apos;ll get back to you as soon as possible
                                     </p>
                                 </div>
                             </div>
@@ -208,8 +208,8 @@ export default function ContactPage() {
                                     <Sparkles className="w-8 h-8 text-white" />
                                 </div>
                                 <p className="text-xl text-gray-800 leading-relaxed font-medium italic">
-                                    "Thank you for being part of the Internyl community! 
-                                    Your feedback and questions help us build a better platform for everyone."
+                                    &ldquo;Thank you for being part of the Internyl community! 
+                                    Your feedback and questions help us build a better platform for everyone.&rdquo;
                                 </p>
                                 <cite className="text-lg text-gray-600 font-medium mt-4 block">- The Internyl Team</cite>
                             </div>

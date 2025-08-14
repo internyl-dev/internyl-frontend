@@ -38,15 +38,15 @@ const faqData: FAQItem[] = [
   // Eligibility & Applications
   {
     id: "eligibility-1",
-    question: "I'm a freshman - are there internships available for me?",
-    answer: "Absolutely! While many competitive programs target juniors and seniors, we have numerous opportunities specifically for freshmen and sophomores. Use our 'Eligibility' filter to find programs that accept your grade level.",
+    question: "I&apos;m a freshman - are there internships available for me?",
+    answer: "Absolutely! While many competitive programs target juniors and seniors, we have numerous opportunities specifically for freshmen and sophomores. Use our &apos;Eligibility&apos; filter to find programs that accept your grade level.",
     category: "Eligibility & Applications",
     icon: GraduationCap
   },
   {
     id: "eligibility-2",
-    question: "What's the difference between 'Rising Junior' and 'Junior'?",
-    answer: "'Rising Junior' means you'll be a junior in the fall (currently a sophomore), while 'Junior' means you're currently a junior. Most summer programs use 'Rising' terminology since they occur between academic years.",
+    question: "What&apos;s the difference between &apos;Rising Junior&apos; and &apos;Junior&apos;?",
+    answer: "&apos;Rising Junior&apos; means you&apos;ll be a junior in the fall (currently a sophomore), while &apos;Junior&apos; means you&apos;re currently a junior. Most summer programs use &apos;Rising&apos; terminology since they occur between academic years.",
     category: "Eligibility & Applications",
     icon: GraduationCap
   },
@@ -69,7 +69,7 @@ const faqData: FAQItem[] = [
   {
     id: "costs-1",
     question: "Are there free internship opportunities?",
-    answer: "Yes! Use our 'Cost' filter and select 'Free' to find programs with no participation fees. These include many research opportunities, government programs, and some corporate internships.",
+    answer: "Yes! Use our &apos;Cost&apos; filter and select &apos;Free&apos; to find programs with no participation fees. These include many research opportunities, government programs, and some corporate internships.",
     category: "Costs & Financial Aid",
     icon: DollarSign
   },
@@ -83,13 +83,13 @@ const faqData: FAQItem[] = [
   {
     id: "costs-3",
     question: "Do any programs offer financial aid or scholarships?",
-    answer: "Many programs offer need-based aid or merit scholarships. Look for mentions of 'financial aid available' in program descriptions, and don't hesitate to contact programs directly about funding opportunities.",
+    answer: "Many programs offer need-based aid or merit scholarships. Look for mentions of &apos;financial aid available&apos; in program descriptions, and don&apos;t hesitate to contact programs directly about funding opportunities.",
     category: "Costs & Financial Aid",
     icon: DollarSign
   },
   {
     id: "costs-4",
-    question: "What does 'Stipend' mean?",
+    question: "What does &apos;Stipend&apos; mean?",
     answer: "A stipend means the program pays you for participating! These are typically research or work-based internships where you receive payment for your contribution to the organization.",
     category: "Costs & Financial Aid",
     icon: DollarSign
@@ -99,21 +99,21 @@ const faqData: FAQItem[] = [
   {
     id: "programs-1",
     question: "What subjects and fields are available?",
-    answer: "We feature internships across many fields including STEM (science, technology, engineering, math), business, medicine, law, arts, social sciences, and more. Use our 'Subject' filter to explore specific areas of interest.",
+    answer: "We feature internships across many fields including STEM (science, technology, engineering, math), business, medicine, law, arts, social sciences, and more. Use our &apos;Subject&apos; filter to explore specific areas of interest.",
     category: "Program Types & Subjects",
     icon: BookOpen
   },
   {
     id: "programs-2",
     question: "Are there virtual/remote internship options?",
-    answer: "Yes! Many programs now offer virtual components or fully remote experiences. Look for location listings that mention 'Virtual' or 'Remote' when browsing opportunities.",
+    answer: "Yes! Many programs now offer virtual components or fully remote experiences. Look for location listings that mention &apos;Virtual&apos; or &apos;Remote&apos; when browsing opportunities.",
     category: "Program Types & Subjects",
     icon: MapPin
   },
   {
     id: "programs-3",
     question: "How long do most internships last?",
-    answer: "Program durations vary widely. Use our 'Duration' filter to find programs that fit your schedule - from 1-week intensives to full summer programs lasting 8+ weeks. Most fall between 2-6 weeks.",
+    answer: "Program durations vary widely. Use our &apos;Duration&apos; filter to find programs that fit your schedule - from 1-week intensives to full summer programs lasting 8+ weeks. Most fall between 2-6 weeks.",
     category: "Program Types & Subjects",
     icon: Clock
   },
@@ -128,15 +128,15 @@ const faqData: FAQItem[] = [
   },
   {
     id: "timing-2",
-    question: "What does 'Rolling Admission' mean?",
-    answer: "Rolling admission means applications are reviewed as they're received, rather than after a single deadline. Apply early for the best chances, as spots may fill before the final deadline.",
+    question: "What does &apos;Rolling Admission&apos; mean?",
+    answer: "Rolling admission means applications are reviewed as they&apos;re received, rather than after a single deadline. Apply early for the best chances, as spots may fill before the final deadline.",
     category: "Deadlines & Timing",
     icon: Clock
   },
   {
     id: "timing-3",
     question: "I missed a deadline - are there still opportunities available?",
-    answer: "Don't give up! Use our 'Due in' filter to find programs with later deadlines. Some programs have rolling admissions or accept late applications if space is available.",
+    answer: "Don&apos;t give up! Use our &apos;Due in&apos; filter to find programs with later deadlines. Some programs have rolling admissions or accept late applications if space is available.",
     category: "Deadlines & Timing",
     icon: Clock
   },
@@ -152,14 +152,14 @@ const faqData: FAQItem[] = [
   {
     id: "technical-2",
     question: "Why isn't a program showing up in my search results?",
-    answer: "Check your active filters - they might be too restrictive. Try clearing filters or adjusting your search terms. Some programs may also have limited eligibility that doesn't match your current filter settings.",
+    answer: "Check your active filters - they might be too restrictive. Try clearing filters or adjusting your search terms. Some programs may also have limited eligibility that doesn&apos;t match your current filter settings.",
     category: "Technical & Account Issues",
     icon: Search
   },
   {
     id: "technical-3",
     question: "How do I contact you about a problem or suggestion?",
-    answer: "We'd love to hear from you! Use the contact information provided on our website to reach out with questions, technical issues, or suggestions for improving our platform.",
+    answer: "We&apos;d love to hear from you! Use the contact information provided on our website to reach out with questions, technical issues, or suggestions for improving our platform.",
     category: "Technical & Account Issues",
     icon: Mail
   }
@@ -400,7 +400,7 @@ export default function FAQ() {
                   Still have questions?
                 </h3>
                 <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-2xl mx-auto">
-                  Can't find what you're looking for? We're here to help you find the perfect internship opportunity.
+                  Can&apos;t find what you&apos;re looking for? We&apos;re here to help you find the perfect internship opportunity.
                 </p>
                 <button className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                   <Mail className="w-6 h-6" />
