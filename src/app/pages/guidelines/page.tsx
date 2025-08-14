@@ -99,7 +99,7 @@ export default function CommunityGuidelinesPage() {
                                         Coming Soon!
                                     </p>
                                     <p className="text-gray-600 leading-relaxed">
-                                        Our team is working hard to create guidelines that foster a welcoming environment for students to discover amazing opportunities. Check back soon for updates.
+                                        We are crumbling under the pressure of school, we'll do it eventually.
                                     </p>
                                 </div>
                             </div>

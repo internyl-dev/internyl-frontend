@@ -320,7 +320,7 @@ export default function FAQ() {
           {/* FAQ Items */}
           <div style={staggerDelay(3)}>
             <div className="space-y-6">
-              {filteredFAQs.map((faq, index) => {
+              {filteredFAQs.map((faq) => {
                 const Icon = faq.icon;
                 const category = categories.find(cat => cat.name === faq.category);
                 const isOpen = openItems.has(faq.id);
