@@ -99,7 +99,7 @@ export default function CommunityGuidelinesPage() {
                                         Coming Soon!
                                     </p>
                                     <p className="text-gray-600 leading-relaxed">
-                                        We are crumbling under the pressure of school, we'll do it eventually.
+                                        We are crumbling under the pressure of school, we&apos;ll do it eventually.
                                     </p>
                                 </div>
                             </div>
