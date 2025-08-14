@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { ChevronDown, Search, BookOpen, Clock, Users, DollarSign, MapPin, GraduationCap, Mail, Shield } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ChevronDown, Search, BookOpen, Clock, Users, DollarSign, MapPin, GraduationCap, Mail, Shield, Sparkles, HelpCircle } from "lucide-react";
 
 interface FAQItem {
   id: string;
@@ -166,18 +166,42 @@ const faqData: FAQItem[] = [
 ];
 
 const categories = [
-  { name: "Getting Started", icon: BookOpen, color: "bg-blue-50 text-blue-700" },
-  { name: "Eligibility & Applications", icon: GraduationCap, color: "bg-green-50 text-green-700" },
-  { name: "Costs & Financial Aid", icon: DollarSign, color: "bg-yellow-50 text-yellow-700" },
-  { name: "Program Types & Subjects", icon: BookOpen, color: "bg-purple-50 text-purple-700" },
-  { name: "Deadlines & Timing", icon: Clock, color: "bg-red-50 text-red-700" },
-  { name: "Technical & Account Issues", icon: Shield, color: "bg-gray-50 text-gray-700" }
+  { name: "Getting Started", icon: BookOpen, color: "from-blue-500 to-blue-600" },
+  { name: "Eligibility & Applications", icon: GraduationCap, color: "from-green-500 to-green-600" },
+  { name: "Costs & Financial Aid", icon: DollarSign, color: "from-yellow-500 to-yellow-600" },
+  { name: "Program Types & Subjects", icon: BookOpen, color: "from-purple-500 to-purple-600" },
+  { name: "Deadlines & Timing", icon: Clock, color: "from-red-500 to-red-600" },
+  { name: "Technical & Account Issues", icon: Shield, color: "from-gray-500 to-gray-600" }
 ];
 
 export default function FAQ() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+  const [isVisible, setIsVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Prevent hydration issues
+  if (!mounted) {
+    return null;
+  }
+
+  const fadeInUp = {
+    transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+    opacity: isVisible ? 1 : 0,
+    transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+  };
+
+  const staggerDelay = (index: number) => ({
+    ...fadeInUp,
+    transitionDelay: `${index * 0.1}s`
+  });
 
   const filteredFAQs = faqData.filter(faq => {
     const matchesSearch = faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -202,154 +226,189 @@ export default function FAQ() {
   };
 
   return (
-    <div className="min-h-screen px-4 py-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="container mx-auto px-6 sm:px-8 py-16 max-w-7xl relative">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Frequently Asked Questions
+        <div className="text-center mb-24" style={fadeInUp}>
+          <div className="inline-flex items-center gap-2 bg-gray-100 border border-gray-200 text-gray-700 px-6 py-3 rounded-full text-sm font-medium mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
+            <Sparkles className="w-4 h-4 text-purple-600 animate-pulse" />
+            Get Your Questions Answered
+          </div>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+            Frequently Asked{' '}
+            <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-800 bg-clip-text text-transparent animate-gradient bg-300% bg-gradient-to-r">
+              Questions
+            </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl sm:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-8">
             Find answers to common questions about finding and applying to high school internships
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative mb-8">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search for questions..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 border border-black-200 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
-          />
-        </div>
-
-        {/* Category Filters */}
-        <div className="flex flex-wrap gap-3 mb-8 justify-center">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              !selectedCategory 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            All Categories
-          </button>
-          {categories.map((category) => {
-            const Icon = category.icon;
-            return (
-              <button
-                key={category.name}
-                onClick={() => setSelectedCategory(category.name)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedCategory === category.name
-                    ? 'bg-blue-600 text-white'
-                    : `bg-white text-gray-700 border border-gray-200 hover:bg-gray-50`
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {category.name}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Clear Filters */}
-        {(searchTerm || selectedCategory) && (
-          <div className="text-center mb-6">
-            <button
-              onClick={clearFilters}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium underline"
-            >
-              Clear all filters
-            </button>
-            <span className="text-gray-500 text-sm ml-2">
-              ({filteredFAQs.length} result{filteredFAQs.length !== 1 ? 's' : ''})
-            </span>
-          </div>
-        )}
-
-        {/* FAQ Items */}
-        <div className="space-y-4">
-          {filteredFAQs.map((faq) => {
-            const Icon = faq.icon;
-            const category = categories.find(cat => cat.name === faq.category);
-            const isOpen = openItems.has(faq.id);
-
-            return (
-              <div key={faq.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <button
-                  onClick={() => toggleItem(faq.id)}
-                  className="w-full px-6 py-5 text-left hover:bg-gray-50 transition-colors flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-lg ${category?.color || 'bg-gray-50 text-gray-700'}`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                        {faq.question}
-                      </h3>
-                      <span className="text-sm text-gray-500">
-                        {faq.category}
-                      </span>
-                    </div>
-                  </div>
-                  <ChevronDown 
-                    className={`w-5 h-5 text-gray-400 transition-transform ${
-                      isOpen ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                
-                {isOpen && (
-                  <div className="px-6 pb-5">
-                    <div className="pl-14">
-                      <p className="text-gray-700 leading-relaxed">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </div>
-                )}
+        <div className="space-y-20">
+          {/* Search Bar */}
+          <div style={staggerDelay(0)}>
+            <div className="bg-gradient-to-br from-white/60 to-blue-50/40 backdrop-blur-sm border border-white/40 rounded-3xl p-8 shadow-xl">
+              <div className="relative">
+                <div className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-xl shadow-lg">
+                  <Search className="text-white w-6 h-6" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search for questions..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-20 pr-8 py-6 bg-white/50 backdrop-blur-sm border border-white/40 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-lg hover:shadow-xl transition-all duration-300 placeholder-gray-500"
+                />
               </div>
-            );
-          })}
-        </div>
-
-        {/* No Results */}
-        {filteredFAQs.length === 0 && (
-          <div className="text-center py-12">
-            <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No questions found
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Try adjusting your search terms or browse different categories
-            </p>
-            <button
-              onClick={clearFilters}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              Show all questions
-            </button>
+            </div>
           </div>
-        )}
 
-        {/* Still have questions? */}
-        <div className="mt-16 text-center bg-blue-50 rounded-2xl p-8">
-          <Mail className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Still have questions?
-          </h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Can&apos;t find what you&apos;re looking for? We&apos;re here to help you find the perfect internship opportunity.
-          </p>
-          <button className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-            Contact Support
-          </button>
+          {/* Category Filters */}
+          <div style={staggerDelay(1)}>
+            <div className="bg-gradient-to-br from-white/60 to-purple-50/40 backdrop-blur-sm border border-white/40 rounded-3xl p-8 shadow-xl">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Browse by Category</h2>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  className={`px-6 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl ${
+                    !selectedCategory 
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white transform scale-105' 
+                      : 'bg-white/50 text-gray-700 border border-white/40 hover:bg-white/70 backdrop-blur-sm'
+                  }`}
+                >
+                  All Categories
+                </button>
+                {categories.map((category) => {
+                  const Icon = category.icon;
+                  return (
+                    <button
+                      key={category.name}
+                      onClick={() => setSelectedCategory(category.name)}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl ${
+                        selectedCategory === category.name
+                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white transform scale-105'
+                          : 'bg-white/50 text-gray-700 border border-white/40 hover:bg-white/70 backdrop-blur-sm'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {category.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Clear Filters */}
+          {(searchTerm || selectedCategory) && (
+            <div className="text-center" style={staggerDelay(2)}>
+              <div className="bg-gradient-to-br from-white/50 to-gray-50/40 backdrop-blur-sm border border-white/40 rounded-2xl p-4 shadow-lg inline-block">
+                <button
+                  onClick={clearFilters}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-semibold underline mr-4 transition-colors duration-300"
+                >
+                  Clear all filters
+                </button>
+                <span className="text-gray-600 text-sm">
+                  ({filteredFAQs.length} result{filteredFAQs.length !== 1 ? 's' : ''})
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* FAQ Items */}
+          <div style={staggerDelay(3)}>
+            <div className="space-y-6">
+              {filteredFAQs.map((faq, index) => {
+                const Icon = faq.icon;
+                const category = categories.find(cat => cat.name === faq.category);
+                const isOpen = openItems.has(faq.id);
+
+                return (
+                  <div key={faq.id} className="bg-gradient-to-br from-white/60 to-gray-50/40 backdrop-blur-sm border border-white/40 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+                    <button
+                      onClick={() => toggleItem(faq.id)}
+                      className="w-full px-8 py-6 text-left hover:bg-white/30 transition-all duration-300 flex items-center justify-between group"
+                    >
+                      <div className="flex items-center gap-6">
+                        <div className={`bg-gradient-to-br ${category?.color || 'from-gray-500 to-gray-600'} p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
+                            {faq.question}
+                          </h3>
+                          <span className="text-sm text-gray-600 font-medium px-3 py-1 bg-white/40 rounded-full">
+                            {faq.category}
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronDown 
+                        className={`w-6 h-6 text-gray-500 transition-all duration-300 group-hover:text-blue-600 ${
+                          isOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                    
+                    {isOpen && (
+                      <div className="px-8 pb-6">
+                        <div className="pl-18 bg-white/30 backdrop-blur-sm rounded-xl p-6 border border-white/40">
+                          <p className="text-gray-700 leading-relaxed text-lg">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* No Results */}
+          {filteredFAQs.length === 0 && (
+            <div style={staggerDelay(4)}>
+              <div className="bg-gradient-to-br from-white/60 to-gray-50/40 backdrop-blur-sm border border-white/40 rounded-3xl p-12 shadow-xl text-center">
+                <div className="bg-gradient-to-br from-gray-400 to-gray-500 p-6 rounded-3xl w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
+                  <Search className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  No questions found
+                </h3>
+                <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+                  Try adjusting your search terms or browse different categories
+                </p>
+                <button
+                  onClick={clearFilters}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  Show all questions
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Still have questions? */}
+          <div style={staggerDelay(5)}>
+            <div className="bg-gradient-to-br from-blue-50/80 to-purple-50/80 backdrop-blur-sm border border-white/40 rounded-3xl p-12 shadow-xl hover:shadow-2xl transition-all duration-300 text-center">
+              <div className="max-w-3xl mx-auto">
+                <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-6 rounded-3xl w-20 h-20 mx-auto mb-8 flex items-center justify-center shadow-lg">
+                  <HelpCircle className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-3xl font-bold text-gray-900 mb-4">
+                  Still have questions?
+                </h3>
+                <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-2xl mx-auto">
+                  Can't find what you're looking for? We're here to help you find the perfect internship opportunity.
+                </p>
+                <button className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                  <Mail className="w-6 h-6" />
+                  Contact Support
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
