@@ -277,7 +277,7 @@ export default function AboutPage() {
                                         Discover your next opportunity
                                     </h2>
                                     <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                                        Join thousands of students who've found amazing programs through our platform.
+                                        Join thousands of students who&apos;ve found amazing programs through our platform.
                                         Start exploring internships, research programs, competitions, and more.
                                     </p>
                                 </div>

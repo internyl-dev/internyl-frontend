@@ -48,7 +48,7 @@ export default function ContactPage() {
                         </span>
                     </h1>
                     <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                        We're here to help! Whether you have questions, feedback, or need support, 
+                        We&apos;re here to help! Whether you have questions, feedback, or need support, 
                         our team is ready to assist you.
                     </p>
                 </div>
@@ -67,7 +67,7 @@ export default function ContactPage() {
                                 <p className="text-gray-700">
                                     For urgent issues, policy violations, or security concerns, please use our 
                                     built-in report system for faster processing. For all other inquiries, 
-                                    we'd love to hear from you through the contact methods below.
+                                    we&apos;d love to hear from you through the contact methods below.
                                 </p>
                             </div>
                         </div>
@@ -118,9 +118,9 @@ export default function ContactPage() {
                         <div className="bg-blue-600 p-8 text-white">
                             <div className="text-center">
                                 <Mail className="w-16 h-16 mx-auto mb-4 animate-bounce" />
-                                <h2 className="text-3xl font-bold mb-2">Let's Connect</h2>
+                                <h2 className="text-3xl font-bold mb-2">Let&apos;s Connect</h2>
                                 <p className="text-blue-100">
-                                    Send us an email and we'll get back to you as soon as possible
+                                    Send us an email and we&apos;ll get back to you as soon as possible
                                 </p>
                             </div>
                         </div>
