@@ -223,7 +223,16 @@ function HomeContent() {
     }
   };
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#9381FF] via-[#A891FF] to-[#9381FF]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg font-medium">Loading your internships...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (user) {
     const savedInternshipsFiltered = internships.filter((internship) =>
@@ -290,21 +299,40 @@ function HomeContent() {
           {/* Scrollable Internship Cards with enhanced container */}
           <div className="overflow-x-auto px-2 sm:px-6 md:px-12 lg:px-20 pb-8 md:pb-10">
             <div className="flex w-max md:w-full gap-6">
-              {savedInternshipsFiltered.map((internship, index) => (
-                <motion.div
-                  key={internship.id}
-                  className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm"
-                  initial={{ opacity: 1, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <InternshipCards
-                    internships={[internship]}
-                    bookmarked={bookmarked}
-                    toggleBookmark={toggleBookmark}
-                  />
-                </motion.div>
-              ))}
+              {savedInternshipsFiltered.length === 0 ? (
+                <div className="w-full text-center py-12 px-6">
+                  <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20">
+                    <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No saved internships yet</h3>
+                  <p className="text-gray-500 mb-6">Start exploring and bookmark internships you're interested in!</p>
+                  <Link
+                    href="/pages/internships"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#E26262] to-[#F07575] text-white rounded-full hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 font-medium gap-2"
+                  >
+                    Explore Internships
+                    <ArrowForwardIcon className="w-4 h-4" />
+                  </Link>
+                </div>
+              ) : (
+                savedInternshipsFiltered.map((internship, index) => (
+                  <motion.div
+                    key={internship.id}
+                    className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm"
+                    initial={{ opacity: 1, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <InternshipCards
+                      internships={[internship]}
+                      bookmarked={bookmarked}
+                      toggleBookmark={toggleBookmark}
+                    />
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         </motion.div>
