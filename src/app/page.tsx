@@ -142,6 +142,8 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const router = useRouter();
 
@@ -209,6 +211,48 @@ function HomeContent() {
 
     return () => unsubscribe();
   }, []);
+  useEffect(() => {
+    if (searchTerm.length >= 2 && internships.length > 0) {
+      const suggestions = new Set<string>();
+      
+      internships.forEach(internship => {
+        const title = internship.overview?.title;
+        const provider = internship.overview?.provider;
+        const subjects = internship.overview?.subject || [];
+        const tags = internship.overview?.tags || [];
+        
+        // Add title matches
+        if (title && title.toLowerCase().includes(searchTerm.toLowerCase())) {
+          suggestions.add(title);
+        }
+        
+        // Add provider matches
+        if (provider && provider.toLowerCase().includes(searchTerm.toLowerCase())) {
+          suggestions.add(provider);
+        }
+        
+        // Add subject matches
+        subjects.forEach(subject => {
+          if (subject && subject.toLowerCase().includes(searchTerm.toLowerCase())) {
+            suggestions.add(subject);
+          }
+        });
+        
+        // Add tag matches
+        tags.forEach(tag => {
+          if (tag && tag.toLowerCase().includes(searchTerm.toLowerCase())) {
+            suggestions.add(tag);
+          }
+        });
+      });
+      
+      const suggestionArray = Array.from(suggestions).slice(0, 5);
+      setSearchSuggestions(suggestionArray);
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [searchTerm, internships]);
 
   const toggleBookmark = async (internshipId: string) => {
     const isBookmarked = bookmarked[internshipId] === true;
@@ -446,15 +490,53 @@ function HomeContent() {
                 onSubmit={handleSearch}
               >
                 <div className="relative w-full">
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="search for your dream internship"
-                    className="px-6 py-4 rounded-2xl text-base w-full shadow-lg border-2 border-gray-200/50 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464]/50 focus:border-[#ec6464] transition-all duration-300 hover:shadow-xl font-medium placeholder:text-gray-400"
-                  />
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#ec6464]/5 to-[#9381FF]/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                </div>
+  <SearchOutlinedIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
+  <input
+    type="text"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
+    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+    placeholder="Search for your dream internship..."
+    className="pl-12 pr-6 py-4 rounded-2xl text-base w-full shadow-lg border-2 border-gray-200/50 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464]/50 focus:border-[#ec6464] transition-all duration-300 hover:shadow-xl font-medium placeholder:text-gray-400"
+    minLength={2}
+    required
+  />
+  {searchTerm && (
+    <button
+      type="button"
+      onClick={() => {setSearchTerm(''); setShowSuggestions(false);}}
+      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
+    >
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  )}
+  
+  {/* Search Suggestions Dropdown */}
+  {showSuggestions && searchSuggestions.length > 0 && (
+    <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md border border-gray-200 rounded-xl shadow-2xl z-20 max-h-60 overflow-y-auto">
+      {searchSuggestions.map((suggestion, index) => (
+        <button
+          key={index}
+          type="button"
+          onClick={() => {
+            setSearchTerm(suggestion);
+            setShowSuggestions(false);
+            router.push(`/pages/internships?search=${encodeURIComponent(suggestion)}`);
+          }}
+          className="w-full px-4 py-3 text-left hover:bg-[#ec6464]/10 transition-colors duration-200 border-b border-gray-100 last:border-b-0 text-gray-700 font-medium"
+        >
+          <SearchOutlinedIcon className="w-4 h-4 text-gray-400 mr-3 inline" />
+          {suggestion}
+        </button>
+      ))}
+    </div>
+  )}
+  
+  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#ec6464]/5 to-[#9381FF]/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+</div>
                 <button
                   type="submit"
                   className="group mx-auto bg-gradient-to-r from-[#ec6464] to-[#f07575] hover:from-[#d65050] hover:to-[#e66666] text-white px-8 py-4 rounded-2xl font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center whitespace-nowrap text-base min-w-[180px] min-h-[56px] shadow-xl hover:shadow-2xl transform hover:scale-105 border border-white/20"
