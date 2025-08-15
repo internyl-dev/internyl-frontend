@@ -15,8 +15,8 @@ const sora = Sora({
 })
 
 export const metadata: Metadata = {
-  title: "Internyl",
-  description: "Streamline your search. Secure your future.",
+  title: "Internyl | Find your perfect internship",
+  description: "Internyl is your go-to platform for discovering and managing internships tailored to your career goals. | Streamline your search. Secure your future.",
 };
 
 export default function RootLayout({
