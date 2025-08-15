@@ -47,6 +47,37 @@ function getDueCategory(date: Date | null): string {
 }
 
 function InternshipsContent() {
+  // Add this motivational phrases code here
+  const motivationalPhrases = [
+    "Discover your next adventure today! 🚀",
+    "Your dream internship is just a search away ✨",
+    "Transform your summer into something extraordinary 🌟",
+    "Find the perfect opportunity to grow and learn 📚",
+    "Take the first step toward your bright future 🌅",
+    "Unlock new possibilities with every click 🔓",
+    "Your journey to success starts here 🎯",
+    "Explore programs that will shape your tomorrow 🔮",
+    "Turn your passion into real-world experience 💡",
+    "Every great career begins with a single opportunity 🌱",
+    "Ready to make this summer count? Let's go! ⚡",
+    "Find internships that match your ambitions 🎨",
+    "Your next chapter is waiting to be written ✍️",
+    "Dive into experiences that will inspire you 🌊",
+    "Connect your interests with amazing opportunities 🔗",
+    "Build the foundation for your dream career 🏗️",
+    "Discover programs tailored just for you 🎪",
+    "Step out of your comfort zone and into greatness 🦋",
+    "Find your place in the world of innovation 🌍",
+    "Today's search could change your entire future 🌈"
+
+  ];
+
+  const getRandomPhrase = () => {
+    return motivationalPhrases[Math.floor(Math.random() * motivationalPhrases.length)];
+  };
+
+  const [motivationalPhrase] = useState(() => getRandomPhrase());
+
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string[] }>({});
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [subjectSearch, setSubjectSearch] = useState("");
@@ -140,6 +171,30 @@ function InternshipsContent() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.filter-dropdown') && !target.closest('.filter-button') && !target.closest('.sort-dropdown-container')) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Add keyboard navigation support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpenDropdown(null);
+        setShowMobileFilters(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Auto-hide mobile filters when desktop size
   useEffect(() => {
     const handleResize = () => {
@@ -187,7 +242,7 @@ function InternshipsContent() {
           };
           // Find highest cost
           if (data.costs?.costs && Array.isArray(data.costs.costs)) {
-            data.costs.costs.forEach((item: { lowest?: number; highest?: number; [key: string]: unknown }) => {
+            data.costs.costs.forEach((item: { lowest?: number; highest?: number;[key: string]: unknown }) => {
               if (typeof item.highest === 'number' && item.highest > highestCost) {
                 highestCost = item.highest;
               } else if (typeof item.lowest === 'number' && item.lowest > highestCost) {
@@ -310,7 +365,7 @@ function InternshipsContent() {
     setSearchTerm("");
     setShowBookmarkedOnly(false);
     setSortBy("relevance");
-  setCustomCostRange([0, maxCost]);
+    setCustomCostRange([0, maxCost]);
     setShowCustomCostInput(false);
   };
 
@@ -507,18 +562,18 @@ function InternshipsContent() {
                   return !isFree && minCost >= 1000 && minCost <= 3000;
                 case "$3000+":
                   return !isFree && minCost > 3000;
-                  case "Custom Range": {
-                    const min = customCostRange[0];
-                    const max = customCostRange[1];
-                    
-                    // If the range starts at 0, include free internships
-                    if (min === 0 && isFree) {
-                      return true;
-                    }
-                    
-                    // For non-free internships, check if they fall within the range
-                    return !isFree && minCost >= min && minCost <= max;
+                case "Custom Range": {
+                  const min = customCostRange[0];
+                  const max = customCostRange[1];
+
+                  // If the range starts at 0, include free internships
+                  if (min === 0 && isFree) {
+                    return true;
                   }
+
+                  // For non-free internships, check if they fall within the range
+                  return !isFree && minCost >= min && minCost <= max;
+                }
                 default:
                   return false;
               }
@@ -606,15 +661,136 @@ function InternshipsContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen radial-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
+        {/* Keep your header */}
+        <div className="text-center pt-2 mt-0">...</div>
+        
+        {/* Enhanced Skeleton Cards with Masonry-style Layout */}
+        <div className="px-0 sm:px-4 lg:px-8">
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border border-black/30 animate-pulse relative">
+                {/* Info Icon - Top Right */}
+                <div className="absolute top-4 right-4">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                </div>
+  
+                {/* Header Section */}
+                <div className="mb-6">
+                  {/* Provider name */}
+                  <div className="h-4 bg-gray-200 rounded w-32 mb-3"></div>
+                  
+                  {/* Program title - large gradient text simulation */}
+                  <div className="space-y-2 mb-4">
+                    <div className="h-10 bg-gradient-to-r from-gray-300 to-gray-200 rounded w-full"></div>
+                    <div className="h-10 bg-gradient-to-r from-gray-300 to-gray-200 rounded w-4/5"></div>
+                  </div>
+                  
+                  {/* Due date with icon */}
+                  <div className="flex items-center gap-3 mt-4">
+                    <div className="w-6 h-6 bg-red-200 rounded-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                  </div>
+                </div>
+  
+                {/* Details Section */}
+                <div className="space-y-4">
+                  {/* Subject tags */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-5 h-5 bg-blue-200 rounded mt-1"></div>
+                    <div className="flex flex-wrap gap-2 flex-1">
+                      <div className="h-6 bg-blue-100 rounded-full w-20 px-3 py-1"></div>
+                      <div className="h-6 bg-blue-100 rounded-full w-24 px-3 py-1"></div>
+                      <div className="h-6 bg-blue-100 rounded-full w-16 px-3 py-1"></div>
+                    </div>
+                  </div>
+  
+                  {/* Grade level */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 bg-orange-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded w-40"></div>
+                  </div>
+  
+                  {/* Duration */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 bg-purple-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded w-28"></div>
+                  </div>
+  
+                  {/* Location */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 bg-yellow-300 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded w-36"></div>
+                  </div>
+  
+                  {/* Cost/Stipend */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 bg-green-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                  </div>
+                </div>
+  
+                {/* Action buttons at bottom */}
+                <div className="flex justify-between items-center mt-6 pt-2">
+                  <div className="w-10 h-10 bg-blue-200 rounded-full"></div>
+                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+  
+        {/* Floating shimmer effect overlay for extra polish */}
+        <style jsx>{`
+          @keyframes shimmer {
+            0% {
+              background-position: -200% 0;
+            }
+            100% {
+              background-position: 200% 0;
+            }
+          }
+          
+          .animate-pulse::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+              90deg,
+              transparent,
+              rgba(255, 255, 255, 0.4),
+              transparent
+            );
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+            border-radius: 30px;
+            pointer-events: none;
+            z-index: 1;
+          }
+        `}</style>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
-      <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
+      {/* Motivational Header */}
+      <div className="text-center pt-3.5 mt-0">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1">
+          Find Your Perfect Internship
+        </h1>
+        <p className="text-base md:text-lg text-gray-600 font-medium font-inter">
+          {motivationalPhrase}
+        </p>
+      </div>
+
+      <div className="-mt-20">
+        <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
+      </div>
 
       {/* Sort and View Options */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4 mt-8">
@@ -622,7 +798,7 @@ function InternshipsContent() {
         <div className="relative sort-dropdown-container">
           <button
             onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
-            className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border text-sm font-medium hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border text-sm font-medium hover:bg-gray-50 hover:shadow-md transition-all duration-200 hover:scale-105"
           >
             <SlidersHorizontal className="w-4 h-4" />
             Sort: {sortOptions.find(opt => opt.value === sortBy)?.label}
@@ -653,9 +829,9 @@ function InternshipsContent() {
         {user && hasBookmarkedInternships && (
           <button
             onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${showBookmarkedOnly
-              ? 'bg-blue-100 text-blue-700 border border-blue-200'
-              : 'bg-white text-gray-700 border hover:bg-gray-50'
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${showBookmarkedOnly
+              ? 'bg-blue-100 text-blue-700 border border-blue-200 animate-pulse'
+              : 'bg-white text-gray-700 border hover:bg-gray-50 hover:shadow-md'
               }`}
           >
             <BookmarkCheck className="w-4 h-4" />
@@ -700,8 +876,9 @@ function InternshipsContent() {
             options.map((option) => (
               <div
                 key={`${category}-${option}`}
-                className={`flex items-center gap-1 px-3 py-1 ${getFilterColor(category)} rounded-full text-sm text-black`}
+                className={`flex items-center gap-1 px-3 py-1 ${getFilterColor(category)} rounded-full text-sm text-black animate-in fade-in-0 zoom-in-95 duration-200 hover:scale-105 transition-transform`}
               >
+
                 <span>{category}: {option === "Custom Range" ? `$${customCostRange[0]} - $${customCostRange[1]}` : option}</span>
                 <button
                   onClick={() => toggleFilterOption(category, option)}
@@ -715,7 +892,7 @@ function InternshipsContent() {
           {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
             <button
               onClick={clearAllFilters}
-              className="flex items-center gap-1 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-full text-sm font-medium transition-colors"
+              className="flex items-center gap-1 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 hover:shadow-sm active:scale-95"
             >
               <RotateCcw className="w-3 h-3" />
               Clear all
@@ -753,7 +930,7 @@ function InternshipsContent() {
                   onClick={() =>
                     setOpenDropdown((prev) => (prev === filter.label ? null : filter.label))
                   }
-                  className={`filter-button flex items-center gap-2 px-4 py-2 rounded-full ${filter.color} text-black text-sm font-semibold shadow-sm hover:brightness-95 transition ${hasActiveOptions ? 'ring-2 ring-blue-400 ring-offset-1' : ''
+                  className={`filter-button flex items-center gap-2 px-4 py-2 rounded-full ${filter.color} text-black text-sm font-semibold shadow-sm hover:brightness-95 hover:scale-105 transition-all duration-200 ${hasActiveOptions ? 'ring-2 ring-blue-400 ring-offset-1' : ''
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -768,7 +945,7 @@ function InternshipsContent() {
                 </button>
 
                 {openDropdown === filter.label && (
-                  <div className="absolute top-12 left-0 w-48 bg-white rounded-xl shadow-lg p-3 space-y-2 z-20 border">
+                  <div className="absolute top-12 left-0 w-48 bg-white rounded-xl shadow-lg p-3 space-y-2 z-20 border animate-in fade-in-0 zoom-in-95 duration-200">
                     <div className="flex items-center justify-between mb-2 pb-2 border-b">
                       <span className="text-sm font-medium text-gray-700">{filter.label}</span>
                       {hasActiveOptions && (
@@ -800,7 +977,7 @@ function InternshipsContent() {
                                   type="checkbox"
                                   checked={activeFilters[filter.label]?.includes(option) || false}
                                   onChange={() => toggleFilterOption(filter.label, option)}
-                                  className="accent-blue-500"
+                                  className="accent-blue-500 w-4 h-4 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-all duration-200"
                                 />
                                 {option}
                               </label>
@@ -847,7 +1024,7 @@ function InternshipsContent() {
                                           if (val > customCostRange[1]) val = customCostRange[1];
                                           setCustomCostRange([val, customCostRange[1]]);
                                         }}
-                                        className="w-full px-2 py-1 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
+                                        className="w-full px-2 py-1 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md hover:border-gray-400"
                                         style={{ minWidth: '60px' }}
                                       />
                                     </div>
@@ -872,27 +1049,27 @@ function InternshipsContent() {
                                       />
                                     </div>
                                   </div>
-                                    <div className="w-full flex justify-center items-center">
-                                      <Slider
-                                        range
-                                        min={0}
-                                        max={maxCost}
-                                        value={customCostRange}
-                                        onChange={(value) => {
-                                          if (Array.isArray(value)) {
-                                            setCustomCostRange(value as [number, number]);
-                                            setLastSearchTime(Date.now()); // Trigger immediate re-filtering
-                                          }
-                                        }}
-                                        allowCross={false}
-                                        marks={{ 0: { style: { marginLeft: 0 }, label: '$0' }, [maxCost]: { style: { marginRight: 0 }, label: `$${maxCost}` } }}
-                                        step={100}
-                                        trackStyle={[{ backgroundColor: '#3C66C2', height: 4 }]}
-                                        handleStyle={[{ borderColor: '#3C66C2', height: 14, width: 14, marginTop: -5 }, { borderColor: '#3C66C2', height: 14, width: 14, marginTop: -5 }]}
-                                        railStyle={{ height: 4 }}
-                                        style={{ width: '120px', margin: '0 auto' }}
-                                      />
-                                    </div>
+                                  <div className="w-full flex justify-center items-center">
+                                    <Slider
+                                      range
+                                      min={0}
+                                      max={maxCost}
+                                      value={customCostRange}
+                                      onChange={(value) => {
+                                        if (Array.isArray(value)) {
+                                          setCustomCostRange(value as [number, number]);
+                                          setLastSearchTime(Date.now()); // Trigger immediate re-filtering
+                                        }
+                                      }}
+                                      allowCross={false}
+                                      marks={{ 0: { style: { marginLeft: 0 }, label: '$0' }, [maxCost]: { style: { marginRight: 0 }, label: `$${maxCost}` } }}
+                                      step={100}
+                                      trackStyle={[{ backgroundColor: '#3C66C2', height: 4 }]}
+                                      handleStyle={[{ borderColor: '#3C66C2', height: 14, width: 14, marginTop: -5 }, { borderColor: '#3C66C2', height: 14, width: 14, marginTop: -5 }]}
+                                      railStyle={{ height: 4 }}
+                                      style={{ width: '120px', margin: '0 auto' }}
+                                    />
+                                  </div>
                                 </div>
                                 <div className="text-xs text-gray-400 mt-6 text-center">Select range in USD</div>
                               </div>
@@ -930,7 +1107,7 @@ function InternshipsContent() {
 
           {/* Cat's suggestion */}
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
-          <p className="text-purple-700 text-sm font-medium mb-2">🐱 Meow! Here&apos;s a suggestion:</p>
+            <p className="text-purple-700 text-sm font-medium mb-2">🐱 Meow! Here&apos;s a suggestion:</p>
             <p className="text-purple-600 text-sm">
               Try using broader search terms or removing some filters to find more opportunities!
             </p>
@@ -947,11 +1124,13 @@ function InternshipsContent() {
         </div>
       )}
 
-      <InternshipCards
-        internships={filteredAndSortedInternships}
-        bookmarked={bookmarked}
-        toggleBookmark={toggleBookmark}
-      />
+      <div className="animate-in fade-in-0 duration-500">
+        <InternshipCards
+          internships={filteredAndSortedInternships}
+          bookmarked={bookmarked}
+          toggleBookmark={toggleBookmark}
+        />
+      </div>
     </div>
   );
 }

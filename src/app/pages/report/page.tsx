@@ -46,7 +46,7 @@ export default function ReportPage() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
         toast.error("Please log in to submit a report.");
-        router.push(`/login?redirect=/report`);
+        router.push(`/pages/login?redirect=${encodeURIComponent("/pages/report")}`); // FIX THIS; DOESNT WORK
       } else {
         setUser(user);
       }
@@ -166,10 +166,10 @@ export default function ReportPage() {
           reportType === "info"
             ? reportDetails
             : reportType === "bug"
-            ? bugDescription
-            : reportType === "other"
-            ? otherDescription
-            : "",
+              ? bugDescription
+              : reportType === "other"
+                ? otherDescription
+                : "",
 
         // Incorrect info extra fields
         ...(reportType === "info" && {
@@ -236,7 +236,7 @@ export default function ReportPage() {
   return (
     <div className="mt-20 px-4 py-2">
       {step !== 2 ? (
-        <form className="bg-white rounded-2xl shadow-md p-6 max-w-3xl mx-auto" onSubmit={handleSubmit}>
+        <form className="bg-gradient-to-br from-white/70 to-gray-50/50 backdrop-blur-sm border border-white/40 rounded-3xl shadow-2xl p-10 max-w-3xl mx-auto" onSubmit={handleSubmit}>
           <h1 className="text-xl text-center mb-4 font-semibold">Report an Issue</h1>
 
           {step === 0 && (
@@ -320,7 +320,7 @@ export default function ReportPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Current Info
                       </label>
-                      <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm">
+                      <div className="px-4 py-3 bg-gradient-to-br from-white/60 to-gray-50/40 backdrop-blur-sm border border-white/40 rounded-2xl shadow-lg">
                         {(() => {
                           const selected = internships.find(
                             (int) => `${int.overview.title} — ${int.overview.provider}` === searchTerm
@@ -443,7 +443,7 @@ export default function ReportPage() {
               {/* User Info Display */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">User ID</label>
-                <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl shadow-sm">
+                <div className="px-4 py-3 bg-gradient-to-br from-white/60 to-blue-50/40 backdrop-blur-sm border border-white/40 rounded-2xl shadow-lg">
                   {user.uid}
                 </div>
               </div>
@@ -465,10 +465,10 @@ export default function ReportPage() {
           )}
         </form>
       ) : (
-        <div className="flex flex-col items-center justify-center text-center p-6 space-y-6 bg-white rounded-2xl shadow-md max-w-3xl mx-auto mt-[20vh] mb-[25vh]">
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center text-center p-10 space-y-6 bg-gradient-to-br from-white/70 to-green-50/50 backdrop-blur-sm border border-white/40 rounded-3xl shadow-2xl max-w-3xl mx-auto mt-[20vh] mb-[25vh]">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
             <svg
-              className="w-8 h-8 text-green-600"
+              className="w-8 h-8 text-white"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
