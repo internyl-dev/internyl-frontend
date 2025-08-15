@@ -132,6 +132,60 @@ const FloatingCard = ({ children, delay = 0, className = "" }: {
   );
 };
 
+const InsightsWidget = ({ savedCount, totalInternships, savedInternshipsFiltered }: { 
+  savedCount: number; 
+  totalInternships: number;
+  savedInternshipsFiltered: any[];
+}) => {
+  const completionRate = totalInternships > 0 ? (savedCount / Math.min(totalInternships, 10)) * 100 : 0;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.8 }}
+      className="bg-white/30 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-xl mx-2 sm:mx-4 mt-6"
+    >
+      <h3 className="text-lg font-semibold text-[#2F2F3A] mb-4">Your Progress</h3>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div className="p-3 bg-white/40 rounded-xl">
+          <div className="text-2xl font-bold text-[#ec6464]">{savedCount}</div>
+          <div className="text-sm text-gray-600">Saved</div>
+        </div>
+        <div className="p-3 bg-white/40 rounded-xl">
+          <div className="text-2xl font-bold text-[#9381FF]">{Math.round(completionRate)}%</div>
+          <div className="text-sm text-gray-600">Explored</div>
+        </div>
+        <div className="p-3 bg-white/40 rounded-xl">
+          <div className="text-2xl font-bold text-[#2BA280]">
+            {savedInternshipsFiltered.filter(i => {
+              const deadlines = i.dates?.deadlines || [];
+              const nextDeadline = deadlines.find(d => d.date && new Date(d.date) > new Date());
+              return nextDeadline;
+            }).length}
+          </div>
+          <div className="text-sm text-gray-600">Active</div>
+        </div>
+        <div className="p-3 bg-white/40 rounded-xl">
+          <div className="text-2xl font-bold text-[#E26262]">
+            {savedInternshipsFiltered.filter(i => {
+              const deadlines = i.dates?.deadlines || [];
+              const soonDeadline = deadlines.find(d => {
+                if (!d.date) return false;
+                const deadlineDate = new Date(d.date);
+                const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                return deadlineDate <= weekFromNow && deadlineDate > new Date();
+              });
+              return soonDeadline;
+            }).length}
+          </div>
+          <div className="text-sm text-gray-600">Due Soon</div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 // Component that uses useSearchParams - wrapped in its own Suspense
 function HomeContent() {
   const [user, setUser] = useState<User | null>(null);
@@ -429,7 +483,14 @@ function HomeContent() {
               )}
             </div>
           </div>
-        </motion.div>
+          </motion.div>
+        
+        {/* Smart Data Insights Widget */}
+        <InsightsWidget 
+          savedCount={savedInternshipsFiltered.length} 
+          totalInternships={internships.length}
+          savedInternshipsFiltered={savedInternshipsFiltered}
+        />
       </div>
     );
   }
