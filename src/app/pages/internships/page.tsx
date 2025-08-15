@@ -171,6 +171,30 @@ function InternshipsContent() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.filter-dropdown') && !target.closest('.filter-button') && !target.closest('.sort-dropdown-container')) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Add keyboard navigation support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpenDropdown(null);
+        setShowMobileFilters(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Auto-hide mobile filters when desktop size
   useEffect(() => {
     const handleResize = () => {
@@ -665,7 +689,7 @@ function InternshipsContent() {
         <div className="relative sort-dropdown-container">
           <button
             onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
-            className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border text-sm font-medium hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border text-sm font-medium hover:bg-gray-50 hover:shadow-md transition-all duration-200 hover:scale-105"
           >
             <SlidersHorizontal className="w-4 h-4" />
             Sort: {sortOptions.find(opt => opt.value === sortBy)?.label}
@@ -696,9 +720,9 @@ function InternshipsContent() {
         {user && hasBookmarkedInternships && (
           <button
             onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${showBookmarkedOnly
-              ? 'bg-blue-100 text-blue-700 border border-blue-200'
-              : 'bg-white text-gray-700 border hover:bg-gray-50'
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${showBookmarkedOnly
+              ? 'bg-blue-100 text-blue-700 border border-blue-200 animate-pulse'
+              : 'bg-white text-gray-700 border hover:bg-gray-50 hover:shadow-md'
               }`}
           >
             <BookmarkCheck className="w-4 h-4" />
@@ -743,8 +767,9 @@ function InternshipsContent() {
             options.map((option) => (
               <div
                 key={`${category}-${option}`}
-                className={`flex items-center gap-1 px-3 py-1 ${getFilterColor(category)} rounded-full text-sm text-black`}
+                className={`flex items-center gap-1 px-3 py-1 ${getFilterColor(category)} rounded-full text-sm text-black animate-in fade-in-0 zoom-in-95 duration-200 hover:scale-105 transition-transform`}
               >
+
                 <span>{category}: {option === "Custom Range" ? `$${customCostRange[0]} - $${customCostRange[1]}` : option}</span>
                 <button
                   onClick={() => toggleFilterOption(category, option)}
@@ -758,7 +783,7 @@ function InternshipsContent() {
           {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
             <button
               onClick={clearAllFilters}
-              className="flex items-center gap-1 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-full text-sm font-medium transition-colors"
+              className="flex items-center gap-1 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 hover:shadow-sm active:scale-95"
             >
               <RotateCcw className="w-3 h-3" />
               Clear all
@@ -796,7 +821,7 @@ function InternshipsContent() {
                   onClick={() =>
                     setOpenDropdown((prev) => (prev === filter.label ? null : filter.label))
                   }
-                  className={`filter-button flex items-center gap-2 px-4 py-2 rounded-full ${filter.color} text-black text-sm font-semibold shadow-sm hover:brightness-95 transition ${hasActiveOptions ? 'ring-2 ring-blue-400 ring-offset-1' : ''
+                  className={`filter-button flex items-center gap-2 px-4 py-2 rounded-full ${filter.color} text-black text-sm font-semibold shadow-sm hover:brightness-95 hover:scale-105 transition-all duration-200 ${hasActiveOptions ? 'ring-2 ring-blue-400 ring-offset-1' : ''
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -811,7 +836,7 @@ function InternshipsContent() {
                 </button>
 
                 {openDropdown === filter.label && (
-                  <div className="absolute top-12 left-0 w-48 bg-white rounded-xl shadow-lg p-3 space-y-2 z-20 border">
+                  <div className="absolute top-12 left-0 w-48 bg-white rounded-xl shadow-lg p-3 space-y-2 z-20 border animate-in fade-in-0 zoom-in-95 duration-200">
                     <div className="flex items-center justify-between mb-2 pb-2 border-b">
                       <span className="text-sm font-medium text-gray-700">{filter.label}</span>
                       {hasActiveOptions && (
@@ -843,7 +868,7 @@ function InternshipsContent() {
                                   type="checkbox"
                                   checked={activeFilters[filter.label]?.includes(option) || false}
                                   onChange={() => toggleFilterOption(filter.label, option)}
-                                  className="accent-blue-500"
+                                  className="accent-blue-500 w-4 h-4 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-all duration-200"
                                 />
                                 {option}
                               </label>
@@ -890,7 +915,7 @@ function InternshipsContent() {
                                           if (val > customCostRange[1]) val = customCostRange[1];
                                           setCustomCostRange([val, customCostRange[1]]);
                                         }}
-                                        className="w-full px-2 py-1 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
+                                        className="w-full px-2 py-1 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md hover:border-gray-400"
                                         style={{ minWidth: '60px' }}
                                       />
                                     </div>
@@ -990,11 +1015,13 @@ function InternshipsContent() {
         </div>
       )}
 
-      <InternshipCards
-        internships={filteredAndSortedInternships}
-        bookmarked={bookmarked}
-        toggleBookmark={toggleBookmark}
-      />
+      <div className="animate-in fade-in-0 duration-500">
+        <InternshipCards
+          internships={filteredAndSortedInternships}
+          bookmarked={bookmarked}
+          toggleBookmark={toggleBookmark}
+        />
+      </div>
     </div>
   );
 }
