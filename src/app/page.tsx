@@ -135,7 +135,7 @@ const FloatingCard = ({ children, delay = 0, className = "" }: {
 const InsightsWidget = ({ savedCount, totalInternships, savedInternshipsFiltered }: { 
   savedCount: number; 
   totalInternships: number;
-  savedInternshipsFiltered: any[];
+  savedInternshipsFiltered: Internship[];
 }) => {
   const completionRate = totalInternships > 0 ? (savedCount / Math.min(totalInternships, 10)) * 100 : 0;
   
@@ -405,7 +405,7 @@ function HomeContent() {
                     </svg>
                   </div>
                   <h3 className="text-xl font-semibold text-gray-700 mb-2">No saved internships yet</h3>
-                  <p className="text-gray-500 mb-6">Start exploring and bookmark internships you're interested in!</p>
+                  <p className="text-gray-500 mb-6">Start exploring and bookmark internships you&apos;re interested in!</p>
                   <Link
                     href="/pages/internships"
                     className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#E26262] to-[#F07575] text-white rounded-full hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 font-medium gap-2"
