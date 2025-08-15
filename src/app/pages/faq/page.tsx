@@ -38,14 +38,14 @@ const faqData: FAQItem[] = [
   // Eligibility & Applications
   {
     id: "eligibility-1",
-    question: "I&apos;m a freshman - are there internships available for me?",
+    question: "I'm a freshman - are there internships available for me?",
     answer: "Absolutely! While many competitive programs target juniors and seniors, we have numerous opportunities specifically for freshmen and sophomores. Use our &apos;Eligibility&apos; filter to find programs that accept your grade level.",
     category: "Eligibility & Applications",
     icon: GraduationCap
   },
   {
     id: "eligibility-2",
-    question: "What&apos;s the difference between &apos;Rising Junior&apos; and &apos;Junior&apos;?",
+    question: "What's the difference between &apos;Rising Junior&apos; and &apos;Junior&apos;?",
     answer: "&apos;Rising Junior&apos; means you&apos;ll be a junior in the fall (currently a sophomore), while &apos;Junior&apos; means you&apos;re currently a junior. Most summer programs use &apos;Rising&apos; terminology since they occur between academic years.",
     category: "Eligibility & Applications",
     icon: GraduationCap
@@ -236,7 +236,7 @@ export default function FAQ() {
           </div>
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
             Frequently Asked{' '}
-            <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-800 bg-clip-text text-transparent animate-gradient bg-300% bg-gradient-to-r">
+            <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-800 bg-clip-text text-transparent animate-gradient bg-300%">
               Questions
             </span>
           </h1>
@@ -337,7 +337,7 @@ export default function FAQ() {
                         </div>
                         <div>
                           <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
-                            {faq.question}
+                            {faq.question.replace(/&apos;/g, "'")}
                           </h3>
                           <span className="text-sm text-gray-600 font-medium px-3 py-1 bg-white/40 rounded-full">
                             {faq.category}
@@ -355,7 +355,7 @@ export default function FAQ() {
                       <div className="px-8 pb-6">
                         <div className="pl-18 bg-white/30 backdrop-blur-sm rounded-xl p-6 border border-white/40">
                           <p className="text-gray-700 leading-relaxed text-lg">
-                            {faq.answer}
+                            {faq.answer.replace(/&apos;/g, "'")}
                           </p>
                         </div>
                       </div>

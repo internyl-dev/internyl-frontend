@@ -46,7 +46,7 @@ export default function ReportPage() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
         toast.error("Please log in to submit a report.");
-        router.push(`/login?redirect=/report`);
+        router.push(`/pages/login?redirect=${encodeURIComponent("/pages/report")}`); // FIX THIS; DOESNT WORK
       } else {
         setUser(user);
       }
@@ -166,10 +166,10 @@ export default function ReportPage() {
           reportType === "info"
             ? reportDetails
             : reportType === "bug"
-            ? bugDescription
-            : reportType === "other"
-            ? otherDescription
-            : "",
+              ? bugDescription
+              : reportType === "other"
+                ? otherDescription
+                : "",
 
         // Incorrect info extra fields
         ...(reportType === "info" && {

@@ -779,7 +779,7 @@ function InternshipsContent() {
   return (
     <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
       {/* Motivational Header */}
-      <div className="text-center pt-2 mt-0">
+      <div className="text-center pt-3.5 mt-0">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1">
           Find Your Perfect Internship
         </h1>
@@ -788,7 +788,7 @@ function InternshipsContent() {
         </p>
       </div>
 
-      <div className="-mt-16">
+      <div className="-mt-20">
         <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
       </div>
 

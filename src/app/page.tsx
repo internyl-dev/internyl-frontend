@@ -132,13 +132,13 @@ const FloatingCard = ({ children, delay = 0, className = "" }: {
   );
 };
 
-const InsightsWidget = ({ savedCount, totalInternships, savedInternshipsFiltered }: { 
-  savedCount: number; 
+const InsightsWidget = ({ savedCount, totalInternships, savedInternshipsFiltered }: {
+  savedCount: number;
   totalInternships: number;
   savedInternshipsFiltered: Internship[];
 }) => {
   const completionRate = totalInternships > 0 ? (savedCount / Math.min(totalInternships, 10)) * 100 : 0;
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -268,30 +268,30 @@ function HomeContent() {
   useEffect(() => {
     if (searchTerm.length >= 2 && internships.length > 0) {
       const suggestions = new Set<string>();
-      
+
       internships.forEach(internship => {
         const title = internship.overview?.title;
         const provider = internship.overview?.provider;
         const subjects = internship.overview?.subject || [];
         const tags = internship.overview?.tags || [];
-        
+
         // Add title matches
         if (title && title.toLowerCase().includes(searchTerm.toLowerCase())) {
           suggestions.add(title);
         }
-        
+
         // Add provider matches
         if (provider && provider.toLowerCase().includes(searchTerm.toLowerCase())) {
           suggestions.add(provider);
         }
-        
+
         // Add subject matches
         subjects.forEach(subject => {
           if (subject && subject.toLowerCase().includes(searchTerm.toLowerCase())) {
             suggestions.add(subject);
           }
         });
-        
+
         // Add tag matches
         tags.forEach(tag => {
           if (tag && tag.toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -299,7 +299,7 @@ function HomeContent() {
           }
         });
       });
-      
+
       const suggestionArray = Array.from(suggestions).slice(0, 5);
       setSearchSuggestions(suggestionArray);
       setShowSuggestions(true);
@@ -342,7 +342,7 @@ function HomeContent() {
         {/* Top Section with enhanced gradient */}
         <div className="bg-gradient-to-br from-[#9381FF] via-[#A891FF] to-[#9381FF] text-white relative">
           <div className="absolute inset-0 bg-black/5"></div>
-          <div className="px-4 sm:px-6 md:px-12 lg:px-20 pt-20 md:pt-28 pb-20 md:pb-28 relative text-right z-10">
+          <div className="px-4 sm:px-6 md:px-12 lg:px-20 pt-20 md:pt-28 pb-20 md:pb-28 relative text-center sm:text-right z-10">
             <motion.div
               className="inline-block max-w-full"
               initial={{ opacity: 0, y: 30 }}
@@ -358,7 +358,7 @@ function HomeContent() {
                 Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ")[0] || "Intern"}
               </motion.h1>
               <motion.p
-                className={`text-left text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className} drop-shadow-md`}
+                className={`text-center sm:text-left text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className} drop-shadow-md`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
@@ -369,14 +369,21 @@ function HomeContent() {
           </div>
         </div>
 
+        {/* Smart Data Insights Widget */}
+        <InsightsWidget
+          savedCount={savedInternshipsFiltered.length}
+          totalInternships={internships.length}
+          savedInternshipsFiltered={savedInternshipsFiltered}
+        />
+
         {/* Middle Section with enhanced styling */}
         <motion.div
-          className="relative bg-white/40 backdrop-blur-xl rounded-tl-[30px] rounded-bl-[30px] mt-6 mx-2 sm:mx-4 text-[#2F2F3A] flex flex-col max-w-full shadow-2xl border border-white/20"
+          className="relative bg-white/40 backdrop-blur-xl rounded-tl-[30px] rounded-bl-[30px] rounded-tr-[30px] rounded-br-[30px] mt-6 mx-2 sm:mx-4 text-[#2F2F3A] flex flex-col max-w-full shadow-2xl border border-white/20"
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 sm:px-6 md:px-12 lg:px-20 pt-10 md:pt-18 pb-8 md:pb-12 gap-4 md:gap-0">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 sm:px-6 md:px-12 lg:px-20 pt-10 md:pt-18 sm:pb-8 md:pb-12 gap-4 md:gap-0 ml-8 sm:ml-0 pb-0">
             <div className="flex flex-col items-start w-full md:w-auto">
               <p className="text-base sm:text-lg md:text-[18px] text-[#A2A2C7] tracking-[-0.04em] mb-1 font-medium">
                 Track your internships
@@ -418,7 +425,7 @@ function HomeContent() {
                 savedInternshipsFiltered.map((internship, index) => (
                   <motion.div
                     key={internship.id}
-                    className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm"
+                    className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm sm:mr-0 mr-10"
                     initial={{ opacity: 1, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -437,12 +444,12 @@ function HomeContent() {
 
         {/* Suggested Internships Section */}
         <motion.div
-          className="relative bg-white/40 backdrop-blur-xl rounded-tl-[30px] rounded-bl-[30px] mt-10 mx-2 sm:mx-4 text-[#2F2F3A] flex flex-col max-w-full shadow-2xl border border-white/20"
+          className="relative bg-white/40 backdrop-blur-xl rounded-tl-[30px] rounded-bl-[30px] rounded-tr-[30px] rounded-br-[30px] mt-10 mx-2 sm:mx-4 text-[#2F2F3A] flex flex-col max-w-full shadow-2xl border border-white/20"
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 sm:px-6 md:px-12 lg:px-20 pt-10 md:pt-18 pb-8 md:pb-12 gap-4 md:gap-0">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 sm:px-6 md:px-12 lg:px-20 pt-10 md:pt-18 sm:pb-8 md:pb-12 gap-4 md:gap-0 ml-8 pb-0">
             <div className="flex flex-col items-start w-full md:w-auto">
               <p className="text-base sm:text-lg md:text-[18px] text-[#A2A2C7] tracking-[-0.04em] mb-1 font-medium">
                 Recommended for you
@@ -468,7 +475,7 @@ function HomeContent() {
                 internshipsToShow.map((internship, index) => (
                   <motion.div
                     key={internship.id}
-                    className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm"
+                    className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm sm:mr-0 mr-10"
                     initial={{ opacity: 1, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -483,30 +490,31 @@ function HomeContent() {
               )}
             </div>
           </div>
-          </motion.div>
-        
-        {/* Smart Data Insights Widget */}
-        <InsightsWidget 
-          savedCount={savedInternshipsFiltered.length} 
+        </motion.div>
+
+        {/* Smart Data Insights Widget
+        <InsightsWidget
+          savedCount={savedInternshipsFiltered.length}
           totalInternships={internships.length}
           savedInternshipsFiltered={savedInternshipsFiltered}
-        />
+        /> */}
       </div>
     );
   }
 
   // Enhanced Public Landing Page
   return (
-    <div className="text-[#1d1d1f] px-2 sm:px-6 md:px-12 lg:px-20 pt-16 sm:pt-24 pb-20 sm:pb-32 relative overflow-hidden">
+    <div className="text-[#1d1d1f] px-3 sm:px-6 md:px-12 lg:px-20 pt-16 sm:pt-24 pb-20 sm:pb-32 relative overflow-hidden">
       {/* Subtle background decoration */}
       <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 right-20 w-72 h-72 bg-gradient-to-br from-[#ec6464]/10 to-[#9381FF]/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-gradient-to-tr from-[#2BA280]/10 to-[#3C66C2]/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-10 right-10 w-52 h-52 sm:w-72 sm:h-72 bg-gradient-to-br from-[#ec6464]/10 to-[#9381FF]/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-10 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-tr from-[#2BA280]/10 to-[#3C66C2]/10 rounded-full blur-3xl"></div>
       </div>
 
-      {/* Hero Section with enhanced animations */}
-      <section className="max-w-7xl mx-auto relative z-10 mr-auto ml-auto">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-0">
+      {/* Hero Section */}
+      <section className="max-w-7xl mx-auto relative z-10">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+          {/* Hero Text */}
           <motion.div
             className="text-center lg:text-left w-full mt-8 sm:mt-10"
             initial={{ opacity: 0, y: 50 }}
@@ -522,15 +530,15 @@ function HomeContent() {
               Internyl — Internship Tracker for Students
             </motion.p>
             <motion.h1
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
+              className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold leading-tight"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
             >
               <span className={`text-transparent bg-gradient-to-r from-[#ec6464] to-[#f07575] bg-clip-text font-extrabold ${inter.className} drop-shadow-sm`}>Streamline</span><br />
               <span>your search,</span><br />
-              Secure <span className={`font-bold ${kalam.className} text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#9381FF] to-[#A891FF] bg-clip-text`}>your</span><br />
-<span className={`font-bold ${kalam.className} text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#2BA280] to-[#3C66C2] bg-clip-text hover:from-[#5865F2] hover:to-[#5865F2] transition-all duration-300 cursor-pointer`}>future</span>
+              Secure <span className={`font-bold ${kalam.className} text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#9381FF] to-[#A891FF] bg-clip-text`}>your</span><br />
+              <span className={`font-bold ${kalam.className} text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#2BA280] to-[#3C66C2] bg-clip-text hover:from-[#5865F2] hover:to-[#5865F2] transition-all duration-300 cursor-pointer`}>future</span>
             </motion.h1>
             <motion.p
               className="mt-6 text-lg text-[#1d1d1f]/80 font-medium leading-relaxed"
@@ -540,6 +548,8 @@ function HomeContent() {
             >
               Internyl helps students find and track internships and programs — all in one place.
             </motion.p>
+
+            {/* Search Form */}
             <motion.div
               className="mt-8 flex flex-col items-center gap-6 w-full"
               initial={{ opacity: 0, y: 20 }}
@@ -547,60 +557,58 @@ function HomeContent() {
               transition={{ delay: 0.6, duration: 0.6 }}
             >
               <form
-                className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full max-w-xl"
+                className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full max-w-xl px-2"
                 onSubmit={handleSearch}
               >
                 <div className="relative w-full">
-  <SearchOutlinedIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
-  <input
-    type="text"
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
-    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-    placeholder="Search for your dream internship..."
-    className="pl-12 pr-6 py-4 rounded-2xl text-base w-full shadow-lg border-2 border-gray-200/50 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464]/50 focus:border-[#ec6464] transition-all duration-300 hover:shadow-xl font-medium placeholder:text-gray-400"
-    minLength={2}
-    required
-  />
-  {searchTerm && (
-    <button
-      type="button"
-      onClick={() => {setSearchTerm(''); setShowSuggestions(false);}}
-      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
-    >
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </button>
-  )}
-  
-  {/* Search Suggestions Dropdown */}
-  {showSuggestions && searchSuggestions.length > 0 && (
-    <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md border border-gray-200 rounded-xl shadow-2xl z-20 max-h-60 overflow-y-auto">
-      {searchSuggestions.map((suggestion, index) => (
-        <button
-          key={index}
-          type="button"
-          onClick={() => {
-            setSearchTerm(suggestion);
-            setShowSuggestions(false);
-            router.push(`/pages/internships?search=${encodeURIComponent(suggestion)}`);
-          }}
-          className="w-full px-4 py-3 text-left hover:bg-[#ec6464]/10 transition-colors duration-200 border-b border-gray-100 last:border-b-0 text-gray-700 font-medium"
-        >
-          <SearchOutlinedIcon className="w-4 h-4 text-gray-400 mr-3 inline" />
-          {suggestion}
-        </button>
-      ))}
-    </div>
-  )}
-  
-  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#ec6464]/5 to-[#9381FF]/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-</div>
+                  <SearchOutlinedIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    placeholder="Search for your dream internship..."
+                    className="pl-12 pr-6 py-4 rounded-2xl text-base w-full shadow-lg border-2 border-gray-200/50 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464]/50 focus:border-[#ec6464] transition-all duration-300 hover:shadow-xl font-medium placeholder:text-gray-400"
+                    minLength={2}
+                    required
+                  />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => { setSearchTerm(''); setShowSuggestions(false); }}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+
+                  {/* Search Suggestions Dropdown */}
+                  {showSuggestions && searchSuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md border border-gray-200 rounded-xl shadow-2xl z-20 max-h-60 overflow-y-auto">
+                      {searchSuggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => {
+                            setSearchTerm(suggestion);
+                            setShowSuggestions(false);
+                            router.push(`/pages/internships?search=${encodeURIComponent(suggestion)}`);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-[#ec6464]/10 transition-colors duration-200 border-b border-gray-100 last:border-b-0 text-gray-700 font-medium"
+                        >
+                          <SearchOutlinedIcon className="w-4 h-4 text-gray-400 mr-3 inline" />
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button
                   type="submit"
-                  className="group mx-auto bg-gradient-to-r from-[#ec6464] to-[#f07575] hover:from-[#d65050] hover:to-[#e66666] text-white px-8 py-4 rounded-2xl font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center whitespace-nowrap text-base min-w-[180px] min-h-[56px] shadow-xl hover:shadow-2xl transform hover:scale-105 border border-white/20"
+                  className="group w-full sm:w-auto bg-gradient-to-r from-[#ec6464] to-[#f07575] hover:from-[#d65050] hover:to-[#e66666] text-white px-8 py-4 rounded-2xl font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center whitespace-nowrap text-base min-h-[56px] shadow-xl hover:shadow-2xl transform hover:scale-105 border border-white/20"
                 >
                   <span className="inline-flex items-center gap-2">
                     begin search
@@ -608,8 +616,10 @@ function HomeContent() {
                   </span>
                 </button>
               </form>
+
+              {/* Free to Use Badge */}
               <motion.div
-                className="flex justify-end w-[120%] ml-4"
+                className="flex justify-center md:justify-end w-full"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
@@ -618,24 +628,25 @@ function HomeContent() {
                   width={200}
                   height={54}
                   alt="Free to use"
-                  className="-mt-2 sm:-mt-1 w-auto h-12 sm:h-14 drop-shadow-xl hover:drop-shadow-2xl transition-all duration-300"
+                  className="w-auto h-12 sm:h-14 drop-shadow-xl hover:drop-shadow-2xl transition-all duration-300"
                   style={{ filter: 'drop-shadow(0 4px 20px rgba(236,100,100,0.15))' }}
                 />
               </motion.div>
             </motion.div>
           </motion.div>
 
+          {/* Hero Image */}
           <motion.div
-            className="hidden md:flex justify-end w-full"
-            initial={{ opacity: 0, x: 50, rotate: 5 }}
-            animate={{ opacity: 1, x: 0, rotate: 0 }}
+            className="md:flex justify-center hidden md:justify-end w-full mt-10 md:mt-0"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
           >
             <FloatingCard delay={0.5}>
               <Image
                 src="/internyl-infinite-cards.svg"
                 alt="Internship tiles visual"
-                className="drop-shadow-2xl object-left overflow-x-hidden w-[220px] md:w-[340px] lg:w-[440px] xl:w-[540px] h-auto hover:scale-105 transition-transform duration-500 ease-out"
+                className="drop-shadow-2xl object-left w-[240px] sm:w-[300px] md:w-[440px] lg:w-[540px] h-auto hover:scale-105 transition-transform duration-500 ease-out"
                 width={540}
                 height={540}
               />
@@ -646,7 +657,7 @@ function HomeContent() {
 
       {/* Enhanced Comparison Section */}
       <motion.section
-        className="mt-32 text-center"
+        className="mt-30 text-center"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
@@ -826,21 +837,19 @@ function HomeContent() {
 
       {/* Enhanced global styles */}
       <style jsx global>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-8px) rotate(1deg); }
-          66% { transform: translateY(-4px) rotate(-0.5deg); }
-        }
-        
-        @keyframes pulse-glow {
-          0%, 100% { box-shadow: 0 0 20px rgba(236,100,100,0.3); }
-          50% { box-shadow: 0 0 30px rgba(236,100,100,0.5), 0 0 40px rgba(236,100,100,0.2); }
-        }
-        
-        .hover\\:shadow-3xl:hover {
-          box-shadow: 0 25px 80px 0 rgba(0, 0, 0, 0.15);
-        }
-      `}</style>
+      @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        33% { transform: translateY(-8px) rotate(1deg); }
+        66% { transform: translateY(-4px) rotate(-0.5deg); }
+      }
+      @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(236,100,100,0.3); }
+        50% { box-shadow: 0 0 30px rgba(236,100,100,0.5), 0 0 40px rgba(236,100,100,0.2); }
+      }
+      .hover\\:shadow-3xl:hover {
+        box-shadow: 0 25px 80px 0 rgba(0, 0, 0, 0.15);
+      }
+    `}</style>
     </div>
   );
 }

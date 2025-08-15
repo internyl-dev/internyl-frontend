@@ -72,18 +72,18 @@ export default function InternshipCards({
     if (duration === null || duration === undefined || duration === "not provided" || duration === "") {
       return "Not provided";
     }
-    
+
     // If it's a number (integer), add "weeks"
     if (typeof duration === 'number' || (typeof duration === 'string' && !isNaN(Number(duration)))) {
       const weeks = typeof duration === 'number' ? duration : Number(duration);
       return `${weeks} weeks`;
     }
-    
+
     // If it's already a string with descriptive text, return as is
     if (typeof duration === 'string') {
       return duration;
     }
-    
+
     return "Not provided";
   };
 
@@ -155,14 +155,14 @@ export default function InternshipCards({
   const getAdditionalInfo = (internship: InternshipType) => {
     const info: { label: string; value: string }[] = [];
 
-  // Description - most important, shown first
+    // Description - most important, shown first
     if (isValidValue(internship.overview?.description)) {
       info.push({
         label: "Description",
         value: internship.overview.description
       });
     }
-    
+
     // Location information
     if (internship.locations?.locations && Array.isArray(internship.locations.locations)) {
       const location = internship.locations.locations[0];
@@ -180,7 +180,7 @@ export default function InternshipCards({
         if (isValidValue(location.address)) {
           locationParts.push(location.address);
         }
-        
+
         if (locationParts.length > 0) {
           info.push({
             label: "Location",
@@ -189,7 +189,7 @@ export default function InternshipCards({
         }
       }
     }
-    
+
     // Tags (online, hybrid, in-person)
     if (internship.overview?.tags && Array.isArray(internship.overview.tags)) {
       const validTags = internship.overview.tags.filter(tag => isValidValue(tag));
@@ -200,7 +200,7 @@ export default function InternshipCards({
         });
       }
     }
-    
+
     // All deadlines with details
     if (internship.dates?.deadlines && Array.isArray(internship.dates.deadlines)) {
       const deadlines = internship.dates.deadlines
@@ -225,7 +225,7 @@ export default function InternshipCards({
         });
       }
     }
-    
+
     // Program dates
     if (internship.dates?.dates && Array.isArray(internship.dates.dates)) {
       const programDates = internship.dates.dates
@@ -246,7 +246,7 @@ export default function InternshipCards({
         });
       }
     }
-    
+
     // Eligibility requirements from "other" array
     if (internship.eligibility?.requirements?.other && Array.isArray(internship.eligibility.requirements.other)) {
       const requirements = internship.eligibility.requirements.other
@@ -258,7 +258,7 @@ export default function InternshipCards({
         });
       }
     }
-    
+
     // Application requirements
     const appRequirements = [];
     if (isTruthyValue(internship.eligibility?.requirements?.essay_required)) {
@@ -270,14 +270,14 @@ export default function InternshipCards({
     if (isTruthyValue(internship.eligibility?.requirements?.transcript_required)) {
       appRequirements.push("Transcript required");
     }
-    
+
     if (appRequirements.length > 0) {
       info.push({
         label: "Application Requirements",
         value: appRequirements.join(" • ")
       });
     }
-    
+
     // Cost details (for modal):
     if (internship.costs?.costs && Array.isArray(internship.costs.costs) && internship.costs.costs[0]) {
       const costInfo = internship.costs.costs[0];
@@ -307,7 +307,7 @@ export default function InternshipCards({
         });
       }
     }
-    
+
     // Contact information
     if (internship.contact?.contact) {
       const contactInfo = [];
@@ -317,7 +317,7 @@ export default function InternshipCards({
       if (isValidValue(internship.contact.contact.phone)) {
         contactInfo.push(`Phone: ${internship.contact.contact.phone}`);
       }
-      
+
       if (contactInfo.length > 0) {
         info.push({
           label: "Contact",
@@ -325,7 +325,7 @@ export default function InternshipCards({
         });
       }
     }
-    
+
     return info;
   };
 
@@ -486,10 +486,10 @@ export default function InternshipCards({
             if (firstDeadlineDateString) {
               console.log('Raw deadline date:', firstDeadlineDateString);
             }
-              const firstDeadlineDate = firstDeadlineDateString && 
-                isValidValue(firstDeadlineDateString)
-                  ? formatDate(firstDeadlineDateString)
-                  : null;
+            const firstDeadlineDate = firstDeadlineDateString &&
+              isValidValue(firstDeadlineDateString)
+              ? formatDate(firstDeadlineDateString)
+              : null;
 
             // For daysRemaining, use robust parsing (now supported in getDaysRemaining)
             const daysRemaining = getDaysRemaining(firstDeadlineDateString);
@@ -639,7 +639,7 @@ export default function InternshipCards({
                     if (hasCost) {
                       const costInfo = internship.costs.costs[0];
                       const hasValidCosts = isValidValue(costInfo.lowest) || isValidValue(costInfo.highest);
-                      
+
                       if (isTruthyValue(costInfo.free) || !hasValidCosts) {
                         costStr = "Free";
                       } else {
@@ -740,11 +740,11 @@ export default function InternshipCards({
 
       {/* Modal Overlay */}
       {modalInfo && (
-        <div 
-          className="fixed inset-0 backdrop-blur-sm bg-black/10 z-[9999] flex items-center justify-center p-4"
+        <div
+          className="absolute top-0 left-0 w-full min-h-screen backdrop-blur-sm bg-black/10 z-[9999] flex items-center justify-center p-4 rounded-4xl"
           onClick={closeModal}
         >
-          <div 
+          <div
             className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto relative"
             onClick={(e) => e.stopPropagation()}
           >
