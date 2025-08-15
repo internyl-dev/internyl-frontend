@@ -47,6 +47,37 @@ function getDueCategory(date: Date | null): string {
 }
 
 function InternshipsContent() {
+  // Add this motivational phrases code here
+  const motivationalPhrases = [
+    "Discover your next adventure today! 🚀",
+    "Your dream internship is just a search away ✨",
+    "Transform your summer into something extraordinary 🌟",
+    "Find the perfect opportunity to grow and learn 📚",
+    "Take the first step toward your bright future 🌅",
+    "Unlock new possibilities with every click 🔓",
+    "Your journey to success starts here 🎯",
+    "Explore programs that will shape your tomorrow 🔮",
+    "Turn your passion into real-world experience 💡",
+    "Every great career begins with a single opportunity 🌱",
+    "Ready to make this summer count? Let's go! ⚡",
+    "Find internships that match your ambitions 🎨",
+    "Your next chapter is waiting to be written ✍️",
+    "Dive into experiences that will inspire you 🌊",
+    "Connect your interests with amazing opportunities 🔗",
+    "Build the foundation for your dream career 🏗️",
+    "Discover programs tailored just for you 🎪",
+    "Step out of your comfort zone and into greatness 🦋",
+    "Find your place in the world of innovation 🌍",
+    "Today's search could change your entire future 🌈"
+
+  ];
+
+  const getRandomPhrase = () => {
+    return motivationalPhrases[Math.floor(Math.random() * motivationalPhrases.length)];
+  };
+
+  const [motivationalPhrase] = useState(() => getRandomPhrase());
+
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string[] }>({});
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [subjectSearch, setSubjectSearch] = useState("");
@@ -187,7 +218,7 @@ function InternshipsContent() {
           };
           // Find highest cost
           if (data.costs?.costs && Array.isArray(data.costs.costs)) {
-            data.costs.costs.forEach((item: { lowest?: number; highest?: number; [key: string]: unknown }) => {
+            data.costs.costs.forEach((item: { lowest?: number; highest?: number;[key: string]: unknown }) => {
               if (typeof item.highest === 'number' && item.highest > highestCost) {
                 highestCost = item.highest;
               } else if (typeof item.lowest === 'number' && item.lowest > highestCost) {
@@ -310,7 +341,7 @@ function InternshipsContent() {
     setSearchTerm("");
     setShowBookmarkedOnly(false);
     setSortBy("relevance");
-  setCustomCostRange([0, maxCost]);
+    setCustomCostRange([0, maxCost]);
     setShowCustomCostInput(false);
   };
 
@@ -507,18 +538,18 @@ function InternshipsContent() {
                   return !isFree && minCost >= 1000 && minCost <= 3000;
                 case "$3000+":
                   return !isFree && minCost > 3000;
-                  case "Custom Range": {
-                    const min = customCostRange[0];
-                    const max = customCostRange[1];
-                    
-                    // If the range starts at 0, include free internships
-                    if (min === 0 && isFree) {
-                      return true;
-                    }
-                    
-                    // For non-free internships, check if they fall within the range
-                    return !isFree && minCost >= min && minCost <= max;
+                case "Custom Range": {
+                  const min = customCostRange[0];
+                  const max = customCostRange[1];
+
+                  // If the range starts at 0, include free internships
+                  if (min === 0 && isFree) {
+                    return true;
                   }
+
+                  // For non-free internships, check if they fall within the range
+                  return !isFree && minCost >= min && minCost <= max;
+                }
                 default:
                   return false;
               }
@@ -614,7 +645,19 @@ function InternshipsContent() {
 
   return (
     <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
-      <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
+      {/* Motivational Header */}
+      <div className="text-center pt-2 mt-0">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1">
+          Find Your Perfect Internship
+        </h1>
+        <p className="text-base md:text-lg text-gray-600 font-medium">
+          {motivationalPhrase}
+        </p>
+      </div>
+
+      <div className="-mt-16">
+        <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
+      </div>
 
       {/* Sort and View Options */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4 mt-8">
@@ -872,27 +915,27 @@ function InternshipsContent() {
                                       />
                                     </div>
                                   </div>
-                                    <div className="w-full flex justify-center items-center">
-                                      <Slider
-                                        range
-                                        min={0}
-                                        max={maxCost}
-                                        value={customCostRange}
-                                        onChange={(value) => {
-                                          if (Array.isArray(value)) {
-                                            setCustomCostRange(value as [number, number]);
-                                            setLastSearchTime(Date.now()); // Trigger immediate re-filtering
-                                          }
-                                        }}
-                                        allowCross={false}
-                                        marks={{ 0: { style: { marginLeft: 0 }, label: '$0' }, [maxCost]: { style: { marginRight: 0 }, label: `$${maxCost}` } }}
-                                        step={100}
-                                        trackStyle={[{ backgroundColor: '#3C66C2', height: 4 }]}
-                                        handleStyle={[{ borderColor: '#3C66C2', height: 14, width: 14, marginTop: -5 }, { borderColor: '#3C66C2', height: 14, width: 14, marginTop: -5 }]}
-                                        railStyle={{ height: 4 }}
-                                        style={{ width: '120px', margin: '0 auto' }}
-                                      />
-                                    </div>
+                                  <div className="w-full flex justify-center items-center">
+                                    <Slider
+                                      range
+                                      min={0}
+                                      max={maxCost}
+                                      value={customCostRange}
+                                      onChange={(value) => {
+                                        if (Array.isArray(value)) {
+                                          setCustomCostRange(value as [number, number]);
+                                          setLastSearchTime(Date.now()); // Trigger immediate re-filtering
+                                        }
+                                      }}
+                                      allowCross={false}
+                                      marks={{ 0: { style: { marginLeft: 0 }, label: '$0' }, [maxCost]: { style: { marginRight: 0 }, label: `$${maxCost}` } }}
+                                      step={100}
+                                      trackStyle={[{ backgroundColor: '#3C66C2', height: 4 }]}
+                                      handleStyle={[{ borderColor: '#3C66C2', height: 14, width: 14, marginTop: -5 }, { borderColor: '#3C66C2', height: 14, width: 14, marginTop: -5 }]}
+                                      railStyle={{ height: 4 }}
+                                      style={{ width: '120px', margin: '0 auto' }}
+                                    />
+                                  </div>
                                 </div>
                                 <div className="text-xs text-gray-400 mt-6 text-center">Select range in USD</div>
                               </div>
@@ -930,7 +973,7 @@ function InternshipsContent() {
 
           {/* Cat's suggestion */}
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
-          <p className="text-purple-700 text-sm font-medium mb-2">🐱 Meow! Here&apos;s a suggestion:</p>
+            <p className="text-purple-700 text-sm font-medium mb-2">🐱 Meow! Here&apos;s a suggestion:</p>
             <p className="text-purple-600 text-sm">
               Try using broader search terms or removing some filters to find more opportunities!
             </p>
