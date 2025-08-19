@@ -287,7 +287,11 @@ export default function InternshipCards({
       } else {
         const costParts = [];
         if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {
-          costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
+          if (costInfo.lowest === costInfo.highest) {
+            costParts.push(`$${costInfo.lowest}`);
+          } else {
+            costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
+          }
         } else if (isValidValue(costInfo.lowest)) {
           costParts.push(`Starting at $${costInfo.lowest}`);
         } else if (isValidValue(costInfo.highest)) {
@@ -645,7 +649,11 @@ export default function InternshipCards({
                       } else {
                         const costParts = [];
                         if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {
-                          costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
+                          if (costInfo.lowest === costInfo.highest) {
+                            costParts.push(`$${costInfo.lowest}`);
+                          } else {
+                            costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
+                          }
                         } else if (isValidValue(costInfo.lowest)) {
                           costParts.push(`Starting at $${costInfo.lowest}`);
                         } else if (isValidValue(costInfo.highest)) {
