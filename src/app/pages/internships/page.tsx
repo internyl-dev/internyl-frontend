@@ -1087,42 +1087,83 @@ function InternshipsContent() {
       </div>
 
       {/* No Results Message */}
-      {filteredAndSortedInternships.length === 0 && (
-        <div className="text-center py-12">
-          {/* Cat Image */}
-          <div className="mb-6">
-            <img
-              src="/cat.svg"
-              alt="No results found"
-              className="w-48 h-48 mx-auto object-contain opacity-80"
-            />
-          </div>
+{filteredAndSortedInternships.length === 0 && (
+  <div className="text-center py-16 px-4">
+    {/* Cat Image with animation */}
+    <div className="mb-8 relative">
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-100 via-purple-50 to-pink-100 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+      <img
+        src="/cat.svg"
+        alt="No results found"
+        className="w-56 h-56 mx-auto object-contain relative z-10 animate-bounce"
+        style={{ animationDuration: '3s' }}
+      />
+    </div>
 
-          <div className="text-gray-500 text-lg mb-2">No internships found</div>
-          <p className="text-gray-400 text-sm mb-4">
-            {showBookmarkedOnly
-              ? "You don&apos;t have any bookmarked internships matching these filters"
-              : "Try adjusting your search terms or filters"}
-          </p>
+    {/* Main heading with gradient */}
+    <div className="mb-6">
+      <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 bg-clip-text text-transparent mb-3">
+        Oops! No internships found
+      </h2>
+      <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full mx-auto"></div>
+    </div>
 
-          {/* Cat's suggestion */}
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
-            <p className="text-purple-700 text-sm font-medium mb-2">🐱 Meow! Here&apos;s a suggestion:</p>
-            <p className="text-purple-600 text-sm">
-              Try using broader search terms or removing some filters to find more opportunities!
-            </p>
-          </div>
+    {/* Contextual message with better typography */}
+    <div className="max-w-lg mx-auto mb-8">
+      <p className="text-gray-600 text-lg leading-relaxed font-medium">
+        {showBookmarkedOnly
+          ? "You haven't bookmarked any internships matching these filters yet"
+          : searchTerm 
+            ? `No programs found for "${searchTerm}" with your current filters`
+            : "No internships match your current filter combination"}
+      </p>
+    </div>
 
-          {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
-            <button
-              onClick={clearAllFilters}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
-            >
-              Clear all filters
-            </button>
-          )}
+    {/* Enhanced cat's suggestion box */}
+    <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 border-2 border-purple-200 rounded-2xl p-6 mb-8 max-w-lg mx-auto shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+      <div className="flex items-start gap-3">
+        <div className="text-3xl animate-pulse">🐱</div>
+        <div className="text-left">
+          <p className="text-purple-800 font-bold text-lg mb-2">Meow! Here's what you can try:</p>
+          <ul className="text-purple-700 text-sm space-y-2 list-none">
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+              Remove some filters to see more options
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+              Try broader search terms
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+              Check back later for new programs
+            </li>
+          </ul>
         </div>
-      )}
+      </div>
+    </div>
+
+    {/* Enhanced clear button */}
+    {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
+      <button
+        onClick={clearAllFilters}
+        className="group px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 transform"
+      >
+        <span className="flex items-center gap-2">
+          <RotateCcw className="w-5 h-5 group-hover:animate-spin" />
+          Start Fresh
+        </span>
+      </button>
+    )}
+
+    {/* Decorative elements */}
+    <div className="mt-12 flex justify-center gap-4 opacity-30">
+      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+      <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+      <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+    </div>
+  </div>
+)}
 
       <div className="animate-in fade-in-0 duration-500">
         <InternshipCards
