@@ -71,6 +71,30 @@ function InternshipsContent() {
     "Today's search could change your entire future 🌈"
 
   ];
+  useEffect(() => {
+    // Add gradient animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .animate-gradient {
+        animation: gradient 6s ease infinite;
+      }
+      .bg-300\\% {
+        background-size: 300% 300%;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
 
   const getRandomPhrase = () => {
     return motivationalPhrases[Math.floor(Math.random() * motivationalPhrases.length)];
@@ -779,11 +803,18 @@ function InternshipsContent() {
   return (
     <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
       {/* Motivational Header */}
-      <div className="text-center pt-3.5 mt-0">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1">
-          Find Your Perfect Internship
+      <div className="text-center pt-6 mt-0 mb-4">
+        <div className="inline-flex items-center gap-2 bg-gray-100 border border-gray-200 text-gray-700 px-4 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium mb-6 sm:mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Search className="w-3 sm:w-4 h-3 sm:h-4 text-blue-600 animate-pulse" />
+          Find Your Perfect Match
+        </div>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight px-2">
+          Find Your Perfect{' '}
+          <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent animate-gradient bg-300%">
+            Internship
+          </span>
         </h1>
-        <p className="text-base md:text-lg text-gray-600 font-medium font-inter">
+        <p className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-4 sm:mb-8 px-4 font-medium">
           {motivationalPhrase}
         </p>
       </div>
@@ -1124,7 +1155,7 @@ function InternshipsContent() {
       <div className="flex items-start gap-3">
         <div className="text-3xl animate-pulse">🐱</div>
         <div className="text-left">
-          <p className="text-purple-800 font-bold text-lg mb-2">Meow! Here's what you can try:</p>
+          <p className="text-purple-800 font-bold text-lg mb-2">Meow! Here&apos;s what you can try:</p>
           <ul className="text-purple-700 text-sm space-y-2 list-none">
             <li className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>

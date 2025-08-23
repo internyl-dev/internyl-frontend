@@ -25,13 +25,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={sora.className}>
+    <html lang="en" className={`${sora.variable} ${sora.className}`} suppressHydrationWarning>
       <head>
         <meta name="ahrefs-site-verification" content="1bf3eb3cb396b00c795c6feed22093d00dd29b7ce6729827e98eb9f424faf17f" />
         <script 
           src="https://analytics.ahrefs.com/analytics.js" 
           data-key="ZGhqb0L0Wu3sMwp1GgSe/Q" 
           async
+          suppressHydrationWarning
         ></script>
       </head>
       <body className="min-h-screen flex flex-col">

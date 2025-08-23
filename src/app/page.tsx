@@ -568,7 +568,7 @@ function HomeContent() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    placeholder="Search for your dream internship..."
+                    placeholder="search for your dream internship..."
                     className="pl-12 pr-6 py-4 rounded-2xl text-base w-full shadow-lg border-2 border-gray-200/50 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464]/50 focus:border-[#ec6464] transition-all duration-300 hover:shadow-xl font-medium placeholder:text-gray-400"
                     minLength={2}
                     required
