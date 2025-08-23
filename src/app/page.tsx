@@ -242,7 +242,7 @@ function HomeContent() {
           setBookmarked(map);
         }
 
-        const querySnapshot = await getDocs(collection(db, "internships-history"));
+        const querySnapshot = await getDocs(collection(db, "programs-display"));
         const internshipList = querySnapshot.docs.map((doc) => {
           const data = doc.data();
 

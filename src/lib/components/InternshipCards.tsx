@@ -13,6 +13,9 @@ import {
   InfoOutlined as InfoIcon,
   LocationOnOutlined as LocationIcon,
   Close as CloseIcon,
+  ChecklistOutlined as ChecklistIcon,
+  CheckCircleOutlined as CheckCircleOutlinedIcon,
+  RadioButtonUncheckedOutlined as RadioButtonUncheckedIcon,
 } from "@mui/icons-material";
 import { getDaysRemaining } from "../modules/getTimeRemaining";
 import { getDueColorClass } from "../modules/getDueDateTextColor";
@@ -30,6 +33,19 @@ interface CardPosition {
   x: number;
   y: number;
   height: number;
+}
+
+interface EligibilityItem {
+  id: string;
+  label: string;
+  required: boolean;
+  description?: string;
+}
+
+interface UserEligibilityData {
+  [internshipId: string]: {
+    [itemId: string]: boolean;
+  };
 }
 
 const bookmarkButtonStyles = {
@@ -60,6 +76,11 @@ export default function InternshipCards({
   const [isInitialRender, setIsInitialRender] = useState<boolean>(true);
   const [expandedSubjects, setExpandedSubjects] = useState<{ [key: string]: boolean }>({});
   const [modalInfo, setModalInfo] = useState<{ internshipId: string; info: { label: string; value: string }[] } | null>(null);
+  
+  // New state for eligibility checklist
+  const [eligibilityModal, setEligibilityModal] = useState<{ internshipId: string; items: EligibilityItem[] } | null>(null);
+  const [userEligibilityData, setUserEligibilityData] = useState<UserEligibilityData>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const capitalizeWords = (text: string) =>
     text
@@ -347,6 +368,178 @@ export default function InternshipCards({
     setModalInfo(null);
   };
 
+  // Function to get eligibility items for an internship
+  const getEligibilityItems = (internship: InternshipType): EligibilityItem[] => {
+    const items: EligibilityItem[] = [];
+
+    // Check application requirements
+    if (isTruthyValue(internship.eligibility?.requirements?.essay_required)) {
+      items.push({
+        id: 'essay',
+        label: 'Essay',
+        required: true,
+        description: 'Personal statement or essay as required by the program'
+      });
+    }
+
+    if (isTruthyValue(internship.eligibility?.requirements?.recommendation_required)) {
+      items.push({
+        id: 'recommendation',
+        label: 'Letter of Recommendation',
+        required: true,
+        description: 'Recommendation letter from teacher, counselor, or mentor'
+      });
+    }
+
+    if (isTruthyValue(internship.eligibility?.requirements?.transcript_required)) {
+      items.push({
+        id: 'transcript',
+        label: 'Official Transcript',
+        required: true,
+        description: 'Official academic transcript or grade report'
+      });
+    }
+
+    // Add common application materials
+    items.push({
+      id: 'application_form',
+      label: 'Completed Application Form',
+      required: true,
+      description: 'Main application form with all required fields completed'
+    });
+
+    // Add eligibility verification items
+    const gradesArray = internship.eligibility?.eligibility?.grades || [];
+    const validGrades = gradesArray.filter(grade => isValidValue(grade));
+    if (validGrades.length > 0) {
+      items.push({
+        id: 'grade_eligibility',
+        label: `Grade Level Verification (${validGrades.join(', ')})`,
+        required: true,
+        description: `Verify you are in one of the eligible grade levels: ${validGrades.join(', ')}`
+      });
+    }
+
+    const ageRange = internship.eligibility?.eligibility?.age || null;
+    if (isValidValue(ageRange?.minimum) || isValidValue(ageRange?.maximum)) {
+      const ageText = isValidValue(ageRange?.minimum) && isValidValue(ageRange?.maximum)
+        ? `${ageRange?.minimum} - ${ageRange?.maximum}`
+        : isValidValue(ageRange?.minimum)
+          ? `${ageRange?.minimum}+`
+          : `up to ${ageRange?.maximum}`;
+      
+      items.push({
+        id: 'age_eligibility',
+        label: `Age Verification (Ages ${ageText})`,
+        required: true,
+        description: `Confirm you meet the age requirements: Ages ${ageText}`
+      });
+    }
+
+    // Add additional requirements from the "other" array
+    if (internship.eligibility?.requirements?.other && Array.isArray(internship.eligibility.requirements.other)) {
+      internship.eligibility.requirements.other
+        .filter(req => isValidValue(req))
+        .forEach((req, index) => {
+          items.push({
+            id: `other_req_${index}`,
+            label: req,
+            required: true,
+            description: `Additional requirement: ${req}`
+          });
+        });
+    }
+
+    // Add cost-related items if applicable
+    if (internship.costs?.costs && Array.isArray(internship.costs.costs) && internship.costs.costs[0]) {
+      const costInfo = internship.costs.costs[0];
+      const hasValidCosts = isValidValue(costInfo.lowest) || isValidValue(costInfo.highest);
+      
+      if (!isTruthyValue(costInfo.free) && hasValidCosts) {
+        items.push({
+          id: 'payment_plan',
+          label: 'Payment Plan/Financial Aid',
+          required: false,
+          description: 'Arrange payment or apply for financial aid if needed'
+        });
+      }
+    }
+
+    return items;
+  };
+
+  // Function to handle opening eligibility checklist
+  const handleEligibilityClick = (internshipId: string) => {
+    const internship = internships.find(i => i.id === internshipId);
+    if (internship) {
+      const items = getEligibilityItems(internship);
+      setEligibilityModal({ internshipId, items });
+    }
+  };
+
+  // Function to close eligibility modal
+  const closeEligibilityModal = () => {
+    setEligibilityModal(null);
+  };
+
+  // Function to handle checkbox toggle
+  const handleCheckboxToggle = (internshipId: string, itemId: string) => {
+    setUserEligibilityData(prev => ({
+      ...prev,
+      [internshipId]: {
+        ...prev[internshipId],
+        [itemId]: !prev[internshipId]?.[itemId]
+      }
+    }));
+  };
+
+  // Function to save eligibility data to database
+  const saveEligibilityData = async (internshipId: string) => {
+    setIsLoading(true);
+    try {
+      // Simulated database save - replace with your actual database call
+      const dataToSave = {
+        internshipId,
+        eligibilityChecklist: userEligibilityData[internshipId] || {},
+        lastUpdated: new Date().toISOString(),
+        userId: 'current_user_id' // Replace with actual user ID
+      };
+
+      // Here you would make your actual API call to save to the database
+      // Example: await saveToDatabase('users', dataToSave);
+      
+      console.log('Saving eligibility data to database:', dataToSave);
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Show success message (you could add a toast notification here)
+      alert('Eligibility checklist saved successfully!');
+      
+    } catch (error) {
+      console.error('Error saving eligibility data:', error);
+      alert('Error saving checklist. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load saved eligibility data on component mount
+  useEffect(() => {
+    // Simulated data loading - replace with your actual database call
+    const loadSavedData = async () => {
+      try {
+        // Example: const savedData = await loadFromDatabase('users', 'current_user_id');
+        // For now, we'll use empty state
+        console.log('Loading saved eligibility data...');
+      } catch (error) {
+        console.error('Error loading saved data:', error);
+      }
+    };
+
+    loadSavedData();
+  }, []);
+
   // Configuration
   const itemWidth = 350; // Fixed width for each card
   const gap = 32; // Gap between cards
@@ -449,25 +642,27 @@ export default function InternshipCards({
     }
   }, [internships.length, expandedSubjects, calculateMasonryLayout]);
 
-  // Close modal when clicking escape key
+  // Close modals when clicking escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && modalInfo) {
-        closeModal();
+      if (e.key === 'Escape') {
+        if (modalInfo) {
+          closeModal();
+        }
+        if (eligibilityModal) {
+          closeEligibilityModal();
+        }
       }
     };
 
-    if (modalInfo) {
+    if (modalInfo || eligibilityModal) {
       document.addEventListener('keydown', handleEscape);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
     };
-  }, [modalInfo]);
+  }, [modalInfo, eligibilityModal]);
 
   return (
     <>
@@ -529,8 +724,15 @@ export default function InternshipCards({
                   width: `${itemWidth}px`,
                 }}
               >
-                {/* Info Icon - Top Right */}
-                <div className="absolute top-4 right-4">
+                {/* Top Right Icons */}
+                <div className="absolute top-4 right-4 flex gap-2">
+                  <button
+                    onClick={() => handleEligibilityClick(internshipId)}
+                    className="text-[#8D8DAC] hover:text-[#2F2F3A] cursor-pointer p-2 rounded-full hover:bg-black/5 transition-all duration-200"
+                    aria-label={`Eligibility checklist for ${internship.overview?.title || 'this internship'}`}
+                  >
+                    <ChecklistIcon fontSize="small" />
+                  </button>
                   <button
                     onClick={() => handleInfoClick(internshipId)}
                     className="text-[#8D8DAC] hover:text-[#2F2F3A] cursor-pointer p-2 rounded-full hover:bg-black/5 transition-all duration-200"
@@ -650,14 +852,14 @@ export default function InternshipCards({
                         const costParts = [];
                         if (isValidValue(costInfo.lowest) && isValidValue(costInfo.highest)) {
                           if (costInfo.lowest === costInfo.highest) {
-                            costParts.push(`$${costInfo.lowest}`);
+                            costParts.push(`${costInfo.lowest}`);
                           } else {
-                            costParts.push(`$${costInfo.lowest} - $${costInfo.highest}`);
+                            costParts.push(`${costInfo.lowest} - ${costInfo.highest}`);
                           }
                         } else if (isValidValue(costInfo.lowest)) {
-                          costParts.push(`Starting at $${costInfo.lowest}`);
+                          costParts.push(`Starting at ${costInfo.lowest}`);
                         } else if (isValidValue(costInfo.highest)) {
-                          costParts.push(`Up to $${costInfo.highest}`);
+                          costParts.push(`Up to ${costInfo.highest}`);
                         }
                         if (costParts.length > 0) {
                           costStr = costParts.join(", ");
@@ -746,14 +948,14 @@ export default function InternshipCards({
         </div>
       </div>
 
-      {/* Modal Overlay */}
+      {/* Info Modal */}
       {modalInfo && (
         <div
-          className="absolute top-0 left-0 w-full min-h-screen backdrop-blur-sm bg-black/10 z-[9999] flex items-center justify-center p-4 rounded-4xl"
+          className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm bg-black/10 z-[9999] flex items-center justify-center p-4"
           onClick={closeModal}
         >
           <div
-            className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto relative"
+            className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -788,6 +990,136 @@ export default function InternshipCards({
                   No additional information available for this internship.
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Eligibility Checklist Modal */}
+      {eligibilityModal && (
+        <div
+          className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm bg-black/10 z-[9999] flex items-center justify-center p-4"
+          onClick={closeEligibilityModal}
+        >
+          <div
+            className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-800">
+                    Eligibility Checklist
+                  </h2>
+                  <p className="text-gray-600 text-sm mt-1">
+                    {internships.find(i => i.id === eligibilityModal.internshipId)?.overview?.title || 'Internship'}
+                  </p>
+                </div>
+                <button
+                  onClick={closeEligibilityModal}
+                  className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Close checklist"
+                >
+                  <CloseIcon fontSize="medium" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {eligibilityModal.items.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                    <p className="text-blue-800 text-sm">
+                      Check off items as you complete them. Your progress will be saved automatically.
+                    </p>
+                  </div>
+
+                  {eligibilityModal.items.map((item) => {
+                    const isChecked = userEligibilityData[eligibilityModal.internshipId]?.[item.id] || false;
+                    
+                    return (
+                      <div
+                        key={item.id}
+                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-start gap-3">
+                          <button
+                            onClick={() => handleCheckboxToggle(eligibilityModal.internshipId, item.id)}
+                            className="mt-1 text-blue-600 hover:text-blue-800 transition-colors"
+                            aria-label={`Toggle ${item.label}`}
+                          >
+                            {isChecked ? (
+                              <CheckCircleOutlinedIcon className="text-green-600" />
+                            ) : (
+                              <RadioButtonUncheckedIcon />
+                            )}
+                          </button>
+                          
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className={`font-medium ${isChecked ? 'text-green-700 line-through' : 'text-gray-800'}`}>
+                                {item.label}
+                              </h3>
+                              {item.required && (
+                                <span className="text-red-500 text-xs bg-red-100 px-2 py-1 rounded-full">
+                                  Required
+                                </span>
+                              )}
+                            </div>
+                            
+                            {item.description && (
+                              <p className={`text-sm ${isChecked ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {item.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Progress Summary */}
+                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium text-gray-700">Progress</span>
+                      <span className="text-sm text-gray-600">
+                        {Object.values(userEligibilityData[eligibilityModal.internshipId] || {}).filter(Boolean).length} of {eligibilityModal.items.length} completed
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${(Object.values(userEligibilityData[eligibilityModal.internshipId] || {}).filter(Boolean).length / eligibilityModal.items.length) * 100}%`
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-gray-500 text-center py-8">
+                  No specific eligibility requirements found for this internship.
+                </div>
+              )}
+
+              {/* Save Button */}
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={closeEligibilityModal}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => saveEligibilityData(eligibilityModal.internshipId)}
+                  disabled={isLoading}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isLoading ? 'Saving...' : 'Save Progress'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
