@@ -1124,7 +1124,7 @@ function InternshipsContent() {
           <div className="mb-8 relative">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-100 via-purple-50 to-pink-100 rounded-full blur-3xl opacity-30 animate-pulse"></div>
             <img
-              src="/cat.svg"
+              src="/cat.png"
               alt="No results found"
               className="w-56 h-56 mx-auto object-contain relative z-10 animate-bounce"
               style={{ animationDuration: '3s' }}
