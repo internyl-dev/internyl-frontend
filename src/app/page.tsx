@@ -477,7 +477,7 @@ function HomeContent() {
                     </svg>
                   </div>
                   <h3 className="text-xl font-semibold text-gray-700 mb-2">No recommendations yet</h3>
-                  <p className="text-gray-500 mb-6">We'll begin suggesting as soon as you begin searching!</p>
+                  <p className="text-gray-500 mb-6">We&apos;ll begin suggesting as soon as you begin searching!</p>
                   <Link
                     href="/pages/internships"
                     className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#E26262] to-[#F07575] text-white rounded-full hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 font-medium gap-2"
