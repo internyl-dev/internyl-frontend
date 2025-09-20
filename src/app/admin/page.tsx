@@ -25,13 +25,21 @@ export default function AdminDashboard() {
   const [status, setStatus] = useState("");
   const [internshipCount, setInternshipCount] = useState<number>(0);
 
+  const [reportCount, setReportCount] = useState<number>(0);
+
   const fetchCount = async () => {
     const snapshot = await getDocs(collection(db, "internships"));
     setInternshipCount(snapshot.size);
   };
 
+  const fetchInternReportCount = async () => {
+    const snapshot = await getDocs(collection(db, "reports"));
+    setReportCount(snapshot.size);
+  }
+
   useEffect(() => {
     fetchCount();
+    fetchInternReportCount();
   }, [status]);
 
   const uploadInternships = async () => {
@@ -105,6 +113,44 @@ export default function AdminDashboard() {
               Refresh
             </Button>
           </div>
+
+        </div>
+        {/* Reports Count */}
+        <div
+          className="flex-1 p-7 rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center justify-center"
+          style={{
+            background: "rgba(255,255,255,0.55)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.10)",
+          }}
+        >
+          <h3 className="pb-2 font-bold text-lg text-red-700 flex items-center gap-2">
+            Report Information
+          </h3>
+
+          <div className="flex flex-wrap gap-8">
+            <div className="text-center items-center">
+              <p className="text-4xl font-extrabold text-gray-900 mb-2">{reportCount}</p>
+              <p className="text-gray-600 text-sm"># of Reports that Require Attention</p>
+            </div>
+
+            {/* FIX THIS */}
+            <div className="text-center items-center">
+              <p className="text-4xl font-extrabold text-gray-900 mb-2">{reportCount}</p>
+              <p className="text-gray-600 text-sm"># of Resolved Reports</p>
+            </div>
+          </div>
+
+          <Button
+            size="small"
+            variant="outlined"
+            className="ml-2 px-2 py-2 text-xs top-2"
+            onClick={fetchCount}
+            style={{ minWidth: 0 }}
+          >
+            Refresh
+          </Button>
         </div>
       </div>
     </AdminLayout>

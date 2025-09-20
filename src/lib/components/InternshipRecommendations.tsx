@@ -9,7 +9,7 @@ interface Props {
   toggleBookmark: (id: string) => void;
 }
 
-export default function InternshipReccommendations({ bookmarked, toggleBookmark }: Props) {
+export default function InternshipRecommendations({ bookmarked, toggleBookmark }: Props) {
   const recommendedInternships = useRecommendedInternships();
 
   if (!recommendedInternships.length) return null;

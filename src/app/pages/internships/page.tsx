@@ -71,6 +71,30 @@ function InternshipsContent() {
     "Today's search could change your entire future 🌈"
 
   ];
+  useEffect(() => {
+    // Add gradient animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .animate-gradient {
+        animation: gradient 6s ease infinite;
+      }
+      .bg-300\\% {
+        background-size: 300% 300%;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
 
   const getRandomPhrase = () => {
     return motivationalPhrases[Math.floor(Math.random() * motivationalPhrases.length)];
@@ -218,7 +242,7 @@ function InternshipsContent() {
   useEffect(() => {
     async function fetchInternships() {
       try {
-        const internshipsCollection = collection(db, "internships-history");
+        const internshipsCollection = collection(db, "programs-display");
         const snapshot = await getDocs(internshipsCollection);
 
         let highestCost = 0;
@@ -664,7 +688,7 @@ function InternshipsContent() {
       <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
         {/* Keep your header */}
         <div className="text-center pt-2 mt-0">...</div>
-        
+
         {/* Enhanced Skeleton Cards with Masonry-style Layout */}
         <div className="px-0 sm:px-4 lg:px-8">
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center">
@@ -674,18 +698,18 @@ function InternshipsContent() {
                 <div className="absolute top-4 right-4">
                   <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
                 </div>
-  
+
                 {/* Header Section */}
                 <div className="mb-6">
                   {/* Provider name */}
                   <div className="h-4 bg-gray-200 rounded w-32 mb-3"></div>
-                  
+
                   {/* Program title - large gradient text simulation */}
                   <div className="space-y-2 mb-4">
                     <div className="h-10 bg-gradient-to-r from-gray-300 to-gray-200 rounded w-full"></div>
                     <div className="h-10 bg-gradient-to-r from-gray-300 to-gray-200 rounded w-4/5"></div>
                   </div>
-                  
+
                   {/* Due date with icon */}
                   <div className="flex items-center gap-3 mt-4">
                     <div className="w-6 h-6 bg-red-200 rounded-full"></div>
@@ -693,7 +717,7 @@ function InternshipsContent() {
                     <div className="h-4 bg-gray-200 rounded w-20"></div>
                   </div>
                 </div>
-  
+
                 {/* Details Section */}
                 <div className="space-y-4">
                   {/* Subject tags */}
@@ -705,32 +729,32 @@ function InternshipsContent() {
                       <div className="h-6 bg-blue-100 rounded-full w-16 px-3 py-1"></div>
                     </div>
                   </div>
-  
+
                   {/* Grade level */}
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 bg-orange-200 rounded"></div>
                     <div className="h-4 bg-gray-200 rounded w-40"></div>
                   </div>
-  
+
                   {/* Duration */}
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 bg-purple-200 rounded"></div>
                     <div className="h-4 bg-gray-200 rounded w-28"></div>
                   </div>
-  
+
                   {/* Location */}
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 bg-yellow-300 rounded"></div>
                     <div className="h-4 bg-gray-200 rounded w-36"></div>
                   </div>
-  
+
                   {/* Cost/Stipend */}
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 bg-green-200 rounded"></div>
                     <div className="h-4 bg-gray-200 rounded w-20"></div>
                   </div>
                 </div>
-  
+
                 {/* Action buttons at bottom */}
                 <div className="flex justify-between items-center mt-6 pt-2">
                   <div className="w-10 h-10 bg-blue-200 rounded-full"></div>
@@ -740,7 +764,7 @@ function InternshipsContent() {
             ))}
           </div>
         </div>
-  
+
         {/* Floating shimmer effect overlay for extra polish */}
         <style jsx>{`
           @keyframes shimmer {
@@ -779,11 +803,18 @@ function InternshipsContent() {
   return (
     <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
       {/* Motivational Header */}
-      <div className="text-center pt-3.5 mt-0">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1">
-          Find Your Perfect Internship
+      <div className="text-center pt-6 mt-0 mb-4">
+        <div className="inline-flex items-center gap-2 bg-gray-100 border border-gray-200 text-gray-700 px-4 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium mb-6 sm:mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Search className="w-3 sm:w-4 h-3 sm:h-4 text-blue-600 animate-pulse" />
+          Find Your Perfect Match
+        </div>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight px-2">
+          Find Your Perfect{' '}
+          <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent animate-gradient bg-300%">
+            Internship
+          </span>
         </h1>
-        <p className="text-base md:text-lg text-gray-600 font-medium font-inter">
+        <p className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-4 sm:mb-8 px-4 font-medium">
           {motivationalPhrase}
         </p>
       </div>
@@ -1088,39 +1119,80 @@ function InternshipsContent() {
 
       {/* No Results Message */}
       {filteredAndSortedInternships.length === 0 && (
-        <div className="text-center py-12">
-          {/* Cat Image */}
-          <div className="mb-6">
+        <div className="text-center py-16 px-4">
+          {/* Cat Image with animation */}
+          <div className="mb-8 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-100 via-purple-50 to-pink-100 rounded-full blur-3xl opacity-30 animate-pulse"></div>
             <img
-              src="/cat.svg"
+              src="/cat.png"
               alt="No results found"
-              className="w-48 h-48 mx-auto object-contain opacity-80"
+              className="w-56 h-56 mx-auto object-contain relative z-10 animate-bounce"
+              style={{ animationDuration: '3s' }}
             />
           </div>
 
-          <div className="text-gray-500 text-lg mb-2">No internships found</div>
-          <p className="text-gray-400 text-sm mb-4">
-            {showBookmarkedOnly
-              ? "You don&apos;t have any bookmarked internships matching these filters"
-              : "Try adjusting your search terms or filters"}
-          </p>
+          {/* Main heading with gradient */}
+          <div className="mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 bg-clip-text text-transparent mb-3">
+              Oops! No internships found
+            </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full mx-auto"></div>
+          </div>
 
-          {/* Cat's suggestion */}
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
-            <p className="text-purple-700 text-sm font-medium mb-2">🐱 Meow! Here&apos;s a suggestion:</p>
-            <p className="text-purple-600 text-sm">
-              Try using broader search terms or removing some filters to find more opportunities!
+          {/* Contextual message with better typography */}
+          <div className="max-w-lg mx-auto mb-8">
+            <p className="text-gray-600 text-lg leading-relaxed font-medium">
+              {showBookmarkedOnly
+                ? "You haven't bookmarked any internships matching these filters yet"
+                : searchTerm
+                  ? `No programs found for "${searchTerm}" with your current filters`
+                  : "No internships match your current filter combination"}
             </p>
           </div>
 
+          {/* Enhanced cat's suggestion box */}
+          <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 border-2 border-purple-200 rounded-2xl p-6 mb-8 max-w-lg mx-auto shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="flex items-start gap-3">
+              <div className="text-3xl animate-pulse">🐱</div>
+              <div className="text-left">
+                <p className="text-purple-800 font-bold text-lg mb-2">Meow! Here&apos;s what you can try:</p>
+                <ul className="text-purple-700 text-sm space-y-2 list-none">
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                    Remove some filters to see more options
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                    Try broader search terms
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                    Check back later for new programs
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced clear button */}
           {(totalActiveFilters > 0 || searchTerm || showBookmarkedOnly) && (
             <button
               onClick={clearAllFilters}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+              className="group px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 transform"
             >
-              Clear all filters
+              <span className="flex items-center gap-2">
+                <RotateCcw className="w-5 h-5 group-hover:animate-spin" />
+                Start Fresh
+              </span>
             </button>
           )}
+
+          {/* Decorative elements */}
+          <div className="mt-12 flex justify-center gap-4 opacity-30">
+            <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+          </div>
         </div>
       )}
 

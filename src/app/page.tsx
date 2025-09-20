@@ -242,7 +242,7 @@ function HomeContent() {
           setBookmarked(map);
         }
 
-        const querySnapshot = await getDocs(collection(db, "internships-history"));
+        const querySnapshot = await getDocs(collection(db, "programs-display"));
         const internshipList = querySnapshot.docs.map((doc) => {
           const data = doc.data();
 
@@ -470,7 +470,22 @@ function HomeContent() {
           <div className="overflow-x-auto px-2 sm:px-6 md:px-12 lg:px-20 pb-8 md:pb-10">
             <div className="flex w-max md:w-full gap-6">
               {internshipsToShow.length === 0 ? (
-                <p className="px-4 text-gray-500">No internships available.</p>
+                <div className="w-full text-center py-12 px-6">
+                  <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20">
+                    <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No recommendations yet</h3>
+                  <p className="text-gray-500 mb-6">We&apos;ll begin suggesting as soon as you begin searching!</p>
+                  <Link
+                    href="/pages/internships"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#E26262] to-[#F07575] text-white rounded-full hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 font-medium gap-2"
+                  >
+                    Explore Internships
+                    <ArrowForwardIcon className="w-4 h-4" />
+                  </Link>
+                </div>
               ) : (
                 internshipsToShow.map((internship, index) => (
                   <motion.div
@@ -568,7 +583,7 @@ function HomeContent() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    placeholder="Search for your dream internship..."
+                    placeholder="search for your dream internship..."
                     className="pl-12 pr-6 py-4 rounded-2xl text-base w-full shadow-lg border-2 border-gray-200/50 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#ec6464]/50 focus:border-[#ec6464] transition-all duration-300 hover:shadow-xl font-medium placeholder:text-gray-400"
                     minLength={2}
                     required

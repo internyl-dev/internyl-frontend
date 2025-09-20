@@ -32,7 +32,7 @@ interface BugReport extends Report {
     bugTitle?: string;
     bugDescription?: string;
     bugSteps?: string;
-    bugSeverity?: 'Critical' | 'High' | 'Medium' | 'Low';
+    bugSeverity?: 'Critical' | 'High' | 'Medium' | 'Low' | string; // allow legacy lowercase
 }
 
 interface OtherReport extends Report {
@@ -115,6 +115,7 @@ function ReportDetailsView({ report }: { report: ExtendedReport }) {
 
     if (report.reportType === 'bug') {
         const bugReport = report as BugReport;
+        const severity = bugReport.bugSeverity?.toLowerCase();
         return (
             <div className="space-y-4">
                 {bugReport.bugTitle && (
@@ -138,11 +139,19 @@ function ReportDetailsView({ report }: { report: ExtendedReport }) {
                 {bugReport.bugSeverity && (
                     <div>
                         <label className="text-sm font-semibold text-gray-700">Severity: &nbsp;</label>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${bugReport.bugSeverity === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
-                            bugReport.bugSeverity === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                                bugReport.bugSeverity === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                                    'bg-blue-100 text-blue-800 border-blue-200'
-                            }`}>
+                        <span
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
+                                severity === "critical"
+                                    ? "bg-red-100 text-red-800 border-red-200"
+                                    : severity === "high"
+                                    ? "bg-orange-100 text-orange-800 border-orange-200"
+                                    : severity === "medium"
+                                    ? "bg-yellow-100 text-yellow-800 border-yellow-200"
+                                    : severity === "low"
+                                    ? "bg-blue-100 text-blue-800 border-blue-200"
+                                    : "bg-gray-100 text-gray-800 border-gray-200"
+                            }`}
+                        >
                             {bugReport.bugSeverity}
                         </span>
                     </div>
@@ -200,7 +209,6 @@ export default function AdminReports() {
             const q = query(collection(db, "reports"), orderBy("createdAt", "desc"));
             const snapshot = await getDocs(q);
 
-            // Convert Firestore Timestamps to JS Dates
             const fetched: ExtendedReport[] = snapshot.docs.map((doc) => {
                 const data = doc.data() as Omit<ExtendedReport, "id">;
                 return {
@@ -254,7 +262,10 @@ export default function AdminReports() {
         try {
             const reportRef = doc(db, "reports", editingReportId);
 
-            const firestoreUpdates: Record<string, FirestoreUpdateValue> = {};
+            const firestoreUpdates: Record<string, FirestoreUpdateValue> = {
+                status: editStatus,      // ✅ persist status
+                priority: editPriority,  // ✅ persist priority
+            };
 
             if (editNotes.trim()) {
                 firestoreUpdates.notes = editNotes.trim();
@@ -276,7 +287,6 @@ export default function AdminReports() {
 
             await updateDoc(reportRef, firestoreUpdates);
 
-            // Fetch the updated document after the update
             const updatedDocSnap = await getDoc(reportRef);
             if (!updatedDocSnap.exists()) {
                 toast.error("Failed to fetch updated report after saving.");
@@ -304,12 +314,9 @@ export default function AdminReports() {
                 rejectionReason: updatedData.rejectionReason || "",
             };
 
-            // Send POST request to notify API
             const res = await fetch("/api/notify-report-update", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(reportToNotify),
             });
 
