@@ -84,7 +84,6 @@ export default function InternshipCards({
   // New state for eligibility checklist
   const [eligibilityModal, setEligibilityModal] = useState<{ internshipId: string; items: EligibilityItem[] } | null>(null);
   const [userEligibilityData, setUserEligibilityData] = useState<UserEligibilityData>({});
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const userId = auth.currentUser != null ? auth.currentUser.uid : null;
 
@@ -516,7 +515,6 @@ export default function InternshipCards({
       alert("You must be logged in to save your checklist.");
       return;
     }
-    setIsLoading(true);
     try {
       const dataToSave = {
         eligibilityChecklists: {
@@ -550,9 +548,7 @@ export default function InternshipCards({
     } catch (error) {
       console.error("Error saving eligibility data:", error);
       alert("Error saving checklist. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    } 
   };
 
   // Function to load saved eligibility data for a specific internship
