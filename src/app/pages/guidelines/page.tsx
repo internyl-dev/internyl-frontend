@@ -114,15 +114,6 @@ export default function CommunityGuidelinesPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* Additional Info */}
-                <div className="text-center mt-16" style={staggerDelay(1)}>
-                    <div className="bg-gradient-to-br from-blue-100/80 to-purple-100/80 backdrop-blur-sm border border-white/40 rounded-2xl p-8 shadow-lg max-w-2xl mx-auto">
-                        <p className="text-gray-700 leading-relaxed">
-
-                        </p>
-                    </div>
-                </div>
             </div>
         </div>
     );

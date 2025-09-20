@@ -459,7 +459,7 @@ function HomeContent() {
               </h2>
             </div>
             <Link
-              href="/pages/internships"
+              href="/pages/internships?bookmarked=true"
               className="group inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-[18px] font-medium text-white bg-gradient-to-r from-[#E26262] to-[#F07575] rounded-full gap-2 sm:gap-3.5 hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl transform hover:scale-105 whitespace-nowrap mt-4 md:mt-0 border border-white/20"
             >
               see all

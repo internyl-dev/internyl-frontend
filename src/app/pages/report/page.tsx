@@ -27,13 +27,13 @@ export default function ReportPage() {
   const [incorrectInfoType, setIncorrectInfoType] = useState("");
   const [correctInfo, setCorrectInfo] = useState("");
 
-  // Bug specific
+  // Bug
   const [bugTitle, setBugTitle] = useState("");
   const [bugDescription, setBugDescription] = useState("");
   const [bugSteps, setBugSteps] = useState("");
   const [bugSeverity, setBugSeverity] = useState("Medium");
 
-  // Other specific
+  // Other
   const [otherSubject, setOtherSubject] = useState("");
   const [otherDescription, setOtherDescription] = useState("");
 

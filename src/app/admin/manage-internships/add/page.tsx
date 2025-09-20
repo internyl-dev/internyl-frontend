@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
-import { InternshipCards } from "@/lib/types/internshipCards"; // adjust the path if needed
+import { InternshipCards } from "@/lib/types/internshipCards";
 
 export default function AddInternshipPage() {
   const router = useRouter();
