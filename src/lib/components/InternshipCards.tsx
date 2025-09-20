@@ -23,6 +23,10 @@ import { getIconColor } from "../modules/getDueDateIconColor";
 import { formatDate } from "../modules/dateUtils";
 import LaunchIcon from '@mui/icons-material/Launch';
 
+import { auth, db } from "@/lib/config/firebaseConfig"
+import { doc, getDoc } from "firebase/firestore";
+import { setDoc, updateDoc } from "firebase/firestore";
+
 interface Props {
   internships: InternshipType[];
   bookmarked: { [key: string]: boolean };
@@ -81,6 +85,8 @@ export default function InternshipCards({
   const [eligibilityModal, setEligibilityModal] = useState<{ internshipId: string; items: EligibilityItem[] } | null>(null);
   const [userEligibilityData, setUserEligibilityData] = useState<UserEligibilityData>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const userId = auth.currentUser != null ? auth.currentUser.uid : null;
 
   const capitalizeWords = (text: string) =>
     text
@@ -469,9 +475,10 @@ export default function InternshipCards({
   };
 
   // Function to handle opening eligibility checklist
-  const handleEligibilityClick = (internshipId: string) => {
+  const handleEligibilityClick = async (internshipId: string) => {
     const internship = internships.find(i => i.id === internshipId);
     if (internship) {
+      await loadEligibilityData(internshipId); // Load saved data before opening modal
       const items = getEligibilityItems(internship);
       setEligibilityModal({ internshipId, items });
     }
@@ -482,45 +489,91 @@ export default function InternshipCards({
     setEligibilityModal(null);
   };
 
-  // Function to handle checkbox toggle
+  // Updated function to handle checkbox toggle and save data immediately
   const handleCheckboxToggle = (internshipId: string, itemId: string) => {
-    setUserEligibilityData(prev => ({
-      ...prev,
-      [internshipId]: {
-        ...prev[internshipId],
-        [itemId]: !prev[internshipId]?.[itemId]
-      }
-    }));
+    setUserEligibilityData((prev) => {
+      const updatedData = {
+        ...prev,
+        [internshipId]: {
+          ...prev[internshipId],
+          [itemId]: !prev[internshipId]?.[itemId],
+        },
+      };
+      return updatedData;
+    });
   };
+
+  // UseEffect to save data to Firebase whenever userEligibilityData changes
+  useEffect(() => {
+    if (eligibilityModal) {
+      saveEligibilityData(eligibilityModal.internshipId);
+    }
+  }, [userEligibilityData, eligibilityModal]);
 
   // Function to save eligibility data to database
   const saveEligibilityData = async (internshipId: string) => {
+    if (!userId) {
+      alert("You must be logged in to save your checklist.");
+      return;
+    }
     setIsLoading(true);
     try {
-      // Simulated database save - replace with your actual database call
       const dataToSave = {
-        internshipId,
-        eligibilityChecklist: userEligibilityData[internshipId] || {},
-        lastUpdated: new Date().toISOString(),
-        userId: 'current_user_id' // Replace with actual user ID
+        eligibilityChecklists: {
+          [internshipId]: {
+            checklist: userEligibilityData[internshipId] || {},
+            lastUpdated: new Date().toISOString(),
+          },
+        },
       };
 
-      // Here you would make your actual API call to save to the database
-      // Example: await saveToDatabase('users', dataToSave);
-      
-      console.log('Saving eligibility data to database:', dataToSave);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Show success message (you could add a toast notification here)
-      alert('Eligibility checklist saved successfully!');
-      
+      const userDocRef = doc(db, "users", userId);
+      const userSnapshot = await getDoc(userDocRef);
+
+      if (userSnapshot.exists()) {
+        // Merge with existing eligibilityChecklists
+        const existingData = userSnapshot.data().eligibilityChecklists || {};
+        await updateDoc(userDocRef, {
+          eligibilityChecklists: {
+            ...existingData,
+            [internshipId]: dataToSave.eligibilityChecklists[internshipId],
+          },
+        });
+      } else {
+        // Create new user document
+        await setDoc(userDocRef, {
+          eligibilityChecklists: {
+            [internshipId]: dataToSave.eligibilityChecklists[internshipId],
+          },
+        });
+      }
     } catch (error) {
-      console.error('Error saving eligibility data:', error);
-      alert('Error saving checklist. Please try again.');
+      console.error("Error saving eligibility data:", error);
+      alert("Error saving checklist. Please try again.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Function to load saved eligibility data for a specific internship
+  const loadEligibilityData = async (internshipId: string) => {
+    if (!userId) return;
+
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userSnapshot = await getDoc(userDocRef);
+
+      if (userSnapshot.exists()) {
+        const savedData = userSnapshot.data().eligibilityChecklists || {};
+        if (savedData[internshipId]) {
+          setUserEligibilityData((prev) => ({
+            ...prev,
+            [internshipId]: savedData[internshipId].checklist || {},
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error loading eligibility data:", error);
     }
   };
 
@@ -1103,23 +1156,6 @@ export default function InternshipCards({
                   No specific eligibility requirements found for this internship.
                 </div>
               )}
-
-              {/* Save Button */}
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  onClick={closeEligibilityModal}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  Close
-                </button>
-                <button
-                  onClick={() => saveEligibilityData(eligibilityModal.internshipId)}
-                  disabled={isLoading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isLoading ? 'Saving...' : 'Save Progress'}
-                </button>
-              </div>
             </div>
           </div>
         </div>
