@@ -80,7 +80,7 @@ export default function InternshipCards({
   const [isInitialRender, setIsInitialRender] = useState<boolean>(true);
   const [expandedSubjects, setExpandedSubjects] = useState<{ [key: string]: boolean }>({});
   const [modalInfo, setModalInfo] = useState<{ internshipId: string; info: { label: string; value: string }[] } | null>(null);
-  
+
   // New state for eligibility checklist
   const [eligibilityModal, setEligibilityModal] = useState<{ internshipId: string; items: EligibilityItem[] } | null>(null);
   const [userEligibilityData, setUserEligibilityData] = useState<UserEligibilityData>({});
@@ -432,7 +432,7 @@ export default function InternshipCards({
         : isValidValue(ageRange?.minimum)
           ? `${ageRange?.minimum}+`
           : `up to ${ageRange?.maximum}`;
-      
+
       items.push({
         id: 'age_eligibility',
         label: `Age Verification (Ages ${ageText})`,
@@ -459,7 +459,7 @@ export default function InternshipCards({
     if (internship.costs?.costs && Array.isArray(internship.costs.costs) && internship.costs.costs[0]) {
       const costInfo = internship.costs.costs[0];
       const hasValidCosts = isValidValue(costInfo.lowest) || isValidValue(costInfo.highest);
-      
+
       if (!isTruthyValue(costInfo.free) && hasValidCosts) {
         items.push({
           id: 'payment_plan',
@@ -548,7 +548,7 @@ export default function InternshipCards({
     } catch (error) {
       console.error("Error saving eligibility data:", error);
       alert("Error saving checklist. Please try again.");
-    } 
+    }
   };
 
   // Function to load saved eligibility data for a specific internship
@@ -1087,25 +1087,22 @@ export default function InternshipCards({
 
                   {eligibilityModal.items.map((item) => {
                     const isChecked = userEligibilityData[eligibilityModal.internshipId]?.[item.id] || false;
-                    
+
                     return (
                       <div
                         key={item.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                        onClick={() => handleCheckboxToggle(eligibilityModal.internshipId, item.id)}
+                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                       >
                         <div className="flex items-start gap-3">
-                          <button
-                            onClick={() => handleCheckboxToggle(eligibilityModal.internshipId, item.id)}
-                            className="mt-1 text-blue-600 hover:text-blue-800 transition-colors"
-                            aria-label={`Toggle ${item.label}`}
-                          >
+                          <div className="mt-1 text-blue-600">
                             {isChecked ? (
                               <CheckCircleOutlinedIcon className="text-green-600" />
                             ) : (
                               <RadioButtonUncheckedIcon />
                             )}
-                          </button>
-                          
+                          </div>
+
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className={`font-medium ${isChecked ? 'text-green-700 line-through' : 'text-gray-800'}`}>
@@ -1117,7 +1114,7 @@ export default function InternshipCards({
                                 </span>
                               )}
                             </div>
-                            
+
                             {item.description && (
                               <p className={`text-sm ${isChecked ? 'text-gray-400' : 'text-gray-600'}`}>
                                 {item.description}
@@ -1129,7 +1126,7 @@ export default function InternshipCards({
                     );
                   })}
 
-                  {/* Progress Summary */}
+                  { }
                   <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                     <div className="flex justify-between items-center mb-2">
                       <span className="font-medium text-gray-700">Progress</span>
