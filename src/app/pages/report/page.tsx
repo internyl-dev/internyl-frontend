@@ -27,13 +27,13 @@ export default function ReportPage() {
   const [incorrectInfoType, setIncorrectInfoType] = useState("");
   const [correctInfo, setCorrectInfo] = useState("");
 
-  // Bug specific
+  // Bug
   const [bugTitle, setBugTitle] = useState("");
   const [bugDescription, setBugDescription] = useState("");
   const [bugSteps, setBugSteps] = useState("");
   const [bugSeverity, setBugSeverity] = useState("Medium");
 
-  // Other specific
+  // Other
   const [otherSubject, setOtherSubject] = useState("");
   const [otherDescription, setOtherDescription] = useState("");
 
@@ -58,7 +58,7 @@ export default function ReportPage() {
   useEffect(() => {
     const fetchInternships = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "internships-history"));
+        const querySnapshot = await getDocs(collection(db, "programs-display"));
         const fetched = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),

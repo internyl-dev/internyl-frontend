@@ -10,7 +10,7 @@ import InternshipCards from "@/lib/components/InternshipCards";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
 import { InternshipCards as InternshipType, Deadline, CostsSection } from "@/lib/types/internshipCards";
 
-// Firebase
+
 import { auth, db } from "@/lib/config/firebaseConfig";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -47,7 +47,6 @@ function getDueCategory(date: Date | null): string {
 }
 
 function InternshipsContent() {
-  // Add this motivational phrases code here
   const motivationalPhrases = [
     "Discover your next adventure today! 🚀",
     "Your dream internship is just a search away ✨",
@@ -72,7 +71,7 @@ function InternshipsContent() {
 
   ];
   useEffect(() => {
-    // Add gradient animation styles
+    // Gradient animation styles
     const style = document.createElement('style');
     style.textContent = `
       @keyframes gradient {
@@ -248,7 +247,7 @@ function InternshipsContent() {
         let highestCost = 0;
         const fetchedInternships = snapshot.docs.map((doc) => {
           const data = doc.data();
-          // Defensive check: deadlines might be undefined
+          // Check: deadlines might be undefined
           const deadlines = (data.dates?.deadlines ?? []).map((deadline: Deadline) => {
             const dateVal = deadline.date;
             return {
@@ -686,10 +685,9 @@ function InternshipsContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen radial-bg text-gray-800 px-4 mb-8">
-        {/* Keep your header */}
         <div className="text-center pt-2 mt-0">...</div>
 
-        {/* Enhanced Skeleton Cards with Masonry-style Layout */}
+        {/* Enhanced Skeleton Cards */}
         <div className="px-0 sm:px-4 lg:px-8">
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center">
             {[...Array(8)].map((_, i) => (
@@ -765,7 +763,7 @@ function InternshipsContent() {
           </div>
         </div>
 
-        {/* Floating shimmer effect overlay for extra polish */}
+        {/* Shimmer effect, floating */}
         <style jsx>{`
           @keyframes shimmer {
             0% {

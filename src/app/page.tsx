@@ -19,6 +19,7 @@ import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 
 import InternshipCards from "@/lib/components/InternshipCards";
+import Brushstroke from "@/lib/components/Brushstroke";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
 import { InternshipCards as Internship } from "@/lib/types/internshipCards";
 import { useInternshipsWithFallback } from "@/lib/hooks/useRecommendedInternships";
@@ -342,7 +343,28 @@ function HomeContent() {
         {/* Top Section with enhanced gradient */}
         <div className="bg-gradient-to-br from-[#9381FF] via-[#A891FF] to-[#9381FF] text-white relative">
           <div className="absolute inset-0 bg-black/5"></div>
-          <div className="px-4 sm:px-6 md:px-12 lg:px-20 pt-20 md:pt-28 pb-20 md:pb-28 relative text-center sm:text-right z-10">
+
+          {/* BrushStroke on the left */}
+          <motion.div
+            className="absolute left-0 top-0 w-13/20 h-full z-0"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            style={{ height: '100%', marginLeft: '-13%' }}
+          >
+            <div style={{ animationDelay: '0.6s', height: '100%', display: 'flex', alignItems: 'center' }}>
+              <Brushstroke
+                duration={2}
+                paddingScale={2}
+                style={{ width: '100%', height: '50%' }}
+              >
+                ‎‎
+              </Brushstroke>
+            </div>
+          </motion.div>
+
+          {/* Original text positioning */}
+          <div className="px-4 sm:px-6 md:px-12 lg:px-20 pt-20 md:pt-28 pb-20 md:pb-28 relative text-center z-10">
             <motion.div
               className="inline-block max-w-full"
               initial={{ opacity: 0, y: 30 }}
@@ -358,7 +380,7 @@ function HomeContent() {
                 Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ")[0] || "Intern"}
               </motion.h1>
               <motion.p
-                className={`text-center sm:text-left text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className} drop-shadow-md`}
+                className={`text-center text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className} drop-shadow-md`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
@@ -459,7 +481,7 @@ function HomeContent() {
               </h2>
             </div>
             <Link
-              href="/pages/internships"
+              href="/pages/internships?bookmarked=true"
               className="group inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-[18px] font-medium text-white bg-gradient-to-r from-[#E26262] to-[#F07575] rounded-full gap-2 sm:gap-3.5 hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl transform hover:scale-105 whitespace-nowrap mt-4 md:mt-0 border border-white/20"
             >
               see all

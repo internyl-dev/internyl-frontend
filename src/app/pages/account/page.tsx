@@ -28,7 +28,6 @@ export default function Account() {
   const [statusType, setStatusType] = useState<"success" | "error" | null>(null);
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  // Removed unused [status, setStatus]
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
