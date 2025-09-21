@@ -58,7 +58,7 @@ export default function ReportPage() {
   useEffect(() => {
     const fetchInternships = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "internships-history"));
+        const querySnapshot = await getDocs(collection(db, "programs-display"));
         const fetched = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),

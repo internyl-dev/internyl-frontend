@@ -39,7 +39,7 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
     zIndex: -1,
     clipPath: `url(#${brushClipId})`,
     opacity: 0,
-    animation: `brushReveal-${clipId} ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`
+    animation: `brushReveal-${clipId} ${duration}s cubic-bezier(0.19, 1, 0.22, 1) forwards`
   };
 
   const textStyles: React.CSSProperties = {
@@ -100,9 +100,9 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
                 dur={`${duration}s`}
                 fill="freeze"
                 calcMode="spline"
-                keyTimes="0; 0.15; 0.4; 0.7; 0.9; 1"
-                keySplines="0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94"
-                values="0; 0.08; 0.3; 0.65; 0.92; 1"
+                keyTimes="0; 0.05; 0.12; 0.22; 0.35; 0.5; 0.65; 0.78; 0.88; 0.95; 1"
+                keySplines="0.19,1,0.22,1; 0.16,1,0.3,1; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.19,1,0.22,1; 0.16,1,0.3,1"
+                values="0; 0.02; 0.06; 0.15; 0.28; 0.45; 0.62; 0.78; 0.89; 0.97; 1"
                 begin="0s"
                 repeatCount={indefinite ? "indefinite" : "1"}
                 restart="always"

@@ -346,7 +346,7 @@ function HomeContent() {
 
           {/* BrushStroke on the left */}
           <motion.div
-            className="absolute left-4 sm:left-6 md:left-12 lg:left-20 top-1/2 transform -translate-y-1/2 z-20"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-20"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
