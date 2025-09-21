@@ -53,7 +53,7 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
     width: '100%',
     top: 0,
     left: 0,
-    background: '#FF8000',
+    background: '#FF7373',
     zIndex: -1,
     clipPath: `url(#${brushClipId})`,
     opacity: 0,

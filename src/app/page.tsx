@@ -346,7 +346,7 @@ function HomeContent() {
 
           {/* BrushStroke on the left */}
           <motion.div
-            className="absolute left-0 top-0 w-14/20 h-full z-0"
+            className="absolute left-0 top-0 w-13/20 h-full z-0"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
@@ -358,38 +358,38 @@ function HomeContent() {
                 paddingScale={2}
                 style={{ width: '100%', height: '50%' }}
               >
-                ‎‎ 
+                ‎‎
               </Brushstroke>
             </div>
           </motion.div>
 
           {/* Original text positioning */}
-          <div className="px-4 sm:px-6 md:px-12 lg:px-20 pt-20 md:pt-28 pb-20 md:pb-28 relative text-center sm:text-right z-10">
+          <div className="px-4 sm:px-6 md:px-12 lg:px-20 pt-20 md:pt-28 pb-20 md:pb-28 relative text-center z-10">
             <motion.div
-      className="inline-block max-w-full"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-    >
-      <motion.h1
-        className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-bold drop-shadow-lg"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ")[0] || "Intern"}
-      </motion.h1>
-      <motion.p
-        className={`text-center sm:text-left text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className} drop-shadow-md`}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-      >
-        An internship deadline is near
-      </motion.p>
-    </motion.div>
-  </div>
-</div>
+              className="inline-block max-w-full"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <motion.h1
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-bold drop-shadow-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ")[0] || "Intern"}
+              </motion.h1>
+              <motion.p
+                className={`text-center text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className} drop-shadow-md`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                An internship deadline is near
+              </motion.p>
+            </motion.div>
+          </div>
+        </div>
 
         {/* Smart Data Insights Widget */}
         <InsightsWidget
