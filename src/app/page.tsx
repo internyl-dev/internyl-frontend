@@ -346,17 +346,19 @@ function HomeContent() {
 
           {/* BrushStroke on the left */}
           <motion.div
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-20"
+            className="absolute left-0 top-0 w-1/2 h-full z-20"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
+            style={{ height: '100%' }}
           >
-            <div style={{ animationDelay: '0.6s' }}>
+            <div style={{ animationDelay: '0.6s', height: '100%', display: 'flex', alignItems: 'center' }}>
               <Brushstroke
                 duration={2}
-                className="text-2xl sm:text-3xl md:text-4xl font-bold"
+                paddingScale={2}
+                style={{ width: '100%', height: '50%' }}
               >
-                ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎
+                ‎‎ 
               </Brushstroke>
             </div>
           </motion.div>
