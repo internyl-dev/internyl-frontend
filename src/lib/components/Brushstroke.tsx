@@ -34,7 +34,7 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
     alignItems: 'center',
     justifyContent: 'center',
     // Take up left half of container
-    width: '50%',
+    width: '80%',
     minWidth: 'fit-content',
     // Vertical padding (top and bottom)
     paddingTop: `clamp(${0.25 * paddingScale}rem, ${0.75 * paddingScale}vw + ${0.25 * paddingScale}rem, ${1 * paddingScale}rem)`,
