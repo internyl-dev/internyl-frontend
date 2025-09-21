@@ -39,7 +39,7 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
     zIndex: -1,
     clipPath: `url(#${brushClipId})`,
     opacity: 0,
-    animation: `brushReveal-${clipId} ${duration}s ease-out forwards`
+    animation: `brushReveal-${clipId} ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`
   };
 
   const textStyles: React.CSSProperties = {
@@ -100,9 +100,9 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
                 dur={`${duration}s`}
                 fill="freeze"
                 calcMode="spline"
-                keyTimes="0; 0.2; 0.5; 0.8; 1"
-                keySplines="0.4,0,0.2,1; 0.4,0,0.2,1; 0.4,0,0.2,1; 0.4,0,0.2,1"
-                values="0; 0.1; 0.4; 0.85; 1"
+                keyTimes="0; 0.15; 0.4; 0.7; 0.9; 1"
+                keySplines="0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94"
+                values="0; 0.08; 0.3; 0.65; 0.92; 1"
                 begin="0s"
                 repeatCount={indefinite ? "indefinite" : "1"}
                 restart="always"
@@ -110,7 +110,7 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
             </rect>
           </clipPath>
 
-          {/* Main brush clip path */}
+          { }
           <clipPath id={brushClipId} clipPathUnits="objectBoundingBox">
             <use href={`#${brushShapeId}`} clipPath={`url(#${rectClipId})`} />
           </clipPath>
