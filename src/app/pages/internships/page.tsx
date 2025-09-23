@@ -535,17 +535,10 @@ function InternshipsContent() {
         switch (category) {
           case "Due in": {
             const deadlines = internship.dates?.deadlines || [];
-            if (deadlines.length === 0) return false;
+            const earliestDeadline = getEarliestDeadlineDate(deadlines);
+            if (!earliestDeadline) return false;
 
-            const firstDeadline = deadlines[0];
-            if (!firstDeadline || !firstDeadline.date || firstDeadline.date === "not provided") {
-              return false;
-            }
-
-            const dateObj = new Date(firstDeadline.date);
-            if (isNaN(dateObj.getTime())) return false;
-
-            const dueCategory = getDueCategory(dateObj);
+            const dueCategory = getDueCategory(earliestDeadline);
             return selectedOptions.includes(dueCategory);
           }
 
@@ -677,7 +670,7 @@ function InternshipsContent() {
     });
 
     return sortInternships(filtered, sortBy, searchTerm);
-  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime, sortInternships]);
+  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime]);
 
   const totalActiveFilters = Object.values(activeFilters).reduce((acc, arr) => acc + arr.length, 0);
   const hasBookmarkedInternships = Object.values(bookmarked).some(Boolean);
