@@ -886,11 +886,12 @@ export default function InternshipCards({
                     </p>
                   )}
 
-                  {/* Cost/Stipend logic: show cost first, stipend next line if both; else show only one; else show nothing */}
+                  {/* Cost/Stipend logic: show stipend if free and stipend exists; else show cost first, stipend next line if both; else show only one; else show nothing */}
                   {(() => {
                     const hasCost = internship.costs?.costs && Array.isArray(internship.costs.costs) && internship.costs.costs[0];
                     const hasStipend = isTruthyValue(internship.costs?.stipend?.available) && isValidValue(internship.costs?.stipend?.amount);
                     let costStr = "";
+
                     if (hasCost) {
                       const costInfo = internship.costs.costs[0];
                       const hasValidCosts = isValidValue(costInfo.lowest) || isValidValue(costInfo.highest);
@@ -918,17 +919,28 @@ export default function InternshipCards({
                         costStr += (costStr ? " • " : "") + "Financial aid available";
                       }
                     }
-                    if (hasCost && hasStipend) {
-                      return <>
-                        <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
-                          <MoneyIcon className="mr-2" fontSize="small" />
-                          <span>{costStr}</span>
-                        </p>
+
+                    if (hasCost && isTruthyValue(internship.costs?.costs[0]?.free) && hasStipend) {
+                      // If the internship is free and has a stipend, only show the stipend
+                      return (
                         <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
                           <MoneyIcon className="mr-2" fontSize="small" />
                           <span>Stipend: ${internship.costs.stipend.amount}</span>
                         </p>
-                      </>;
+                      );
+                    } else if (hasCost && hasStipend) {
+                      return (
+                        <>
+                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                            <MoneyIcon className="mr-2" fontSize="small" />
+                            <span>{costStr}</span>
+                          </p>
+                          <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
+                            <MoneyIcon className="mr-2" fontSize="small" />
+                            <span>Stipend: ${internship.costs.stipend.amount}</span>
+                          </p>
+                        </>
+                      );
                     } else if (hasCost && costStr) {
                       return (
                         <p className="text-base flex items-center text-[1.2rem] text-[#2BA280]">
