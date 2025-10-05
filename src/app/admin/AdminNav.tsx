@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useAdminCheck } from "@/lib/hooks/useAdminCheck";
 
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import UserIcon from "@mui/icons-material/Person";
+import DashboardIcon from "@mui/icons-material/DashboardOutlined";
+import UserIcon from "@mui/icons-material/PersonOutline";
 import SearchIcon from "@mui/icons-material/Search";
+import ReportIcon from "@mui/icons-material/ReportOutlined";
 
 export default function AdminNav() {
     // check if admin
@@ -16,6 +17,7 @@ export default function AdminNav() {
     const menuItems = [
         { text: "Dashboard", href: "/admin", icon: <DashboardIcon /> },
         { text: "Internships", href: "/admin/internships", icon: <SearchIcon /> },
+        { text: "Reports", href: "/admin/reports", icon: <ReportIcon /> },
         { text: "Admin Info", href: "/admin/users", icon: <UserIcon /> },
         // { text: "Settings", href: "/admin/settings", icon: <SettingsIcon /> },
     ];

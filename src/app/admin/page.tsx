@@ -25,6 +25,9 @@ export default function AdminDashboard() {
     const [userPercentIncrease, setUserPercentIncrease] = useState<number | null>(null);
     const [newUsersCount, setNewUsersCount] = useState<number | null>(null);
 
+    const [reportPercentIncrease, setReportPercentIncrease] = useState<number | null>(null);
+    const [newReportsCount, setNewReportsCount] = useState<number | null>(null);
+
     const [internshipCount, setInternshipCount] = useState<number>(0);
     const [reportCount, setReportCount] = useState<number>(0);
     const [userCount, setUserCount] = useState<number>(0);
@@ -87,6 +90,20 @@ export default function AdminDashboard() {
         return snapshot.size;
     };
 
+    const fetchRecentReports = async (days: number) => {
+        const now = new Date();
+        const pastDate = new Date();
+        pastDate.setDate(now.getDate() - days);
+
+        const q = query(
+            collection(db, "reports"),
+            where("createdAt", ">", pastDate)
+        );
+
+        const snapshot = await getDocs(q);
+        return snapshot.size;
+    };
+
     // combined function to fetch total users + new users + percentage change
     const fetchUserStats = async () => {
         const totalSnapshot = await getDocs(collection(db, "users"));
@@ -102,10 +119,26 @@ export default function AdminDashboard() {
         setUserPercentIncrease(percentIncrease);
     };
 
+    // report % change
+    const fetchReportStats = async () => {
+        const totalSnapshot = await getDocs(collection(db, "reports"));
+        const totalReports = totalSnapshot.size;
+
+        const reportsLast30Days = await fetchRecentReports(30); // number of new users in last 7 days
+        const oldReports = totalReports - reportsLast30Days;
+
+        const percentIncrease = calculatePercentageChange(oldReports, totalReports);
+
+        setReportCount(totalReports);
+        setNewReportsCount(reportsLast30Days);
+        setReportPercentIncrease(percentIncrease);
+    }
+
     useEffect(() => {
         fetchTotalInternships();
-        fetchTotalReports();
+        // fetchTotalReports();
         fetchUserStats(); // fetch users + new users + percent
+        fetchReportStats();
     }, [status]);
 
     // name variables
@@ -205,13 +238,17 @@ export default function AdminDashboard() {
                         Total Reports Count
                     </h3>
                     <p className="text-5xl font-extrabold text-gray-900 mb-2">{reportCount}</p>
-                    <p className="text-gray-600 text-sm mb-6 text-center">
-                        Total reports
-                    </p>
+                    {
+                        reportPercentIncrease !== null && newReportsCount !== null && reportPercentIncrease != 0 ?
+                            <p className="text-red-600 text-sm mb-6 text-center">
+                                {newReportsCount} new report(s) <br /> {reportPercentIncrease.toFixed(1)}% increase in past 7 days
+                            </p> :
+                            <p className="text-blue-600 text-sm mb-6 text-center">No recorded change</p>
+                    }
                     <Button
                         size="small"
                         variant="outlined"
-                        onClick={fetchTotalReports}
+                        onClick={fetchReportStats}
                         className="px-4 py-2 text-xs rounded-lg border-gray-300 hover:border-purple-400 hover:text-purple-600 transition-all"
                         style={{ minWidth: "80px" }}
                     >
