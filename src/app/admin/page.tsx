@@ -28,7 +28,7 @@ export default function AdminDashboard() {
   const [reportCount, setReportCount] = useState<number>(0);
 
   const fetchCount = async () => {
-    const snapshot = await getDocs(collection(db, "internships"));
+    const snapshot = await getDocs(collection(db, "programs-display"));
     setInternshipCount(snapshot.size);
   };
 
