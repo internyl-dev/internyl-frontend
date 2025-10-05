@@ -75,11 +75,18 @@ export default function Navbar() {
           @keyframes personBreathe{0%,100%{transform:scale(1) translateY(0px);filter:drop-shadow(0 0 0px rgba(59,130,246,0));}25%{transform:scale(1.05) translateY(-1px);filter:drop-shadow(0 2px 4px rgba(59,130,246,0.1));}50%{transform:scale(1.1) translateY(-2px);filter:drop-shadow(0 4px 8px rgba(59,130,246,0.2));}75%{transform:scale(1.05) translateY(-1px);filter:drop-shadow(0 2px 4px rgba(59,130,246,0.1));}}
           @keyframes settingsRotate{0%{transform:rotate(0deg) scale(1);}25%{transform:rotate(90deg) scale(1.1);}50%{transform:rotate(180deg) scale(1.2);}75%{transform:rotate(270deg) scale(1.1);}100%{transform:rotate(360deg) scale(1);}}
           @keyframes dropdownSlide{0%{opacity:0;transform:translateY(-10px) scale(0.95);}100%{opacity:1;transform:translateY(0) scale(1);}}
-          @keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
-          @keyframes logoGlow{0%,100%{text-shadow:0 0 0px rgba(59,130,246,0);}50%{text-shadow:0 0 20px rgba(59,130,246,0.3);}}
+          @keyframes blueWave{0%{background-position:100% 50%;}25%{background-position:0% 50%;}75%{background-position:200% 50%;}100%{background-position:100% 50%;}}
 
           .navbar-scrolled{backdrop-filter:blur(20px);}
-          .logo-hover:hover{animation:shimmer 3s ease-in-out infinite,logoGlow 2s ease-in-out infinite;background-size:400% 400%;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+          .logo-hover{transition:all 0.3s ease;}
+          .logo-hover:hover{
+            background:linear-gradient(90deg, #1e40af, #3b82f6, #60a5fa, #3b82f6, #1e40af);
+            background-size:400% 100%;
+            background-clip:text;
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            animation:blueWave 3s ease-in-out infinite;
+          }
 
           .nav-link{position:relative;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1);}
           .nav-link::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(59,130,246,.1),transparent);transition:left .6s cubic-bezier(.4,0,.2,1);}
