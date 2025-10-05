@@ -65,11 +65,6 @@ export default function AdminDashboard() {
         setInternshipCount(snapshot.size);
     }
 
-    const fetchTotalReports = async () => {
-        const snapshot = await getDocs(collection(db, "reports"));
-        setReportCount(snapshot.size);
-    }
-
     // calculate % change
     const calculatePercentageChange = (oldValue: number, newValue: number) => {
         if (oldValue === 0) return newValue * 100; // from 0 to X
@@ -143,8 +138,8 @@ export default function AdminDashboard() {
 
     // name variables
     const displayName = currentUser?.displayName || "Admin";
-    const email = currentUser?.email || "admin@example.com";
-    const photoURL = currentUser?.photoURL;
+    // const email = currentUser?.email || "admin@example.com";
+    // const photoURL = currentUser?.photoURL;
 
     // while the user is loading, display an unauthorized message
     if (isAdmin === null) {
