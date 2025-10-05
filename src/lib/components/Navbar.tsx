@@ -149,7 +149,7 @@ export default function Navbar() {
               className="nav-link hover:text-amber-600 transition flex items-center gap-2 px-3 py-2 rounded-lg animate-settings"
             >
               <SettingsOutlinedIcon />
-              Admin Dashboard
+              admin dashboard
             </Link>
           )}
 
