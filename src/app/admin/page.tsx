@@ -41,7 +41,7 @@ export default function AdminDashboard() {
         "Hail, esteemed Monarch",
         "Welcome, illustrious Ruler",
         "Salutations, revered Crown",
-        "Welcome, exalted Royal",
+        "Welcome, Royal",
         "Greetings, honored Regent",
     ]
 
