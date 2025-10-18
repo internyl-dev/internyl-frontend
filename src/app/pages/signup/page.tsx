@@ -101,19 +101,19 @@ export default function SignUp() {
             });
 
             // Send email verification
-            try { 
-                await sendEmailVerification(auth.currentUser!);
-                // console.log("Email sent to the user: ", auth.currentUser?.email);
-                await auth.signOut();
-                router.push("/pages/verify-email");
-                return;
-            } catch (sendErr: unknown) {
-                // console.error("sendEmailVerification error:", sendErr);
-                const errorMessage = (sendErr as Error)?.message ?? "Failed to send verification email";
-                setStatus(errorMessage);
-                // don't sign the user out if sending failed
-                // return;
-            }
+            // try { 
+            //     await sendEmailVerification(auth.currentUser!);
+            //     // console.log("Email sent to the user: ", auth.currentUser?.email);
+            //     await auth.signOut();
+            //     router.push("/pages/verify-email");
+            //     return;
+            // } catch (sendErr: unknown) {
+            //     // console.error("sendEmailVerification error:", sendErr);
+            //     const errorMessage = (sendErr as Error)?.message ?? "Failed to send verification email";
+            //     setStatus(errorMessage);
+            //     // don't sign the user out if sending failed
+            //     // return;
+            // }
 
             setStatus("Account created successfully!");
             router.push("/");
