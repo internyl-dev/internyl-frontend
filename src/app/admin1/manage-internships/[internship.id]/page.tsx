@@ -79,7 +79,7 @@ export default function EditInternship() {
   const handleSave = async () => {
     try {
       if (!id) throw new Error("Invalid ID");
-      const docRef = doc(db, "internships", id);
+      const docRef = doc(db, "programs-display", id);
       await updateDoc(docRef, {
         ...internship,
         description,

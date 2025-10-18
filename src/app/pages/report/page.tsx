@@ -241,10 +241,10 @@ export default function ReportPage() {
 
           {step === 0 && (
             <>
-              <div className="text-center">
-                <label>Issue Type</label>
+              <div className="flex flex-col items-center px-4 text-center">
+                <label className="text-lg font-medium mb-3">Issue Type</label>
                 <select
-                  className="w-max-3xl mt-2 mb-4 p-2 border rounded m-4"
+                  className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg p-3 border rounded-lg text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={reportType}
                   onChange={(e) => setReportType(e.target.value as ReportType["reportType"])}
                 >
@@ -253,14 +253,16 @@ export default function ReportPage() {
                   <option value="other">Other</option>
                 </select>
               </div>
+
               <button
-                className="bg-blue-500 text-white px-3 py-2 rounded-2xl hover:bg-blue-600 transition-colors cursor-pointer justified mx-auto block"
+                className="bg-blue-500 text-white px-5 py-3 rounded-2xl hover:bg-blue-600 transition-colors mx-auto block mt-4"
                 onClick={handleStepOne}
               >
-                Next <ArrowForwardIcon />
+                Next <ArrowForwardIcon className="inline-block ml-1" />
               </button>
             </>
           )}
+
 
           {step === 1 && (
             <>
