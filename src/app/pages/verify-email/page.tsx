@@ -40,6 +40,8 @@ export default function VerifyEmailPage() {
         <p className="text-gray-600 mb-6">
           We&apos;ve sent a verification link to your email.  
           Please click it before logging in again.
+          <br /> <br />
+          <span>❓ <b>Can't find the email?</b> Be sure to check your spam, junk, and trash inboxes.</span>
         </p>
 
         <button

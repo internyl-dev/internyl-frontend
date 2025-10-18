@@ -121,13 +121,13 @@ function InternshipsContent() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const router = useRouter();
 
-  const filterData = [
-    {
-      label: "Due in",
-      color: "bg-[#f7d7db]",
-      icon: Clock,
-      options: ["Past Due", "Due Today", "Due This Week", "Due This Month"],
-    },
+    const filterData = [
+      {
+        label: "Due in",
+        color: "bg-[#f7d7db]",
+        icon: Clock,
+        options: ["Past Due", "Due Today", "Due This Week", "Due This Month", "Later"],
+      },
     {
       label: "Subject",
       color: "bg-[#e4e8f6]",
@@ -536,8 +536,12 @@ function InternshipsContent() {
           case "Due in": {
             const deadlines = internship.dates?.deadlines || [];
             const earliestDeadline = getEarliestDeadlineDate(deadlines);
-            if (!earliestDeadline) return false;
-
+            
+            // If no deadline exists, include it in "Later" filter
+            if (!earliestDeadline) {
+              return selectedOptions.includes("Later");
+            }
+          
             const dueCategory = getDueCategory(earliestDeadline);
             return selectedOptions.includes(dueCategory);
           }
