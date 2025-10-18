@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AdminNav from "../AdminNav";
 import {
   collection,
@@ -11,50 +11,12 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/config/firebaseConfig";
-import { InternshipCards, Grade, Deadline, DateRange, Location, CostItem } from "@/lib/types/internshipCards";
+import { InternshipCards, Deadline, Location, CostItem, DateRange } from "@/lib/types/internshipCards";
 
 import {
-  // Button,
-  // TextField,
-  // Dialog,
-  // DialogActions,
-  // DialogContent,
-  // DialogTitle,
   CircularProgress,
-  // Tabs,
-  // Tab,
   Box,
-  // Chip,
-  // FormControlLabel,
-  // Checkbox,
-  // Select,
-  // MenuItem,
-  // InputLabel,
-  // FormControl,
-  // IconButton,
 } from "@mui/material";
-// import { Plus, Trash2, Pencil, Eye, X } from "lucide-react";
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`tabpanel-${index}`}
-      aria-labelledby={`tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
 
 export default function AdminInternships() {
   const [internships, setInternships] = useState<InternshipCards[]>([]);
@@ -106,7 +68,7 @@ export default function AdminInternships() {
     contact: { contact: { email: "", phone: "" } },
   };
 
-  const fetchInternships = async () => {
+  const fetchInternships = useCallback(async () => {
     setLoading(true);
     const snapshot = await getDocs(internshipsRef);
     const data: InternshipCards[] = snapshot.docs.map((doc) => ({
@@ -115,7 +77,7 @@ export default function AdminInternships() {
     }));
     setInternships(data);
     setLoading(false);
-  };
+  }, [internshipsRef]);
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this internship?")) {
@@ -129,10 +91,10 @@ export default function AdminInternships() {
 
     if (editingInternship.id) {
       const docRef = doc(db, "programs-display", editingInternship.id);
-      const { id, ...internshipData } = editingInternship;
+      const { id: _id, ...internshipData } = editingInternship;
       await updateDoc(docRef, internshipData);
     } else {
-      const { id, ...internshipData } = editingInternship;
+      const { id: _id, ...internshipData } = editingInternship;
       await addDoc(internshipsRef, internshipData);
     }
 
@@ -143,7 +105,7 @@ export default function AdminInternships() {
 
   useEffect(() => {
     fetchInternships();
-  }, []);
+  }, [fetchInternships]);
 
   const filteredInternships = internships.filter(
     (intern) =>
@@ -197,7 +159,7 @@ export default function AdminInternships() {
     });
   };
 
-  const updateDeadline = (index: number, field: keyof Deadline, value: any) => {
+  const updateDeadline = (index: number, field: keyof Deadline, value: string | number | boolean) => {
     if (!editingInternship) return;
     const newDeadlines = [...editingInternship.dates.deadlines];
     newDeadlines[index] = { ...newDeadlines[index], [field]: value };
@@ -217,36 +179,6 @@ export default function AdminInternships() {
     });
   };
 
-  // Date Range management
-  const addDateRange = () => {
-    if (!editingInternship) return;
-    const newDate: DateRange = { term: "", start: "not provided", end: "not provided" };
-    setEditingInternship({
-      ...editingInternship,
-      dates: { ...editingInternship.dates, dates: [...editingInternship.dates.dates, newDate] },
-    });
-  };
-
-  const updateDateRange = (index: number, field: keyof DateRange, value: any) => {
-    if (!editingInternship) return;
-    const newDates = [...editingInternship.dates.dates];
-    newDates[index] = { ...newDates[index], [field]: value };
-    setEditingInternship({
-      ...editingInternship,
-      dates: { ...editingInternship.dates, dates: newDates },
-    });
-  };
-
-  const removeDateRange = (index: number) => {
-    if (!editingInternship) return;
-    const newDates = [...editingInternship.dates.dates];
-    newDates.splice(index, 1);
-    setEditingInternship({
-      ...editingInternship,
-      dates: { ...editingInternship.dates, dates: newDates },
-    });
-  };
-
   // Location management
   const addLocation = () => {
     if (!editingInternship) return;
@@ -257,7 +189,7 @@ export default function AdminInternships() {
     });
   };
 
-  const updateLocation = (index: number, field: keyof Location, value: any) => {
+  const updateLocation = (index: number, field: keyof Location, value: string | number | boolean) => {
     if (!editingInternship) return;
     const newLocations = [...editingInternship.locations.locations];
     newLocations[index] = { ...newLocations[index], [field]: value };
@@ -293,7 +225,7 @@ export default function AdminInternships() {
     });
   };
 
-  const updateCost = (index: number, field: keyof CostItem, value: any) => {
+  const updateCost = (index: number, field: keyof CostItem, value: string | number | boolean) => {
     if (!editingInternship) return;
     const newCosts = [...editingInternship.costs.costs];
     newCosts[index] = { ...newCosts[index], [field]: value };
@@ -680,7 +612,7 @@ export default function AdminInternships() {
                         placeholder="Minimum age"
                         type="number"
                         className="px-3 py-2 rounded-md"
-                        value={editingInternship?.eligibility.eligibility.age.minimum === "not provided" ? "" : editingInternship?.eligibility.eligibility.age.minimum as any}
+                        value={editingInternship?.eligibility.eligibility.age.minimum === "not provided" ? "" : String(editingInternship?.eligibility.eligibility.age.minimum)}
                         onChange={(e) =>
                           setEditingInternship({
                             ...editingInternship!,
@@ -701,7 +633,7 @@ export default function AdminInternships() {
                         placeholder="Maximum age"
                         type="number"
                         className="px-3 py-2 rounded-md"
-                        value={editingInternship?.eligibility.eligibility.age.maximum === "not provided" ? "" : editingInternship?.eligibility.eligibility.age.maximum as any}
+                        value={editingInternship?.eligibility.eligibility.age.maximum === "not provided" ? "" : String(editingInternship?.eligibility.eligibility.age.maximum)}
                         onChange={(e) =>
                           setEditingInternship({
                             ...editingInternship!,
@@ -729,7 +661,7 @@ export default function AdminInternships() {
                       placeholder="Duration (weeks)"
                       type="number"
                       className="w-full px-3 py-2 rounded-md"
-                      value={editingInternship?.dates.duration_weeks === "not provided" ? "" : editingInternship?.dates.duration_weeks as any}
+                      value={editingInternship?.dates.duration_weeks === "not provided" ? "" : String(editingInternship?.dates.duration_weeks)}
                       onChange={(e) =>
                         setEditingInternship({
                           ...editingInternship!,
@@ -791,7 +723,7 @@ export default function AdminInternships() {
                       <div key={idx} className="p-3 rounded-md border bg-white/30 flex gap-2 items-start">
                         <div className="flex-1 grid sm:grid-cols-2 gap-2">
                           <input className="px-2 py-1 rounded-md" placeholder="Name" value={c.name} onChange={(e) => updateCost(idx, "name", e.target.value)} />
-                          <input className="px-2 py-1 rounded-md" placeholder="Lowest" value={c.lowest as any} onChange={(e) => updateCost(idx, "lowest", e.target.value)} />
+                          <input className="px-2 py-1 rounded-md" placeholder="Lowest" value={c.lowest === "not provided" ? "" : String(c.lowest)} onChange={(e) => updateCost(idx, "lowest", e.target.value)} />
                         </div>
                         <div>
                           <button className="text-sm px-2 py-1 rounded-md bg-red-600/10 text-red-600" onClick={() => removeCost(idx)}>Remove</button>
@@ -800,7 +732,7 @@ export default function AdminInternships() {
                     ))}
                     <div className="pt-2">
                       <h5 className="font-medium">Stipend</h5>
-                      <input className="w-full px-3 py-2 rounded-md" placeholder="Amount" type="number" value={editingInternship?.costs.stipend.amount === "not provided" ? "" : editingInternship?.costs.stipend.amount as any} onChange={(e) => setEditingInternship({ ...editingInternship!, costs: { ...editingInternship!.costs, stipend: { ...editingInternship!.costs.stipend, amount: e.target.value === "" ? "not provided" : parseFloat(e.target.value) } } })} />
+                      <input className="w-full px-3 py-2 rounded-md" placeholder="Amount" type="number" value={editingInternship?.costs.stipend.amount === "not provided" ? "" : String(editingInternship?.costs.stipend.amount)} onChange={(e) => setEditingInternship({ ...editingInternship!, costs: { ...editingInternship!.costs, stipend: { ...editingInternship!.costs.stipend, amount: e.target.value === "" ? "not provided" : parseFloat(e.target.value) } } })} />
                     </div>
                   </div>
                 )}

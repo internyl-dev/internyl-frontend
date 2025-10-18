@@ -41,7 +41,7 @@ export default function VerifyEmailPage() {
           We&apos;ve sent a verification link to your email.  
           Please click it before logging in again.
           <br /> <br />
-          <span>❓ <b>Can't find the email?</b> Be sure to check your spam, junk, and trash inboxes.</span>
+          <span>❓ <b>Can&apos;t find the email?</b> Be sure to check your spam, junk, and trash inboxes.</span>
         </p>
 
         <button
