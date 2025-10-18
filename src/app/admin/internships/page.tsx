@@ -14,26 +14,26 @@ import { db } from "@/lib/config/firebaseConfig";
 import { InternshipCards, Grade, Deadline, DateRange, Location, CostItem } from "@/lib/types/internshipCards";
 
 import {
-  Button,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+  // Button,
+  // TextField,
+  // Dialog,
+  // DialogActions,
+  // DialogContent,
+  // DialogTitle,
   CircularProgress,
-  Tabs,
-  Tab,
+  // Tabs,
+  // Tab,
   Box,
-  Chip,
-  FormControlLabel,
-  Checkbox,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  IconButton,
+  // Chip,
+  // FormControlLabel,
+  // Checkbox,
+  // Select,
+  // MenuItem,
+  // InputLabel,
+  // FormControl,
+  // IconButton,
 } from "@mui/material";
-import { Plus, Trash2, Pencil, Eye, X } from "lucide-react";
+// import { Plus, Trash2, Pencil, Eye, X } from "lucide-react";
 
 interface TabPanelProps {
   children?: React.ReactNode;
