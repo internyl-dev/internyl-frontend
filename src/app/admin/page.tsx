@@ -132,15 +132,12 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         fetchTotalInternships();
-        // fetchTotalReports();
         fetchUserStats(); // fetch users + new users + percent
         fetchReportStats();
     }, [status]);
 
     // name variables
     const displayName = currentUser?.displayName || "Admin";
-    // const email = currentUser?.email || "admin@example.com";
-    // const photoURL = currentUser?.photoURL;
 
     // while the user is loading, display an unauthorized message
     if (isAdmin === null) {
@@ -164,10 +161,22 @@ export default function AdminDashboard() {
             <AdminNav />
             <section>
                 <h1 className="text-center text-3xl font-bold mt-6">Admin Dashboard</h1>
-                <p className="text-center mt-1 font-regular text-xl text-gray-600">{getRandomPhrase()}, <span className="font-bold text-blue-600">{displayName.split(" ")[0]}</span></p>
+                <p className="text-center mt-1 font-regular text-xl text-gray-600">
+                    {getRandomPhrase()},{" "}
+                    <span className="font-bold text-blue-600">
+                        {displayName.split(" ")[0]}
+                    </span>
+                </p>
             </section>
 
+            {status === "loading" && (
+                <p className="text-center text-sm text-gray-500 mt-2 animate-pulse">
+                    Refreshing data...
+                </p>
+            )}
+
             <section className="flex justify-center mt-8 gap-4">
+                {/* Internship Card */}
                 <div
                     className="flex flex-col items-center justify-center w-full max-w-sm p-8 rounded-3xl border border-white/30 shadow-lg backdrop-blur-lg bg-white/30 hover:bg-white/40 transition-all duration-300"
                     style={{
@@ -179,20 +188,28 @@ export default function AdminDashboard() {
                     <h3 className="text-purple-700 font-bold text-xl mb-4 flex items-center gap-2">
                         Internship Count
                     </h3>
-                    <p className="text-5xl font-extrabold text-gray-900 mb-2">{internshipCount}</p>
+                    <p className="text-5xl font-extrabold text-gray-900 mb-2">
+                        {internshipCount}
+                    </p>
                     <p className="text-gray-600 text-sm mb-6 text-center">
                         Total internships in database
                     </p>
                     <Button
                         size="small"
                         variant="outlined"
-                        onClick={fetchTotalInternships}
+                        onClick={async () => {
+                            setStatus("loading");
+                            await fetchTotalInternships();
+                            setStatus("done");
+                        }}
                         className="px-4 py-2 text-xs rounded-lg border-gray-300 hover:border-purple-400 hover:text-purple-600 transition-all"
                         style={{ minWidth: "80px" }}
                     >
                         Refresh
                     </Button>
                 </div>
+
+                {/* User Count Card */}
                 <div
                     className="flex flex-col items-center justify-center w-full max-w-sm p-8 rounded-3xl border border-white/30 shadow-lg backdrop-blur-lg bg-white/30 hover:bg-white/40 transition-all duration-300"
                     style={{
@@ -205,23 +222,32 @@ export default function AdminDashboard() {
                         Total Number of Users
                     </h3>
                     <p className="text-5xl font-extrabold text-gray-900 mb-2">{userCount}</p>
-                    {
-                        userPercentIncrease !== null && newUsersCount !== null ?
-                            <p className="text-green-600 text-sm mb-6 text-center">
-                                {newUsersCount} new user(s) <br /> {userPercentIncrease.toFixed(1)}% increase in past 7 days
-                            </p> :
-                            <p className="text-gray-600 text-sm mb-6 text-center">No recorded change</p>
-                    }
+                    {userPercentIncrease !== null && newUsersCount !== null ? (
+                        <p className="text-green-600 text-sm mb-6 text-center">
+                            {newUsersCount} new user(s) <br />{" "}
+                            {userPercentIncrease.toFixed(1)}% increase in past 7 days
+                        </p>
+                    ) : (
+                        <p className="text-gray-600 text-sm mb-6 text-center">
+                            No recorded change
+                        </p>
+                    )}
                     <Button
                         size="small"
                         variant="outlined"
-                        onClick={fetchUserStats}
+                        onClick={async () => {
+                            setStatus("loading");
+                            await fetchUserStats();
+                            setStatus("done");
+                        }}
                         className="px-4 py-2 text-xs rounded-lg border-gray-300 hover:border-purple-400 hover:text-purple-600 transition-all"
                         style={{ minWidth: "80px" }}
                     >
                         Refresh
                     </Button>
                 </div>
+
+                {/* Reports Count Card */}
                 <div
                     className="flex flex-col items-center justify-center w-full max-w-sm p-8 rounded-3xl border border-white/30 shadow-lg backdrop-blur-lg bg-white/30 hover:bg-white/40 transition-all duration-300"
                     style={{
@@ -234,17 +260,26 @@ export default function AdminDashboard() {
                         Total Reports Count
                     </h3>
                     <p className="text-5xl font-extrabold text-gray-900 mb-2">{reportCount}</p>
-                    {
-                        reportPercentIncrease !== null && newReportsCount !== null && reportPercentIncrease != 0 ?
-                            <p className="text-red-600 text-sm mb-6 text-center">
-                                {newReportsCount} new report(s) <br /> {reportPercentIncrease.toFixed(1)}% increase in past 7 days
-                            </p> :
-                            <p className="text-blue-600 text-sm mb-6 text-center">No recorded change</p>
-                    }
+                    {reportPercentIncrease !== null &&
+                    newReportsCount !== null &&
+                    reportPercentIncrease != 0 ? (
+                        <p className="text-red-600 text-sm mb-6 text-center">
+                            {newReportsCount} new report(s) <br />{" "}
+                            {reportPercentIncrease.toFixed(1)}% increase in past 7 days
+                        </p>
+                    ) : (
+                        <p className="text-blue-600 text-sm mb-6 text-center">
+                            No recorded change
+                        </p>
+                    )}
                     <Button
                         size="small"
                         variant="outlined"
-                        onClick={fetchReportStats}
+                        onClick={async () => {
+                            setStatus("loading");
+                            await fetchReportStats();
+                            setStatus("done");
+                        }}
                         className="px-4 py-2 text-xs rounded-lg border-gray-300 hover:border-purple-400 hover:text-purple-600 transition-all"
                         style={{ minWidth: "80px" }}
                     >
@@ -252,7 +287,6 @@ export default function AdminDashboard() {
                     </Button>
                 </div>
             </section>
-
         </div>
-    )
+    );
 }
