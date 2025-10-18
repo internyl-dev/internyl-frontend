@@ -11,11 +11,10 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/config/firebaseConfig";
-import { InternshipCards, Deadline, Location, CostItem, DateRange } from "@/lib/types/internshipCards";
+import { InternshipCards, Deadline, Location, CostItem } from "@/lib/types/internshipCards";
 
 import {
   CircularProgress,
-  Box,
 } from "@mui/material";
 
 export default function AdminInternships() {
@@ -89,13 +88,15 @@ export default function AdminInternships() {
   const handleSave = async () => {
     if (!editingInternship) return;
 
+    // create a shallow copy and remove `id` before sending to Firestore
+    const internshipData = { ...editingInternship } as Partial<InternshipCards>;
+    delete (internshipData as Partial<InternshipCards>).id;
+
     if (editingInternship.id) {
       const docRef = doc(db, "programs-display", editingInternship.id);
-      const { id: _id, ...internshipData } = editingInternship;
-      await updateDoc(docRef, internshipData);
+      await updateDoc(docRef, internshipData as Omit<InternshipCards, "id">);
     } else {
-      const { id: _id, ...internshipData } = editingInternship;
-      await addDoc(internshipsRef, internshipData);
+      await addDoc(internshipsRef, internshipData as Omit<InternshipCards, "id">);
     }
 
     setOpenDialog(false);

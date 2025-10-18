@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,7 +20,6 @@ export default function AdminDashboard() {
     const isAdmin = useAdminCheck();
 
     // state variables
-    // eslint-disable-next-line no-unused-vars
     const [status, setStatus] = useState("");
     const [currentUser, setCurrentUser] = useState<User | null>(null);
 
