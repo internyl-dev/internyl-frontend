@@ -140,6 +140,13 @@ const faqData: FAQItem[] = [
     category: "Deadlines & Timing",
     icon: Clock
   },
+  {
+    id: "timing-4",
+    question: "Why do some internships not have a due date?",
+    answer: "Not all internship providers necessarily provide a due date. Hence, our AI isn't able to extract a due date to provide on the internship card.",
+    category: "Deadlines & Timing",
+    icon: Clock
+  },
 
   // Technical & Account Issues
   {

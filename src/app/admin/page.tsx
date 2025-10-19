@@ -1,145 +1,102 @@
-/* eslint-disable no-unused-vars */
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminCheck } from "@/lib/hooks/useAdminCheck";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/config/firebaseConfig";
-import { db } from "@/lib/config/firebaseConfig";
-import { query, where } from "firebase/firestore";
+import { auth, db } from "@/lib/config/firebaseConfig";
+import { query, where, collection, getDocs } from "firebase/firestore";
 
 import CircularProgress from "@mui/material/CircularProgress";
 import AdminNav from "./AdminNav";
-import { Button } from "@mui/material";
-import { collection, getDocs } from "firebase/firestore";
+import { DashboardCard } from "./DashboardCard";
 
 export default function AdminDashboard() {
-    // config variables
     const router = useRouter();
     const isAdmin = useAdminCheck();
 
-    // state variables
+    // --- State ---
     const [status, setStatus] = useState("");
     const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-    const [userPercentIncrease, setUserPercentIncrease] = useState<number | null>(null);
+    const [internshipCount, setInternshipCount] = useState(0);
+    const [reportCount, setReportCount] = useState(0);
+    const [userCount, setUserCount] = useState(0);
+
     const [newUsersCount, setNewUsersCount] = useState<number | null>(null);
-
-    const [reportPercentIncrease, setReportPercentIncrease] = useState<number | null>(null);
+    const [userPercentIncrease, setUserPercentIncrease] = useState<number | null>(null);
     const [newReportsCount, setNewReportsCount] = useState<number | null>(null);
+    const [reportPercentIncrease, setReportPercentIncrease] = useState<number | null>(null);
 
-    const [internshipCount, setInternshipCount] = useState<number>(0);
-    const [reportCount, setReportCount] = useState<number>(0);
-    const [userCount, setUserCount] = useState<number>(0);
-
-    // other varaibles
-    const welcomeMessage = [
-        "Welcome, your Kingship",
-        "Welcome, your Highness",
-        "Welcome, your Royalty",
-        "Greetings, your Majesty",
-        "Hail, esteemed Monarch",
-        "Welcome, illustrious Ruler",
-        "Salutations, revered Crown",
-        "Welcome, Royal",
-        "Greetings, honored Regent",
-    ]
-
+    // --- Redirect non-admin users ---
     useEffect(() => {
-        // If the check is done and user is not admin, redirect to home
-        if (isAdmin === false) {
-            router.replace("/");
-        }
+        if (isAdmin === false) router.replace("/");
     }, [isAdmin, router]);
 
-    // setting current user
+    // --- Track authenticated user ---
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => setCurrentUser(user));
+        const unsubscribe = onAuthStateChanged(auth, setCurrentUser);
         return () => unsubscribe();
     }, []);
 
-    // hooks
-    // fetch stats
-    const fetchTotalInternships = async () => {
-        const snapshot = await getDocs(collection(db, "programs-display"));
-        setInternshipCount(snapshot.size);
-    }
-
-    // calculate % change
+    // --- Helper Functions ---
     const calculatePercentageChange = (oldValue: number, newValue: number) => {
-        if (oldValue === 0) return newValue * 100; // from 0 to X
+        if (oldValue === 0) return newValue * 100;
         return ((newValue - oldValue) / oldValue) * 100;
     };
 
+    const fetchTotalInternships = async () => {
+        const snapshot = await getDocs(collection(db, "programs-display"));
+        setInternshipCount(snapshot.size);
+    };
+
     const fetchRecentUsers = async (days: number) => {
-        const now = new Date();
         const pastDate = new Date();
-        pastDate.setDate(now.getDate() - days);
-
-        const q = query(
-            collection(db, "users"),
-            where("createdAt", ">", pastDate)
-        );
-
+        pastDate.setDate(pastDate.getDate() - days);
+        const q = query(collection(db, "users"), where("createdAt", ">", pastDate));
         const snapshot = await getDocs(q);
         return snapshot.size;
     };
 
     const fetchRecentReports = async (days: number) => {
-        const now = new Date();
         const pastDate = new Date();
-        pastDate.setDate(now.getDate() - days);
-
-        const q = query(
-            collection(db, "reports"),
-            where("createdAt", ">", pastDate)
-        );
-
+        pastDate.setDate(pastDate.getDate() - days);
+        const q = query(collection(db, "reports"), where("createdAt", ">", pastDate));
         const snapshot = await getDocs(q);
         return snapshot.size;
     };
 
-    // combined function to fetch total users + new users + percentage change
+    // --- Stats ---
     const fetchUserStats = async () => {
         const totalSnapshot = await getDocs(collection(db, "users"));
         const totalUsers = totalSnapshot.size;
-
-        const usersLast7Days = await fetchRecentUsers(7); // number of new users in last 7 days
+        const usersLast7Days = await fetchRecentUsers(7);
         const oldUsers = totalUsers - usersLast7Days;
-
-        const percentIncrease = calculatePercentageChange(oldUsers, totalUsers);
 
         setUserCount(totalUsers);
         setNewUsersCount(usersLast7Days);
-        setUserPercentIncrease(percentIncrease);
+        setUserPercentIncrease(calculatePercentageChange(oldUsers, totalUsers));
     };
 
-    // report % change
     const fetchReportStats = async () => {
         const totalSnapshot = await getDocs(collection(db, "reports"));
         const totalReports = totalSnapshot.size;
-
-        const reportsLast30Days = await fetchRecentReports(30); // number of new users in last 7 days
+        const reportsLast30Days = await fetchRecentReports(30);
         const oldReports = totalReports - reportsLast30Days;
-
-        const percentIncrease = calculatePercentageChange(oldReports, totalReports);
 
         setReportCount(totalReports);
         setNewReportsCount(reportsLast30Days);
-        setReportPercentIncrease(percentIncrease);
-    }
+        setReportPercentIncrease(calculatePercentageChange(oldReports, totalReports));
+    };
 
+    // --- Fetch All Stats ---
     useEffect(() => {
         fetchTotalInternships();
-        fetchUserStats(); // fetch users + new users + percent
+        fetchUserStats();
         fetchReportStats();
     }, [status]);
 
-    // name variables
-    const displayName = currentUser?.displayName || "Admin";
-
-    // while the user is loading, display an unauthorized message
+    // --- Loading State ---
     if (isAdmin === null) {
         return (
             <div className="flex flex-col items-center justify-center mt-5">
@@ -151,23 +108,10 @@ export default function AdminDashboard() {
         );
     }
 
-    // random welcome message
-    const getRandomPhrase = () => {
-        return welcomeMessage[Math.floor(Math.random() * welcomeMessage.length)];
-    }
-
+    // --- Main Render ---
     return (
-        <div className="">
-            <AdminNav />
-            <section>
-                <h1 className="text-center text-3xl font-bold mt-6">Admin Dashboard</h1>
-                <p className="text-center mt-1 font-regular text-xl text-gray-600">
-                    {getRandomPhrase()},{" "}
-                    <span className="font-bold text-blue-600">
-                        {displayName.split(" ")[0]}
-                    </span>
-                </p>
-            </section>
+        <div>
+            <AdminNav title="Admin Dashboard" />
 
             {status === "loading" && (
                 <p className="text-center text-sm text-gray-500 mt-2 animate-pulse">
@@ -177,115 +121,62 @@ export default function AdminDashboard() {
 
             <section className="flex justify-center mt-8 gap-4">
                 {/* Internship Card */}
-                <div
-                    className="flex flex-col items-center justify-center w-full max-w-sm p-8 rounded-3xl border border-white/30 shadow-lg backdrop-blur-lg bg-white/30 hover:bg-white/40 transition-all duration-300"
-                    style={{
-                        boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.1)",
-                        WebkitBackdropFilter: "blur(12px)",
-                        backdropFilter: "blur(12px)",
-                    }}
-                >
-                    <h3 className="text-purple-700 font-bold text-xl mb-4 flex items-center gap-2">
-                        Internship Count
-                    </h3>
-                    <p className="text-5xl font-extrabold text-gray-900 mb-2">
-                        {internshipCount}
-                    </p>
-                    <p className="text-gray-600 text-sm mb-6 text-center">
-                        Total internships in database
-                    </p>
-                    <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={async () => {
-                            setStatus("loading");
-                            await fetchTotalInternships();
-                            setStatus("done");
-                        }}
-                        className="px-4 py-2 text-xs rounded-lg border-gray-300 hover:border-purple-400 hover:text-purple-600 transition-all"
-                        style={{ minWidth: "80px" }}
-                    >
-                        Refresh
-                    </Button>
-                </div>
+                <DashboardCard
+                    title="Internship Count"
+                    count={internshipCount}
+                    subtitle="Total internships in database"
+                    color="purple"
+                    onRefresh={fetchTotalInternships}
+                    setStatus={setStatus}
+                />
 
                 {/* User Count Card */}
-                <div
-                    className="flex flex-col items-center justify-center w-full max-w-sm p-8 rounded-3xl border border-white/30 shadow-lg backdrop-blur-lg bg-white/30 hover:bg-white/40 transition-all duration-300"
-                    style={{
-                        boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.1)",
-                        WebkitBackdropFilter: "blur(12px)",
-                        backdropFilter: "blur(12px)",
-                    }}
-                >
-                    <h3 className="text-blue-700 font-bold text-xl mb-4 flex items-center gap-2">
-                        Total Number of Users
-                    </h3>
-                    <p className="text-5xl font-extrabold text-gray-900 mb-2">{userCount}</p>
-                    {userPercentIncrease !== null && newUsersCount !== null ? (
-                        <p className="text-green-600 text-sm mb-6 text-center">
-                            {newUsersCount} new user(s) <br />{" "}
-                            {userPercentIncrease.toFixed(1)}% increase in past 7 days
-                        </p>
-                    ) : (
-                        <p className="text-gray-600 text-sm mb-6 text-center">
-                            No recorded change
-                        </p>
-                    )}
-                    <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={async () => {
-                            setStatus("loading");
-                            await fetchUserStats();
-                            setStatus("done");
-                        }}
-                        className="px-4 py-2 text-xs rounded-lg border-gray-300 hover:border-purple-400 hover:text-purple-600 transition-all"
-                        style={{ minWidth: "80px" }}
-                    >
-                        Refresh
-                    </Button>
-                </div>
+                <DashboardCard
+                    title="Total Number of Users"
+                    count={userCount}
+                    subtitle={
+                        userPercentIncrease !== null && newUsersCount !== null ? (
+                            <>
+                                <span className="text-green-600">
+                                    {newUsersCount} new user(s)
+                                </span>
+                                <br />
+                                <span className="text-green-600">
+                                    {userPercentIncrease.toFixed(1)}% increase in past 7 days
+                                </span>
+                            </>
+                        ) : (
+                            <span className="text-gray-600">No recorded change</span>
+                        )
+                    }
+                    color="blue"
+                    onRefresh={fetchUserStats}
+                    setStatus={setStatus}
+                />
 
                 {/* Reports Count Card */}
-                <div
-                    className="flex flex-col items-center justify-center w-full max-w-sm p-8 rounded-3xl border border-white/30 shadow-lg backdrop-blur-lg bg-white/30 hover:bg-white/40 transition-all duration-300"
-                    style={{
-                        boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.1)",
-                        WebkitBackdropFilter: "blur(12px)",
-                        backdropFilter: "blur(12px)",
-                    }}
-                >
-                    <h3 className="text-red-700 font-bold text-xl mb-4 flex items-center gap-2">
-                        Total Reports Count
-                    </h3>
-                    <p className="text-5xl font-extrabold text-gray-900 mb-2">{reportCount}</p>
-                    {reportPercentIncrease !== null &&
-                    newReportsCount !== null &&
-                    reportPercentIncrease != 0 ? (
-                        <p className="text-red-600 text-sm mb-6 text-center">
-                            {newReportsCount} new report(s) <br />{" "}
-                            {reportPercentIncrease.toFixed(1)}% increase in past 7 days
-                        </p>
-                    ) : (
-                        <p className="text-blue-600 text-sm mb-6 text-center">
-                            No recorded change
-                        </p>
-                    )}
-                    <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={async () => {
-                            setStatus("loading");
-                            await fetchReportStats();
-                            setStatus("done");
-                        }}
-                        className="px-4 py-2 text-xs rounded-lg border-gray-300 hover:border-purple-400 hover:text-purple-600 transition-all"
-                        style={{ minWidth: "80px" }}
-                    >
-                        Refresh
-                    </Button>
-                </div>
+                <DashboardCard
+                    title="Total Reports Count"
+                    count={reportCount}
+                    subtitle={
+                        reportPercentIncrease !== null && newReportsCount !== null ? (
+                            <>
+                                <span className="text-red-700">
+                                    {newReportsCount} new report(s)
+                                </span>
+                                <br />
+                                <span className="text-red-700">
+                                    {reportPercentIncrease.toFixed(1)}% increase in past 7 days
+                                </span>
+                            </>
+                        ) : (
+                            <span className="text-gray-600">No recorded change</span>
+                        )
+                    }
+                    color="red"
+                    onRefresh={fetchReportStats}
+                    setStatus={setStatus}
+                />
             </section>
         </div>
     );
