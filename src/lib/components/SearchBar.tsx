@@ -4,9 +4,10 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 interface SearchBarProps {
   setSearch: React.Dispatch<React.SetStateAction<string>>;
   initialValue?: string;
+  padding?: string;
 }
 
-export default function SearchBar({ setSearch, initialValue }: SearchBarProps) {
+export default function SearchBar({ setSearch, initialValue, padding = 'pt-30' }: SearchBarProps) {
   const [search, setLocalSearch] = useState('');
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function SearchBar({ setSearch, initialValue }: SearchBarProps) {
   };
 
   return (
-    <div className="pt-30 flex justify-center">
+    <div className={`${padding} flex justify-center`}>
       <form onSubmit={handleSubmit} className="w-full max-w-xl relative">
         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-900">
           <SearchOutlinedIcon />
