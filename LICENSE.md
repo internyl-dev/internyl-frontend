@@ -646,5 +646,6 @@ the "copyright" line and a pointer to where the full notice is found.
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 Contact Email: contactinternyl@gmail.com
+
 For inquiries or paper mail requests, please contact us through the email 
 above to receive mailing details.
