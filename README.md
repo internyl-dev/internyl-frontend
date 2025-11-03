@@ -1,8 +1,8 @@
 # Internyl
 
-Internyl is a real time website that displays current internship opportunities in the US for high schoolers and undergraduate students.
+Internyl is a real time website that displays current internship opportunities in the US for high schoolers.
 
-**Link:** https://internyl.org (Link currently unavailable)
+**Link:** https://internyl.org
 
 ### Contact Us
 <a href="https://github.com/your-username">
