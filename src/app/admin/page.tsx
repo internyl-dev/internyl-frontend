@@ -1,158 +1,184 @@
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 "use client";
 
-import { Button, Typography } from "@mui/material";
-import { sampleInternshipData } from "@/lib/test/sample";
-import { db } from "@/lib/config/firebaseConfig";
-import { setDoc, doc, Timestamp, collection, getDocs } from "firebase/firestore";
-import { useState, useEffect } from "react";
-import AdminLayout from "./layout/AdminLayout";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAdminCheck } from "@/lib/hooks/useAdminCheck";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth, db } from "@/lib/config/firebaseConfig";
+import { query, where, collection, getDocs } from "firebase/firestore";
 
-// 🔧 Type-safe conversion of nested Dates to Firestore Timestamps
-function convertDates<T>(obj: T): T {
-  if (obj instanceof Date) return Timestamp.fromDate(obj) as T;
-  if (Array.isArray(obj)) return obj.map(convertDates) as T;
-  if (obj && typeof obj === "object") {
-    const out: Record<string, unknown> = {};
-    for (const key in obj) {
-      out[key] = convertDates((obj as Record<string, unknown>)[key]);
-    }
-    return out as T;
-  }
-  return obj;
-}
+import CircularProgress from "@mui/material/CircularProgress";
+import AdminNav from "./AdminNav";
+import { DashboardCard } from "./DashboardCard";
 
 export default function AdminDashboard() {
-  const [status, setStatus] = useState("");
-  const [internshipCount, setInternshipCount] = useState<number>(0);
+    const router = useRouter();
+    const isAdmin = useAdminCheck();
 
-  const [reportCount, setReportCount] = useState<number>(0);
+    // --- State ---
+    const [status, setStatus] = useState("");
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const fetchCount = async () => {
-    const snapshot = await getDocs(collection(db, "internships"));
-    setInternshipCount(snapshot.size);
-  };
+    const [internshipCount, setInternshipCount] = useState(0);
+    const [reportCount, setReportCount] = useState(0);
+    const [userCount, setUserCount] = useState(0);
 
-  const fetchInternReportCount = async () => {
-    const snapshot = await getDocs(collection(db, "reports"));
-    setReportCount(snapshot.size);
-  }
+    const [newUsersCount, setNewUsersCount] = useState<number | null>(null);
+    const [userPercentIncrease, setUserPercentIncrease] = useState<number | null>(null);
+    const [newReportsCount, setNewReportsCount] = useState<number | null>(null);
+    const [reportPercentIncrease, setReportPercentIncrease] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchCount();
-    fetchInternReportCount();
-  }, [status]);
+    // --- Redirect non-admin users ---
+    useEffect(() => {
+        if (isAdmin === false) router.replace("/");
+    }, [isAdmin, router]);
 
-  const uploadInternships = async () => {
-    try {
-      for (const internship of sampleInternshipData) {
-        await setDoc(doc(db, "internships", internship.id), convertDates(internship));
-      }
-      setStatus("✅ All internships uploaded successfully.");
-    } catch (e) {
-      console.error(e);
-      setStatus("❌ Upload failed. Check console.");
+    // --- Track authenticated user ---
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, setCurrentUser);
+        return () => unsubscribe();
+    }, []);
+
+    // --- Helper Functions ---
+    const calculatePercentageChange = (oldValue: number, newValue: number) => {
+        if (oldValue === 0) return newValue * 100;
+        return ((newValue - oldValue) / oldValue) * 100;
+    };
+
+    const fetchTotalInternships = async () => {
+        const snapshot = await getDocs(collection(db, "programs-display"));
+        setInternshipCount(snapshot.size);
+    };
+
+    const fetchRecentUsers = async (days: number) => {
+        const pastDate = new Date();
+        pastDate.setDate(pastDate.getDate() - days);
+        const q = query(collection(db, "users"), where("createdAt", ">", pastDate));
+        const snapshot = await getDocs(q);
+        return snapshot.size;
+    };
+
+    const fetchRecentReports = async (days: number) => {
+        const pastDate = new Date();
+        pastDate.setDate(pastDate.getDate() - days);
+        const q = query(collection(db, "reports"), where("createdAt", ">", pastDate));
+        const snapshot = await getDocs(q);
+        return snapshot.size;
+    };
+
+    // --- Stats ---
+    const fetchUserStats = async () => {
+        const totalSnapshot = await getDocs(collection(db, "users"));
+        const totalUsers = totalSnapshot.size;
+        const usersLast7Days = await fetchRecentUsers(7);
+        const oldUsers = totalUsers - usersLast7Days;
+
+        setUserCount(totalUsers);
+        setNewUsersCount(usersLast7Days);
+        setUserPercentIncrease(calculatePercentageChange(oldUsers, totalUsers));
+    };
+
+    const fetchReportStats = async () => {
+        const totalSnapshot = await getDocs(collection(db, "reports"));
+        const totalReports = totalSnapshot.size;
+        const reportsLast30Days = await fetchRecentReports(30);
+        const oldReports = totalReports - reportsLast30Days;
+
+        setReportCount(totalReports);
+        setNewReportsCount(reportsLast30Days);
+        setReportPercentIncrease(calculatePercentageChange(oldReports, totalReports));
+    };
+
+    // --- Fetch All Stats ---
+    useEffect(() => {
+        fetchTotalInternships();
+        fetchUserStats();
+        fetchReportStats();
+    }, [status]);
+
+    // --- Loading State ---
+    if (isAdmin === null) {
+        return (
+            <div className="flex flex-col items-center justify-center mt-5">
+                <CircularProgress />
+                <p className="text-purple-400 font-semibold mt-2">
+                    Attempting to Authorize
+                </p>
+            </div>
+        );
     }
-  };
 
-  return (
-    <AdminLayout>
-      <div className="max-w-4xl mx-auto w-full">
-        <h2 className="text-[2.5rem] text-center font-bold tracking-tight mb-8 mt-2 text-gray-900 drop-shadow-sm">
-          Admin Dashboard
-        </h2>
+    // --- Main Render ---
+    return (
+        <div>
+            <AdminNav title="Admin Dashboard" />
 
-        {/* Top row: upload + count */}
-        <div className="flex flex-col md:flex-row gap-6 mb-10 w-full">
-          {/* Upload box */}
-          <div
-            className="flex-1 p-7 rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center justify-center"
-            style={{
-              background: "rgba(255,255,255,0.55)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.10)",
-            }}
-          >
-            <h3 className="pb-2 font-bold text-lg text-blue-700">Upload Internship Data</h3>
-            <p className="pb-2 text-gray-600 text-sm text-center">
-              Clicking this button will upload the internships stored in{" "}
-              <span className="font-mono">sample.ts</span>
-            </p>
-            <Button
-              onClick={uploadInternships}
-              variant="contained"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors w-full max-w-xs mt-2"
-            >
-              Upload Sample Internship Data
-            </Button>
-            {status && <Typography className="mt-2 text-sm">{status}</Typography>}
-          </div>
+            {status === "loading" && (
+                <p className="text-center text-sm text-gray-500 mt-2 animate-pulse">
+                    Refreshing data...
+                </p>
+            )}
 
-          {/* Internship count box */}
-          <div
-            className="flex-1 p-7 rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center justify-center"
-            style={{
-              background: "rgba(255,255,255,0.55)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.10)",
-            }}
-          >
-            <h3 className="pb-2 font-bold text-lg text-purple-700 flex items-center gap-2">
-              Internship Count
-            </h3>
-            <p className="text-4xl font-extrabold text-gray-900 mb-2">{internshipCount}</p>
-            <p className="text-gray-600 text-sm">Total internships in database</p>
-            <Button
-              size="small"
-              variant="outlined"
-              className="ml-2 px-2 py-2 text-xs top-2"
-              onClick={fetchCount}
-              style={{ minWidth: 0 }}
-            >
-              Refresh
-            </Button>
-          </div>
+            <section className="flex justify-center mt-8 gap-4">
+                {/* Internship Card */}
+                <DashboardCard
+                    title="Internship Count"
+                    count={internshipCount}
+                    subtitle="Total internships in database"
+                    color="purple"
+                    onRefresh={fetchTotalInternships}
+                    setStatus={setStatus}
+                />
 
+                {/* User Count Card */}
+                <DashboardCard
+                    title="Total Number of Users"
+                    count={userCount}
+                    subtitle={
+                        userPercentIncrease !== null && newUsersCount !== null ? (
+                            <>
+                                <span className="text-green-600">
+                                    {newUsersCount} new user(s)
+                                </span>
+                                <br />
+                                <span className="text-green-600">
+                                    {userPercentIncrease.toFixed(1)}% increase in past 7 days
+                                </span>
+                            </>
+                        ) : (
+                            <span className="text-gray-600">No recorded change</span>
+                        )
+                    }
+                    color="blue"
+                    onRefresh={fetchUserStats}
+                    setStatus={setStatus}
+                />
+
+                {/* Reports Count Card */}
+                <DashboardCard
+                    title="Total Reports Count"
+                    count={reportCount}
+                    subtitle={
+                        reportPercentIncrease !== null && newReportsCount !== null ? (
+                            <>
+                                <span className="text-red-700">
+                                    {newReportsCount} new report(s)
+                                </span>
+                                <br />
+                                <span className="text-red-700">
+                                    {reportPercentIncrease.toFixed(1)}% increase in past 7 days
+                                </span>
+                            </>
+                        ) : (
+                            <span className="text-gray-600">No recorded change</span>
+                        )
+                    }
+                    color="red"
+                    onRefresh={fetchReportStats}
+                    setStatus={setStatus}
+                />
+            </section>
         </div>
-        {/* Reports Count */}
-        <div
-          className="flex-1 p-7 rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center justify-center"
-          style={{
-            background: "rgba(255,255,255,0.55)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.10)",
-          }}
-        >
-          <h3 className="pb-2 font-bold text-lg text-red-700 flex items-center gap-2">
-            Report Information
-          </h3>
-
-          <div className="flex flex-wrap gap-8">
-            <div className="text-center items-center">
-              <p className="text-4xl font-extrabold text-gray-900 mb-2">{reportCount}</p>
-              <p className="text-gray-600 text-sm"># of Reports that Require Attention</p>
-            </div>
-
-            {/* FIX THIS */}
-            <div className="text-center items-center">
-              <p className="text-4xl font-extrabold text-gray-900 mb-2">{reportCount}</p>
-              <p className="text-gray-600 text-sm"># of Resolved Reports</p>
-            </div>
-          </div>
-
-          <Button
-            size="small"
-            variant="outlined"
-            className="ml-2 px-2 py-2 text-xs top-2"
-            onClick={fetchCount}
-            style={{ minWidth: 0 }}
-          >
-            Refresh
-          </Button>
-        </div>
-      </div>
-    </AdminLayout>
-  );
+    );
 }

@@ -138,7 +138,7 @@ const InsightsWidget = ({ savedCount, totalInternships, savedInternshipsFiltered
   totalInternships: number;
   savedInternshipsFiltered: Internship[];
 }) => {
-  const completionRate = totalInternships > 0 ? (savedCount / Math.min(totalInternships, 10)) * 100 : 0;
+  const completionRate = totalInternships > 0 ? (savedCount / totalInternships) * 100 : 0;
 
   return (
     <motion.div
