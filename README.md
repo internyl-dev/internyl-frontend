@@ -91,7 +91,6 @@ internyl/
     │   ├── admin1/
     │   ├── api/
     │   ├── pages/
-    │   │   ├── [uid]/                  # Dynamic user pages
     │   │   ├── about/
     │   │   ├── account/
     │   │   ├── contact/
@@ -115,16 +114,13 @@ internyl/
         │   ├── InternshipRecommendationCard.tsx
         │   ├── Navbar.tsx
         │   └── SearchBar.tsx
-
         ├── config/
         │   ├── context/
         │   ├── firebaseConfig.ts
         │   └── initGlobals.ts
-
         ├── hooks/
         │   ├── useAdminCheck.ts
         │   └── useRecommendationEngine.ts
-
         ├── modules/
         │   ├── dateUtils.ts
         │   ├── getDueDateIcon.ts
@@ -132,10 +128,8 @@ internyl/
         │   ├── getTimeRemaining.ts
         │   ├── scoreInternship.ts
         │   └── toggleBookmark.ts
-
         ├── test/
         │   └── sample.ts
-
         └── types/
             ├── internshipCard.ts
             ├── report.ts
