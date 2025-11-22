@@ -1,6 +1,6 @@
 # <a href="https://internyl.org">Internyl</a>
 This is the repository for the Frontend of Internyl, focusing on UI/UX. <br>
-Other Repositories for internyl <br>
+Other Repositories for Internyl <br>
 
 * [data-augmentor-agent](https://github.com/internyl-dev/data-augmentor-agent) <br>
 * [program-discovery-agent](https://github.com/internyl-dev/program-discovery-agent) <br>
