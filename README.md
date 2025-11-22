@@ -41,25 +41,27 @@ In summary, Internyl.org provides students, especially those who come from *unde
       - [Eligiblity Checklist](#eligibility-checklist)
     - [Report Page](#report-page)
 
-2. [Technology](#technology)
+2. [Structure](#structure)
+
+3. [Technology](#technology)
 
     - [NextJS with Typescript](#nextjs-with-typescript)
     - [Tailwind CSS](#tailwind-css)
     - [Firebase Authentication](#firebase-athentication)
     - [Firestore Database](#firestore-database)
 
-3. [Feature Updates](#future-updates)
+4. [Feature Updates](#future-updates)
 
     - [Program Information Clarity](#Improving-Program-Information-Clarity)
     - [Scholarships](#Expansion-Toward-Scholarships)
     - [Organization Integrations](#School-&-Organization-Integrations)
 
-3. [Reflection](#reflection)
+5. [Reflection](#reflection)
 
     - [Takeaways](#Takeaways)
     - [Long Term Mission](#Internyl’s-Long-Term-Mission)
 
-# Features
+## Features
 ### User Dashboard
 Users can make an account on our website to access their personal dashboard, where they can view all the internships they've saved, follow their progress with our simple progress bar, and take advantage of our smart recommendation algorithm.
 
