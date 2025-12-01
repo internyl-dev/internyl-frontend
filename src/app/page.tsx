@@ -257,6 +257,50 @@ const InsightsWidget = ({ savedCount, totalInternships, savedInternshipsFiltered
   );
 };
 
+const ScrollToTop = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 300) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  return (
+    <>
+      {isVisible && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0 }}
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 p-4 bg-gradient-to-r from-[#9381FF] to-[#A891FF] text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 border border-white/20"
+          whileHover={{ y: -5 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        </motion.button>
+      )}
+    </>
+  );
+};
+
 // Component that uses useSearchParams - wrapped in its own Suspense
 function HomeContent() {
   const [user, setUser] = useState<User | null>(null);
@@ -422,6 +466,7 @@ function HomeContent() {
 
     return (
       <div className="overflow-hidden">
+        <ScrollToTop />
         {/* Top Section with enhanced gradient */}
         <div className="bg-gradient-to-br from-[#9381FF] via-[#A891FF] to-[#9381FF] text-white relative">
           <div className="absolute inset-0 bg-black/5"></div>
@@ -633,6 +678,7 @@ function HomeContent() {
   // Enhanced Public Landing Page
   return (
     <div className="text-[#1d1d1f] px-3 sm:px-6 md:px-12 lg:px-20 pt-16 sm:pt-24 pb-20 sm:pb-32 relative overflow-hidden">
+      <ScrollToTop />
       {/* Subtle background decoration */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-10 right-10 w-52 h-52 sm:w-72 sm:h-72 bg-gradient-to-br from-[#ec6464]/10 to-[#9381FF]/10 rounded-full blur-3xl"></div>
@@ -962,6 +1008,8 @@ function HomeContent() {
           </motion.div>
         </div>
       </motion.section>
+
+      <ScrollToTop />
 
       {/* Enhanced global styles */}
       <style jsx global>{`
