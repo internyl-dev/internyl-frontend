@@ -139,6 +139,21 @@ const InsightsWidget = ({ savedCount, totalInternships, savedInternshipsFiltered
   savedInternshipsFiltered: Internship[];
 }) => {
   const completionRate = totalInternships > 0 ? (savedCount / totalInternships) * 100 : 0;
+  const activeCount = savedInternshipsFiltered.filter(i => {
+    const deadlines = i.dates?.deadlines || [];
+    const nextDeadline = deadlines.find(d => d.date && new Date(d.date) > new Date());
+    return nextDeadline;
+  }).length;
+  const dueSoonCount = savedInternshipsFiltered.filter(i => {
+    const deadlines = i.dates?.deadlines || [];
+    const soonDeadline = deadlines.find(d => {
+      if (!d.date) return false;
+      const deadlineDate = new Date(d.date);
+      const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      return deadlineDate <= weekFromNow && deadlineDate > new Date();
+    });
+    return soonDeadline;
+  }).length;
 
   return (
     <motion.div
@@ -149,41 +164,140 @@ const InsightsWidget = ({ savedCount, totalInternships, savedInternshipsFiltered
     >
       <h3 className="text-lg font-semibold text-[#2F2F3A] mb-4">Your Progress</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div className="p-3 bg-white/40 rounded-xl">
-          <div className="text-2xl font-bold text-[#ec6464]">{savedCount}</div>
+        <motion.div
+          className="p-3 bg-white/40 rounded-xl relative overflow-hidden"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.9, duration: 0.3 }}
+        >
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min(savedCount / Math.max(totalInternships, 1) * 100, 100)}%` }}
+            transition={{ delay: 1, duration: 0.8, ease: "easeOut" }}
+            className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-[#ec6464] to-[#f07575]"
+          />
+          <motion.div
+            className="text-2xl font-bold text-[#ec6464]"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 1.2, type: "spring", stiffness: 200 }}
+          >
+            {savedCount}
+          </motion.div>
           <div className="text-sm text-gray-600">Saved</div>
-        </div>
-        <div className="p-3 bg-white/40 rounded-xl">
-          <div className="text-2xl font-bold text-[#9381FF]">{Math.round(completionRate)}%</div>
+        </motion.div>
+        <motion.div
+          className="p-3 bg-white/40 rounded-xl relative overflow-hidden"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 1.0, duration: 0.3 }}
+        >
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${completionRate}%` }}
+            transition={{ delay: 1.1, duration: 0.8, ease: "easeOut" }}
+            className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-[#9381FF] to-[#A891FF]"
+          />
+          <motion.div
+            className="text-2xl font-bold text-[#9381FF]"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 1.3, type: "spring", stiffness: 200 }}
+          >
+            {Math.round(completionRate)}%
+          </motion.div>
           <div className="text-sm text-gray-600">Explored</div>
-        </div>
-        <div className="p-3 bg-white/40 rounded-xl">
-          <div className="text-2xl font-bold text-[#2BA280]">
-            {savedInternshipsFiltered.filter(i => {
-              const deadlines = i.dates?.deadlines || [];
-              const nextDeadline = deadlines.find(d => d.date && new Date(d.date) > new Date());
-              return nextDeadline;
-            }).length}
-          </div>
+        </motion.div>
+        <motion.div
+          className="p-3 bg-white/40 rounded-xl relative overflow-hidden"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 1.1, duration: 0.3 }}
+        >
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min(activeCount / Math.max(savedCount, 1) * 100, 100)}%` }}
+            transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }}
+            className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-[#2BA280] to-[#3C66C2]"
+          />
+          <motion.div
+            className="text-2xl font-bold text-[#2BA280]"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 1.4, type: "spring", stiffness: 200 }}
+          >
+            {activeCount}
+          </motion.div>
           <div className="text-sm text-gray-600">Active</div>
-        </div>
-        <div className="p-3 bg-white/40 rounded-xl">
-          <div className="text-2xl font-bold text-[#E26262]">
-            {savedInternshipsFiltered.filter(i => {
-              const deadlines = i.dates?.deadlines || [];
-              const soonDeadline = deadlines.find(d => {
-                if (!d.date) return false;
-                const deadlineDate = new Date(d.date);
-                const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-                return deadlineDate <= weekFromNow && deadlineDate > new Date();
-              });
-              return soonDeadline;
-            }).length}
-          </div>
+        </motion.div>
+        <motion.div
+          className="p-3 bg-white/40 rounded-xl relative overflow-hidden"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.3 }}
+        >
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: dueSoonCount > 0 ? "100%" : "0%" }}
+            transition={{ delay: 1.3, duration: 0.8, ease: "easeOut" }}
+            className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-[#E26262] to-[#F07575]"
+          />
+          <motion.div
+            className="text-2xl font-bold text-[#E26262]"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 1.5, type: "spring", stiffness: 200 }}
+          >
+            {dueSoonCount}
+          </motion.div>
           <div className="text-sm text-gray-600">Due Soon</div>
-        </div>
+        </motion.div>
       </div>
     </motion.div>
+  );
+};
+
+const ScrollToTop = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 300) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  return (
+    <>
+      {isVisible && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0 }}
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 p-4 bg-gradient-to-r from-[#9381FF] to-[#A891FF] text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 border border-white/20"
+          whileHover={{ y: -5 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        </motion.button>
+      )}
+    </>
   );
 };
 
@@ -325,10 +439,22 @@ function HomeContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#9381FF] via-[#A891FF] to-[#9381FF]">
-        <div className="text-center">
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg font-medium">Loading your internships...</p>
-        </div>
+          <motion.p
+            className="text-white text-lg font-medium"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            Loading your internships...
+          </motion.p>
+        </motion.div>
       </div>
     );
   }
@@ -340,6 +466,7 @@ function HomeContent() {
 
     return (
       <div className="overflow-hidden">
+        <ScrollToTop />
         {/* Top Section with enhanced gradient */}
         <div className="bg-gradient-to-br from-[#9381FF] via-[#A891FF] to-[#9381FF] text-white relative">
           <div className="absolute inset-0 bg-black/5"></div>
@@ -427,22 +554,31 @@ function HomeContent() {
           <div className="overflow-x-auto px-2 sm:px-6 md:px-12 lg:px-20 pb-8 md:pb-10">
             <div className="flex w-max md:w-full gap-6">
               {savedInternshipsFiltered.length === 0 ? (
-                <div className="w-full text-center py-12 px-6">
-                  <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20">
+                <motion.div
+                  className="w-full text-center py-12 px-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <motion.div
+                    className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20"
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
                     <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                     </svg>
-                  </div>
+                  </motion.div>
                   <h3 className="text-xl font-semibold text-gray-700 mb-2">No saved internships yet</h3>
                   <p className="text-gray-500 mb-6">Start exploring and bookmark internships you&apos;re interested in!</p>
                   <Link
                     href="/pages/internships"
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#E26262] to-[#F07575] text-white rounded-full hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 font-medium gap-2"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#E26262] to-[#F07575] text-white rounded-full hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 font-medium gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
                     Explore Internships
                     <ArrowForwardIcon className="w-4 h-4" />
                   </Link>
-                </div>
+                </motion.div>
               ) : (
                 savedInternshipsFiltered.map((internship, index) => (
                   <motion.div
@@ -542,6 +678,7 @@ function HomeContent() {
   // Enhanced Public Landing Page
   return (
     <div className="text-[#1d1d1f] px-3 sm:px-6 md:px-12 lg:px-20 pt-16 sm:pt-24 pb-20 sm:pb-32 relative overflow-hidden">
+      <ScrollToTop />
       {/* Subtle background decoration */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-10 right-10 w-52 h-52 sm:w-72 sm:h-72 bg-gradient-to-br from-[#ec6464]/10 to-[#9381FF]/10 rounded-full blur-3xl"></div>
@@ -809,9 +946,9 @@ function HomeContent() {
             className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-3xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
-            whileHover={{ y: -5 }}
+            transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 100 }}
+            viewport={{ once: true, amount: 0.3 }}
+            whileHover={{ y: -5, scale: 1.05 }}
           >
             <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(236,100,100,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0 }} />
             <div className="relative z-10 flex flex-col h-full">
@@ -831,9 +968,9 @@ function HomeContent() {
             className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-3xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            viewport={{ once: true }}
-            whileHover={{ y: -5 }}
+            transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 100 }}
+            viewport={{ once: true, amount: 0.3 }}
+            whileHover={{ y: -5, scale: 1.05 }}
           >
             <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(43,162,128,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0 }} />
             <div className="relative z-10 flex flex-col h-full">
@@ -853,9 +990,9 @@ function HomeContent() {
             className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-3xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            viewport={{ once: true }}
-            whileHover={{ y: -5 }}
+            transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 100 }}
+            viewport={{ once: true, amount: 0.3 }}
+            whileHover={{ y: -5, scale: 1.05 }}
           >
             <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(60,102,194,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0 }} />
             <div className="relative z-10 flex flex-col h-full">
@@ -871,6 +1008,8 @@ function HomeContent() {
           </motion.div>
         </div>
       </motion.section>
+
+      <ScrollToTop />
 
       {/* Enhanced global styles */}
       <style jsx global>{`

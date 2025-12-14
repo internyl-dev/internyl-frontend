@@ -104,6 +104,15 @@ export interface ContactSection {
   contact: ContactInfo;
 }
 
+// METADATA
+export interface Metadata {
+  date_added: string;
+  favicon: string;
+  time_added: string;
+  total_input_tokens: number;
+  total_output_tokens: number;
+}
+
 // FULL INTERNSHIP TYPE
 export interface InternshipCards {
   id: string;
@@ -114,4 +123,5 @@ export interface InternshipCards {
   locations: LocationsSection;
   costs: CostsSection;
   contact: ContactSection;
+  metadata?: Metadata;
 }
