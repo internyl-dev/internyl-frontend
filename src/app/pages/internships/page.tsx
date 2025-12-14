@@ -281,6 +281,7 @@ function InternshipsContent() {
             locations: data.locations,
             costs: data.costs,
             contact: data.contact,
+            metadata: data.metadata,
           } as InternshipType;
         });
         setMaxCost(highestCost > 0 ? highestCost : 10000);
