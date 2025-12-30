@@ -600,6 +600,25 @@ function InternshipsContent() {
             return selectedOptions.includes(dueCategory);
           }
 
+          case "New": {
+            return selectedOptions.some((opt) => {
+              if (opt === "New This Week") {
+                const dateAdded = internship.metadata?.date_added;
+                if (!dateAdded) return false;
+
+                try {
+                  const addedDate = new Date(dateAdded);
+                  const now = new Date();
+                  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                  return addedDate >= oneWeekAgo;
+                } catch (error) {
+                  return false;
+                }
+              }
+              return false;
+            });
+          }
+
           case "Subject": {
             const subjects = internship.overview?.subject || [];
             if (!Array.isArray(subjects) || subjects.length === 0) return false;
@@ -904,6 +923,44 @@ function InternshipsContent() {
             </div>
           )}
         </div>
+
+        {/* NEW Filter Toggle */}
+        <button
+          onClick={() => setActiveFilters(prev => {
+            const newFilters = { ...prev };
+            if (newFilters["New"]) {
+              delete newFilters["New"];
+            } else {
+              newFilters["New"] = ["New This Week"];
+            }
+            return newFilters;
+          })}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 ${activeFilters["New"]?.includes("New This Week")
+              ? 'bg-gradient-to-r from-[#E26262] to-[#F07575] text-white border-2 border-white'
+              : 'bg-white text-[#E26262] border-2 border-[#E26262] hover:bg-[#E26262] hover:text-white'
+            }`}
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+          </svg>
+          NEW!
+          {activeFilters["New"]?.includes("New This Week") && (
+            <span className="bg-white text-[#E26262] text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+              {internships.filter(i => {
+                const dateAdded = i.metadata?.date_added;
+                if (!dateAdded) return false;
+                try {
+                  const addedDate = new Date(dateAdded);
+                  const now = new Date();
+                  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                  return addedDate >= oneWeekAgo;
+                } catch (error) {
+                  return false;
+                }
+              }).length}
+            </span>
+          )}
+        </button>
 
         {/* Bookmarked Only Toggle */}
         {user && hasBookmarkedInternships && (
