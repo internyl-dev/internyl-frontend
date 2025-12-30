@@ -121,13 +121,13 @@ function InternshipsContent() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const router = useRouter();
 
-    const filterData = [
-      {
-        label: "Due in",
-        color: "bg-[#f7d7db]",
-        icon: Clock,
-        options: ["Past Due", "Due Today", "Due This Week", "Due This Month", "Later"],
-      },
+  const filterData = [
+    {
+      label: "Due in",
+      color: "bg-[#f7d7db]",
+      icon: Clock,
+      options: ["Past Due", "Due Today", "Due This Week", "Due This Month", "Later"],
+    },
     {
       label: "Subject",
       color: "bg-[#e4e8f6]",
@@ -466,11 +466,27 @@ function InternshipsContent() {
   const sortInternships = (internships: InternshipType[], sortBy: string, searchTerm: string) => {
     const sorted = [...internships];
 
+    // Helper function to check if deadline is past due
+    const isPastDue = (deadlines: Deadline[]): boolean => {
+      const earliestDate = getEarliestDeadlineDate(deadlines);
+      if (!earliestDate) return false;
+      return earliestDate < new Date();
+    };
+
     switch (sortBy) {
       case "deadline":
         return sorted.sort((a, b) => {
           const aDate = getEarliestDeadlineDate(a.dates?.deadlines || []);
           const bDate = getEarliestDeadlineDate(b.dates?.deadlines || []);
+
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
+          // Both past due or both not past due - sort by date
           if (!aDate && !bDate) return 0;
           if (!aDate) return 1;
           if (!bDate) return -1;
@@ -479,6 +495,13 @@ function InternshipsContent() {
 
       case "cost-low":
         return sorted.sort((a, b) => {
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
           const aCost = getCostValue(a.costs);
           const bCost = getCostValue(b.costs);
           return aCost - bCost;
@@ -486,6 +509,13 @@ function InternshipsContent() {
 
       case "cost-high":
         return sorted.sort((a, b) => {
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
           const aCost = getCostValue(a.costs);
           const bCost = getCostValue(b.costs);
           return bCost - aCost;
@@ -493,17 +523,40 @@ function InternshipsContent() {
 
       case "duration":
         return sorted.sort((a, b) => {
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
           const aDuration = typeof a.dates?.duration_weeks === "number" ? a.dates.duration_weeks : 0;
           const bDuration = typeof b.dates?.duration_weeks === "number" ? b.dates.duration_weeks : 0;
           return aDuration - bDuration;
         });
 
       case "alphabetical":
-        return sorted.sort((a, b) => (a.overview?.title || '').localeCompare(b.overview?.title || ''));
+        return sorted.sort((a, b) => {
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
+          return (a.overview?.title || '').localeCompare(b.overview?.title || '');
+        });
 
       case "relevance":
       default:
         return sorted.sort((a, b) => {
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
           const aScore = calculateRelevanceScore(a, searchTerm);
           const bScore = calculateRelevanceScore(b, searchTerm);
           if (bScore !== aScore) return bScore - aScore;
@@ -537,12 +590,12 @@ function InternshipsContent() {
           case "Due in": {
             const deadlines = internship.dates?.deadlines || [];
             const earliestDeadline = getEarliestDeadlineDate(deadlines);
-            
+
             // If no deadline exists, include it in "Later" filter
             if (!earliestDeadline) {
               return selectedOptions.includes("Later");
             }
-          
+
             const dueCategory = getDueCategory(earliestDeadline);
             return selectedOptions.includes(dueCategory);
           }
