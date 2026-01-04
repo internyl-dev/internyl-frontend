@@ -622,12 +622,13 @@ function InternshipsContent() {
           case "Subject": {
             const subjects = internship.overview?.subject || [];
             if (!Array.isArray(subjects) || subjects.length === 0) return false;
-
+          
             return selectedOptions.some(selectedSubject =>
               subjects.some(internshipSubject => {
-                const subjectStr = String(internshipSubject).toLowerCase();
-                const selectedStr = selectedSubject.toLowerCase();
-                return subjectStr.includes(selectedStr) || selectedStr.includes(subjectStr);
+                const subjectStr = String(internshipSubject).trim().toLowerCase();
+                const selectedStr = selectedSubject.trim().toLowerCase();
+                // Exact match only - no partial matching
+                return subjectStr === selectedStr;
               })
             );
           }
