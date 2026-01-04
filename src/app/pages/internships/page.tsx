@@ -665,7 +665,7 @@ function InternshipsContent() {
 
                 case "Under $1000":
                   return (
-                    !isFree &&
+                    isFree ||
                     minCost !== null &&
                     maxCost !== null &&
                     minCost > 0 &&
