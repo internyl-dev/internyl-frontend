@@ -798,12 +798,12 @@ export default function InternshipCards({
                 ref={(el) => {
                   cardRefs.current[internshipId] = el;
                 }}
-                className={`absolute w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border-2 flex flex-col hover:shadow-xl transition-all duration-300 ${daysRemaining !== null && daysRemaining < 0 ? 'border-red-500' : 'border-black/30'}`}
+                className="absolute w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border-2 border-black/30 flex flex-col hover:shadow-xl transition-all duration-300"
                 style={{
                   left: position ? `${position.x}px` : "0px",
                   top: position ? `${position.y}px` : "0px",
                   transform: position ? "translate3d(0, 0, 0)" : "translate3d(0, 0, 0)",
-                  opacity: isInitialRender ? 0 : 1,
+                  opacity: isInitialRender ? 0 : (daysRemaining !== null && daysRemaining < 0 ? 0.6 : 1),
                   transition: isInitialRender ? "opacity 0.3s ease-out" : "all 0.3s ease-out",
                   width: `${itemWidth}px`,
                 }}

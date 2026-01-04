@@ -712,7 +712,7 @@ function HomeContent() {
               <span className={`text-transparent bg-gradient-to-r from-[#ec6464] to-[#f07575] bg-clip-text font-extrabold ${inter.className} drop-shadow-sm`}>Streamline</span><br />
               <span>your search,</span><br />
               Secure <span className={`font-bold ${kalam.className} text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#9381FF] to-[#A891FF] bg-clip-text`}>your</span><br />
-              <span className={`font-bold ${kalam.className} text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#2BA280] to-[#3C66C2] bg-clip-text hover:from-[#5865F2] hover:to-[#5865F2] transition-all duration-300 cursor-pointer`}>future</span>
+              <span className={`font-bold ${kalam.className} text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-gradient-to-r from-[#2BA280] to-[#3C66C2] bg-clip-text transition-all duration-300`}>future</span>
             </motion.h1>
             <motion.p
               className="mt-6 text-lg text-[#1d1d1f]/80 font-medium leading-relaxed"
@@ -818,11 +818,11 @@ function HomeContent() {
           >
             <FloatingCard delay={0.5}>
               <Image
-                src="/internyl-infinite-cards.svg"
+                src="/enhanced_filled_cards-cropped.svg"
                 alt="Internship tiles visual"
-                className="drop-shadow-2xl object-left w-[240px] sm:w-[300px] md:w-[440px] lg:w-[540px] h-auto hover:scale-105 transition-transform duration-500 ease-out"
-                width={540}
-                height={540}
+                className="drop-shadow-2xl object-left w-[240px] sm:w-[420px] md:w-[580px] lg:w-[740px] ml-15 h-auto hover:scale-105 transition-transform duration-500 ease-out"
+                width={740}
+                height={740}
               />
             </FloatingCard>
           </motion.div>
