@@ -818,11 +818,11 @@ function HomeContent() {
           >
             <FloatingCard delay={0.5}>
               <Image
-                src="/internyl-infinite-cards.svg"
+                src="/enhanced_filled_cards-cropped.svg"
                 alt="Internship tiles visual"
-                className="drop-shadow-2xl object-left w-[240px] sm:w-[300px] md:w-[440px] lg:w-[540px] h-auto hover:scale-105 transition-transform duration-500 ease-out"
-                width={540}
-                height={540}
+                className="drop-shadow-2xl object-left w-[240px] sm:w-[420px] md:w-[580px] lg:w-[740px] ml-15 h-auto hover:scale-105 transition-transform duration-500 ease-out"
+                width={740}
+                height={740}
               />
             </FloatingCard>
           </motion.div>
