@@ -923,7 +923,41 @@ function InternshipsContent() {
       </div>
 
       <div className="-mt-20">
-        <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
+        <SearchBar
+          setSearch={setSearchTerm}
+          initialValue={initialSearch}
+          suggestions={(() => {
+            const suggestionSet = new Set<string>();
+            // Add providers
+            internships.forEach(i => {
+              if (i.overview?.provider) suggestionSet.add(i.overview.provider);
+            });
+
+            // Add eligibility grades
+            internships.forEach(i => {
+              if (i.eligibility?.eligibility?.grades && Array.isArray(i.eligibility.eligibility.grades)) {
+                i.eligibility.eligibility.grades.forEach(grade => {
+                  if (grade && typeof grade === 'string') {
+                    suggestionSet.add(grade.charAt(0).toUpperCase() + grade.slice(1));
+                  }
+                });
+              }
+            });
+
+            // Add subjects
+            internships.forEach(i => {
+              if (i.overview?.subject && Array.isArray(i.overview.subject)) {
+                i.overview.subject.forEach(subject => {
+                  if (subject && typeof subject === 'string') {
+                    suggestionSet.add(subject.charAt(0).toUpperCase() + subject.slice(1));
+                  }
+                });
+              }
+            });
+
+            return Array.from(suggestionSet).sort();
+          })()}
+        />
       </div>
 
       {/* Sort and View Options */}
