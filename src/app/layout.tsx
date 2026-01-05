@@ -7,6 +7,7 @@ import Script from "next/script";
 
 import Navbar from "@/lib/components/Navbar";
 import Footer from "@/lib/components/Footer";
+import ScrollToTop from "@/lib/components/ScrollToTop";
 import { AuthProvider } from "@/lib/config/context/AuthContext";
 import { Toaster } from "react-hot-toast";
 
@@ -57,6 +58,7 @@ export default function RootLayout({
           </main>
 
           <Footer />
+          <ScrollToTop />
         </AuthProvider>
       </body>
     </html>

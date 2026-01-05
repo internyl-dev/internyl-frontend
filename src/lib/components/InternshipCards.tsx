@@ -124,6 +124,36 @@ export default function InternshipCards({
     return false;
   };
 
+  // Helper function to check if internship was added in the last week
+  // Helper function to check if internship was added in the last week
+  const isNewInternship = (dateAdded: string | null | undefined): boolean => {
+    console.log('=== isNewInternship called ===');
+    console.log('dateAdded input:', dateAdded);
+    console.log('dateAdded type:', typeof dateAdded);
+
+    if (!dateAdded) {
+      console.log('No dateAdded provided');
+      return false;
+    }
+
+    try {
+      // Parse the date string (format: "YYYY-MM-DD")
+      const addedDate = new Date(dateAdded);
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      console.log('Parsed addedDate:', addedDate);
+      console.log('Current date (now):', now);
+      console.log('One week ago:', oneWeekAgo);
+      console.log('Is addedDate >= oneWeekAgo?:', addedDate >= oneWeekAgo);
+
+      return addedDate >= oneWeekAgo;
+    } catch (error) {
+      console.error('Error parsing date:', error);
+      return false;
+    }
+  };
+
   // Helper function to check if value is truthy (for yes/no fields)
   const isTruthyValue = (value: string | number | boolean | null | undefined): boolean => {
     if (typeof value === 'boolean') return value;
@@ -744,6 +774,11 @@ export default function InternshipCards({
             const dueTextClass = getDueColorClass(daysRemaining);
             const iconColor = getIconColor(daysRemaining);
             const position = cardPositions[internshipId];
+            // Check if internship is new (added in last week)
+            const isNew = isNewInternship(internship.metadata?.date_added);
+            console.log('🔍 Internship:', internship.overview?.title);
+            console.log('   metadata:', internship.metadata);
+            console.log('   isNew result:', isNew);
 
             // Eligibility: grades and age display
             const gradesArray = internship.eligibility?.eligibility?.grades || [];
@@ -763,16 +798,23 @@ export default function InternshipCards({
                 ref={(el) => {
                   cardRefs.current[internshipId] = el;
                 }}
-                className={`absolute w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border-2 flex flex-col hover:shadow-xl transition-all duration-300 ${daysRemaining !== null && daysRemaining < 0 ? 'border-red-500' : 'border-black/30'}`}
+                className="absolute w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border-2 border-black/30 flex flex-col hover:shadow-xl transition-all duration-300"
                 style={{
                   left: position ? `${position.x}px` : "0px",
                   top: position ? `${position.y}px` : "0px",
                   transform: position ? "translate3d(0, 0, 0)" : "translate3d(0, 0, 0)",
-                  opacity: isInitialRender ? 0 : 1,
+                  opacity: isInitialRender ? 0 : (daysRemaining !== null && daysRemaining < 0 ? 0.6 : 1),
                   transition: isInitialRender ? "opacity 0.3s ease-out" : "all 0.3s ease-out",
                   width: `${itemWidth}px`,
                 }}
               >
+                {/* NEW Badge - Top Left */}
+                {isNew && (
+                  <div className="absolute -top-3 left-4 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md z-10" style={{ backgroundColor: '#E26262' }}>
+                    NEW!
+                  </div>
+                )}
+
                 {/* Top Right Icons */}
                 <div className="absolute top-4 right-4 flex gap-2">
                   <button

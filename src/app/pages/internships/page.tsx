@@ -121,13 +121,13 @@ function InternshipsContent() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const router = useRouter();
 
-    const filterData = [
-      {
-        label: "Due in",
-        color: "bg-[#f7d7db]",
-        icon: Clock,
-        options: ["Past Due", "Due Today", "Due This Week", "Due This Month", "Later"],
-      },
+  const filterData = [
+    {
+      label: "Due in",
+      color: "bg-[#f7d7db]",
+      icon: Clock,
+      options: ["Past Due", "Due Today", "Due This Week", "Due This Month", "Later"],
+    },
     {
       label: "Subject",
       color: "bg-[#e4e8f6]",
@@ -281,6 +281,7 @@ function InternshipsContent() {
             locations: data.locations,
             costs: data.costs,
             contact: data.contact,
+            metadata: data.metadata,
           } as InternshipType;
         });
         setMaxCost(highestCost > 0 ? highestCost : 10000);
@@ -465,11 +466,27 @@ function InternshipsContent() {
   const sortInternships = (internships: InternshipType[], sortBy: string, searchTerm: string) => {
     const sorted = [...internships];
 
+    // Helper function to check if deadline is past due
+    const isPastDue = (deadlines: Deadline[]): boolean => {
+      const earliestDate = getEarliestDeadlineDate(deadlines);
+      if (!earliestDate) return false;
+      return earliestDate < new Date();
+    };
+
     switch (sortBy) {
       case "deadline":
         return sorted.sort((a, b) => {
           const aDate = getEarliestDeadlineDate(a.dates?.deadlines || []);
           const bDate = getEarliestDeadlineDate(b.dates?.deadlines || []);
+
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
+          // Both past due or both not past due - sort by date
           if (!aDate && !bDate) return 0;
           if (!aDate) return 1;
           if (!bDate) return -1;
@@ -478,6 +495,13 @@ function InternshipsContent() {
 
       case "cost-low":
         return sorted.sort((a, b) => {
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
           const aCost = getCostValue(a.costs);
           const bCost = getCostValue(b.costs);
           return aCost - bCost;
@@ -485,6 +509,13 @@ function InternshipsContent() {
 
       case "cost-high":
         return sorted.sort((a, b) => {
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
           const aCost = getCostValue(a.costs);
           const bCost = getCostValue(b.costs);
           return bCost - aCost;
@@ -492,17 +523,40 @@ function InternshipsContent() {
 
       case "duration":
         return sorted.sort((a, b) => {
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
           const aDuration = typeof a.dates?.duration_weeks === "number" ? a.dates.duration_weeks : 0;
           const bDuration = typeof b.dates?.duration_weeks === "number" ? b.dates.duration_weeks : 0;
           return aDuration - bDuration;
         });
 
       case "alphabetical":
-        return sorted.sort((a, b) => (a.overview?.title || '').localeCompare(b.overview?.title || ''));
+        return sorted.sort((a, b) => {
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
+          return (a.overview?.title || '').localeCompare(b.overview?.title || '');
+        });
 
       case "relevance":
       default:
         return sorted.sort((a, b) => {
+          const aPastDue = isPastDue(a.dates?.deadlines || []);
+          const bPastDue = isPastDue(b.dates?.deadlines || []);
+
+          // Past due items go to the end
+          if (aPastDue && !bPastDue) return 1;
+          if (!aPastDue && bPastDue) return -1;
+
           const aScore = calculateRelevanceScore(a, searchTerm);
           const bScore = calculateRelevanceScore(b, searchTerm);
           if (bScore !== aScore) return bScore - aScore;
@@ -536,14 +590,33 @@ function InternshipsContent() {
           case "Due in": {
             const deadlines = internship.dates?.deadlines || [];
             const earliestDeadline = getEarliestDeadlineDate(deadlines);
-            
+
             // If no deadline exists, include it in "Later" filter
             if (!earliestDeadline) {
               return selectedOptions.includes("Later");
             }
-          
+
             const dueCategory = getDueCategory(earliestDeadline);
             return selectedOptions.includes(dueCategory);
+          }
+
+          case "New": {
+            return selectedOptions.some((opt) => {
+              if (opt === "New This Week") {
+                const dateAdded = internship.metadata?.date_added;
+                if (!dateAdded) return false;
+
+                try {
+                  const addedDate = new Date(dateAdded);
+                  const now = new Date();
+                  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                  return addedDate >= oneWeekAgo;
+                } catch {
+                  return false;
+                }
+              }
+              return false;
+            });
           }
 
           case "Subject": {
@@ -552,48 +625,83 @@ function InternshipsContent() {
 
             return selectedOptions.some(selectedSubject =>
               subjects.some(internshipSubject => {
-                const subjectStr = String(internshipSubject).toLowerCase();
-                const selectedStr = selectedSubject.toLowerCase();
-                return subjectStr.includes(selectedStr) || selectedStr.includes(subjectStr);
+                const subjectStr = String(internshipSubject).trim().toLowerCase();
+                const selectedStr = selectedSubject.trim().toLowerCase();
+                // Exact match only - no partial matching
+                return subjectStr === selectedStr;
               })
             );
           }
 
           case "Cost": {
             const costs = internship.costs?.costs || [];
-            // Get all numeric cost values
-            const numericCosts = costs
-              .filter(item => typeof item.lowest === "number")
-              .map(item => item.lowest as number);
-            // Robust free detection based on types
-            const isExplicitFree = costs.some(item => item.free === true);
-            const isZeroCost = numericCosts.some(c => c === 0);
-            const isNoCost = costs.length === 0 || costs.every(item => item.lowest === undefined || item.lowest === null || item.lowest === "not provided");
-            const isFree = isExplicitFree || isZeroCost || isNoCost;
-            // Use minCost for other filters
-            const minCost = numericCosts.length === 0 ? 0 : Math.min(...numericCosts);
-            return selectedOptions.some((opt) => {
+
+            const lowestValues = costs
+              .map(c => c.lowest)
+              .filter(v => typeof v === "number") as number[];
+
+            const highestValues = costs
+              .map(c => c.highest)
+              .filter(v => typeof v === "number") as number[];
+
+            const minCost = lowestValues.length ? Math.min(...lowestValues) : null;
+            const maxCost = highestValues.length ? Math.max(...highestValues) : null;
+
+            const isExplicitFree = costs.some(c => c.free === true);
+            const isZeroCost = minCost === 0;
+            const isNoCostProvided =
+              costs.length === 0 ||
+              costs.every(c =>
+                (c.lowest == null || c.lowest === "not provided") &&
+                (c.highest == null || c.highest === "not provided")
+              );
+
+            const isFree = isExplicitFree || isZeroCost || isNoCostProvided;
+
+            return selectedOptions.some(opt => {
               switch (opt) {
                 case "Free":
                   return isFree;
+
                 case "Under $1000":
-                  return !isFree && minCost > 0 && minCost < 1000;
+                  return (
+                    isFree ||
+                    minCost !== null &&
+                    maxCost !== null &&
+                    minCost > 0 &&
+                    maxCost < 1000
+                  );
+
                 case "$1000–$3000":
-                  return !isFree && minCost >= 1000 && minCost <= 3000;
+                  return (
+                    !isFree &&
+                    minCost !== null &&
+                    maxCost !== null &&
+                    minCost >= 1000 &&
+                    maxCost <= 3000
+                  );
+
                 case "$3000+":
-                  return !isFree && minCost > 3000;
+                  return (
+                    !isFree &&
+                    minCost !== null &&
+                    minCost > 3000
+                  );
+
                 case "Custom Range": {
-                  const min = customCostRange[0];
-                  const max = customCostRange[1];
+                  const [min, max] = customCostRange;
 
-                  // If the range starts at 0, include free internships
-                  if (min === 0 && isFree) {
-                    return true;
-                  }
+                  if (min === 0 && isFree) return true;
 
-                  // For non-free internships, check if they fall within the range
-                  return !isFree && minCost >= min && minCost <= max;
+                  return (
+                    !isFree &&
+                    minCost !== null &&
+                    maxCost !== null &&
+                    minCost >= min &&
+                    maxCost <= max
+                  );
                 }
+
                 default:
                   return false;
               }
@@ -815,7 +923,41 @@ function InternshipsContent() {
       </div>
 
       <div className="-mt-20">
-        <SearchBar setSearch={setSearchTerm} initialValue={initialSearch} />
+        <SearchBar
+          setSearch={setSearchTerm}
+          initialValue={initialSearch}
+          suggestions={(() => {
+            const suggestionSet = new Set<string>();
+            // Add providers
+            internships.forEach(i => {
+              if (i.overview?.provider) suggestionSet.add(i.overview.provider);
+            });
+
+            // Add eligibility grades
+            internships.forEach(i => {
+              if (i.eligibility?.eligibility?.grades && Array.isArray(i.eligibility.eligibility.grades)) {
+                i.eligibility.eligibility.grades.forEach(grade => {
+                  if (grade && typeof grade === 'string') {
+                    suggestionSet.add(grade.charAt(0).toUpperCase() + grade.slice(1));
+                  }
+                });
+              }
+            });
+
+            // Add subjects
+            internships.forEach(i => {
+              if (i.overview?.subject && Array.isArray(i.overview.subject)) {
+                i.overview.subject.forEach(subject => {
+                  if (subject && typeof subject === 'string') {
+                    suggestionSet.add(subject.charAt(0).toUpperCase() + subject.slice(1));
+                  }
+                });
+              }
+            });
+
+            return Array.from(suggestionSet).sort();
+          })()}
+        />
       </div>
 
       {/* Sort and View Options */}
@@ -850,6 +992,44 @@ function InternshipsContent() {
             </div>
           )}
         </div>
+
+        {/* NEW Filter Toggle */}
+        <button
+          onClick={() => setActiveFilters(prev => {
+            const newFilters = { ...prev };
+            if (newFilters["New"]) {
+              delete newFilters["New"];
+            } else {
+              newFilters["New"] = ["New This Week"];
+            }
+            return newFilters;
+          })}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 ${activeFilters["New"]?.includes("New This Week")
+            ? 'bg-gradient-to-r from-[#E26262] to-[#F07575] text-white border-2 border-white'
+            : 'bg-white text-[#E26262] border-2 border-[#E26262] hover:bg-[#E26262] hover:text-white'
+            }`}
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+          </svg>
+          NEW!
+          {activeFilters["New"]?.includes("New This Week") && (
+            <span className="bg-white text-[#E26262] text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+              {internships.filter(i => {
+                const dateAdded = i.metadata?.date_added;
+                if (!dateAdded) return false;
+                try {
+                  const addedDate = new Date(dateAdded);
+                  const now = new Date();
+                  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                  return addedDate >= oneWeekAgo;
+                } catch {
+                  return false;
+                }
+              }).length}
+            </span>
+          )}
+        </button>
 
         {/* Bookmarked Only Toggle */}
         {user && hasBookmarkedInternships && (
