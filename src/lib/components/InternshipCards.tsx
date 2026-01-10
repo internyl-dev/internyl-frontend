@@ -127,12 +127,8 @@ export default function InternshipCards({
   // Helper function to check if internship was added in the last week
   // Helper function to check if internship was added in the last week
   const isNewInternship = (dateAdded: string | null | undefined): boolean => {
-    console.log('=== isNewInternship called ===');
-    console.log('dateAdded input:', dateAdded);
-    console.log('dateAdded type:', typeof dateAdded);
-
     if (!dateAdded) {
-      console.log('No dateAdded provided');
+      // console.log('No dateAdded provided');
       return false;
     }
 
@@ -141,12 +137,6 @@ export default function InternshipCards({
       const addedDate = new Date(dateAdded);
       const now = new Date();
       const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-      console.log('Parsed addedDate:', addedDate);
-      console.log('Current date (now):', now);
-      console.log('One week ago:', oneWeekAgo);
-      console.log('Is addedDate >= oneWeekAgo?:', addedDate >= oneWeekAgo);
-
       return addedDate >= oneWeekAgo;
     } catch (error) {
       console.error('Error parsing date:', error);
@@ -610,7 +600,7 @@ export default function InternshipCards({
       try {
         // Example: const savedData = await loadFromDatabase('users', 'current_user_id');
         // For now, we'll use empty state
-        console.log('Loading saved eligibility data...');
+        // console.log('Loading saved eligibility data...');
       } catch (error) {
         console.error('Error loading saved data:', error);
       }
@@ -762,7 +752,7 @@ export default function InternshipCards({
             const firstDeadlineDateString = internship.dates?.deadlines?.[0]?.date ?? null;
             // Debug: log raw date string to console
             if (firstDeadlineDateString) {
-              console.log('Raw deadline date:', firstDeadlineDateString);
+              // console.log('Raw deadline date:', firstDeadlineDateString);
             }
             const firstDeadlineDate = firstDeadlineDateString &&
               isValidValue(firstDeadlineDateString)
@@ -776,9 +766,9 @@ export default function InternshipCards({
             const position = cardPositions[internshipId];
             // Check if internship is new (added in last week)
             const isNew = isNewInternship(internship.metadata?.date_added);
-            console.log('🔍 Internship:', internship.overview?.title);
-            console.log('   metadata:', internship.metadata);
-            console.log('   isNew result:', isNew);
+            // console.log('🔍 Internship:', internship.overview?.title);
+            // console.log('   metadata:', internship.metadata);
+            // console.log('   isNew result:', isNew);
 
             // Eligibility: grades and age display
             const gradesArray = internship.eligibility?.eligibility?.grades || [];
