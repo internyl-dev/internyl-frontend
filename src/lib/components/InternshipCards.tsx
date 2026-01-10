@@ -16,7 +16,6 @@ import {
   ChecklistOutlined as ChecklistIcon,
   CheckCircleOutlined as CheckCircleOutlinedIcon,
   RadioButtonUncheckedOutlined as RadioButtonUncheckedIcon,
-  IosShareRounded as Share
 } from "@mui/icons-material";
 import { getDaysRemaining } from "../modules/getTimeRemaining";
 import { getDueColorClass } from "../modules/getDueDateTextColor";
@@ -27,7 +26,6 @@ import LaunchIcon from '@mui/icons-material/Launch';
 import { auth, db } from "@/lib/config/firebaseConfig"
 import { doc, getDoc } from "firebase/firestore";
 import { setDoc, updateDoc } from "firebase/firestore";
-import { copyLinkToUserClipboard } from "../modules/copyLinkToUserClipboard";
 
 interface Props {
   internships: InternshipType[];
@@ -809,7 +807,6 @@ export default function InternshipCards({
                   transition: isInitialRender ? "opacity 0.3s ease-out" : "all 0.3s ease-out",
                   width: `${itemWidth}px`,
                 }}
-                id={internship.id}
               >
                 {/* NEW Badge - Top Left */}
                 {isNew && (
@@ -820,15 +817,6 @@ export default function InternshipCards({
 
                 {/* Top Right Icons */}
                 <div className="absolute top-4 right-4 flex gap-2">
-                  {/* Share Button */}
-                  <button
-                    onClick={() => copyLinkToUserClipboard(internship.id)}
-                    className="text-[#8D8DAC] hover:text-[#2F2F3A] cursor-pointer p-2 rounded-full hover:bg-black/5 transition-all duration-200"
-                    aria-label={`Share ${internship.overview?.title || 'this internship'} with friends`}
-                  >
-                    <Share fontSize="small"/>
-                  </button>
-                  {/* Checklist */}
                   <button
                     onClick={() => handleEligibilityClick(internshipId)}
                     className="text-[#8D8DAC] hover:text-[#2F2F3A] cursor-pointer p-2 rounded-full hover:bg-black/5 transition-all duration-200"
@@ -836,7 +824,6 @@ export default function InternshipCards({
                   >
                     <ChecklistIcon fontSize="small" />
                   </button>
-                  {/* Information Card */}
                   <button
                     onClick={() => handleInfoClick(internshipId)}
                     className="text-[#8D8DAC] hover:text-[#2F2F3A] cursor-pointer p-2 rounded-full hover:bg-black/5 transition-all duration-200"
