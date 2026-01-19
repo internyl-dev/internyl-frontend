@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/config/context/AuthContext";
 import { auth } from "@/lib/config/firebaseConfig";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { useAdminCheck } from "@/lib/hooks/useAdminCheck";
+// import { useAdminCheck } from "@/lib/hooks/useAdminCheck";
 
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
@@ -24,7 +24,7 @@ export default function Navbar() {
   const mobileDropdownRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
-  const isAdmin = useAdminCheck();
+  // const isAdmin = useAdminCheck();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -143,7 +143,7 @@ export default function Navbar() {
             internships
           </Link>
 
-          {isAdmin && (
+          {/* {isAdmin && (
             <Link
               href="/admin"
               className="nav-link hover:text-amber-600 transition flex items-center gap-2 px-3 py-2 rounded-lg animate-settings"
@@ -151,7 +151,7 @@ export default function Navbar() {
               <SettingsOutlinedIcon />
               admin dashboard
             </Link>
-          )}
+          )} */}
 
           <div className="relative">
             <button
@@ -225,14 +225,14 @@ export default function Navbar() {
           >
             <SearchOutlinedIcon />
           </Link>
-          {isAdmin && (
+          {/* {isAdmin && (
             <Link
               href="/admin"
               className="mobile-nav-item hover:text-amber-600 transition animate-settings"
             >
               <SettingsOutlinedIcon />
             </Link>
-          )}
+          )} */}
           <button
             onClick={() => setDropdownOpen((prev) => !prev)}
             className="mobile-nav-item text-gray-800 hover:text-purple-600 transition focus:outline-none animate-person"

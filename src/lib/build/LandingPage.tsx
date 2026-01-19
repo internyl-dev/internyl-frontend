@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import ScrollToTop from "@/lib/components/ScrollToTop";
 
@@ -6,8 +8,34 @@ import { kalam, inter } from "@/lib/utils/fonts";
 
 import { ArrowForward } from "@mui/icons-material";
 import LandingPageSearchComponent from "@/lib/components/LandingPageSearchComponent";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { FloatingCard } from "../components/FloatingCard";
+
+import {
+    ThumbDownOutlined as ThumbDownOutlinedIcon,
+    AutoAwesomeOutlined as AutoAwesomeOutlinedIcon,
+    SearchOutlined as SearchOutlinedIcon,
+    WatchLaterOutlined as WatchLaterOutlinedIcon
+
+} from "@mui/icons-material";
+import { AnimatedStrikethroughList } from "../components/AnimatedStrikethroughList";
 
 export default function LandingPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const initialSearch = searchParams.get("search") || "";
+    // eslint disable-next-line no-unused-vars
+    const [searchTerm, setSearchTerm] = useState(initialSearch);
+
+    const handleSearch = (value: React.FormEvent<HTMLFormElement>) => {
+        value.preventDefault();
+        if (searchTerm.trim()) {
+            router.push(`/internships?search=${encodeURIComponent(searchTerm.trim())}`);
+        }
+    };
+
     return (
         <div className="text-[#1d1d1f] px-3 sm:px-6 md:px-12 lg:px-20 pt-16 sm:pt-24 pb-20 sm:pb-32 relative overflow-hidden">
             <ScrollToTop />
@@ -299,20 +327,22 @@ export default function LandingPage() {
             <ScrollToTop />
 
             {/* Enhanced global styles */}
-            <style jsx global>{`
-      @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        33% { transform: translateY(-8px) rotate(1deg); }
-        66% { transform: translateY(-4px) rotate(-0.5deg); }
-      }
-      @keyframes pulse-glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(236,100,100,0.3); }
-        50% { box-shadow: 0 0 30px rgba(236,100,100,0.5), 0 0 40px rgba(236,100,100,0.2); }
-      }
-      .hover\\:shadow-3xl:hover {
-        box-shadow: 0 25px 80px 0 rgba(0, 0, 0, 0.15);
-      }
-    `}</style>
+            <style jsx global>
+                {`
+                    @keyframes float {
+                        0%, 100% { transform: translateY(0px) rotate(0deg); }
+                        33% { transform: translateY(-8px) rotate(1deg); }
+                        66% { transform: translateY(-4px) rotate(-0.5deg); }
+                    }
+                    @keyframes pulse-glow {
+                        0%, 100% { box-shadow: 0 0 20px rgba(236,100,100,0.3); }
+                        50% { box-shadow: 0 0 30px rgba(236,100,100,0.5), 0 0 40px rgba(236,100,100,0.2); }
+                    }
+                    .hover\\:shadow-3xl:hover {
+                        box-shadow: 0 25px 80px 0 rgba(0, 0, 0, 0.15);
+                    }
+                `}
+            </style>
         </div>
     )
 }

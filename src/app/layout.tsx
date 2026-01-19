@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Sora } from "next/font/google";
 import "./globals.css";
-import "@/lib/config/initGlobals";
+// import "@/lib/config/initGlobals";
 
 import Script from "next/script";
 
