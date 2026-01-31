@@ -28,7 +28,7 @@ export default function UserDashboardPage() {
 
     const savedInternshipsFiltered = internships.filter((internship) =>
         userData?.savedInternships?.includes(internship.id)
-    )
+    );
 
     const toggleBookmark = async (internshipId: string) => {
         const isBookmarked = bookmarked[internshipId] === true;
@@ -84,7 +84,7 @@ export default function UserDashboardPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6, delay: 0.2 }}
                             >
-                                Beware, {userData?.displayName?.split(" ")[0] || user?.displayName?.split(" ")[0] || "Intern"}
+                                Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ")[0] || "Intern"}
                             </motion.h1>
                             <motion.p
                                 className={`text-center text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className} drop-shadow-md`}
