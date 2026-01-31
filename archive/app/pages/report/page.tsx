@@ -8,7 +8,7 @@ import { collection, getDocs, doc, setDoc } from "firebase/firestore";
 import toast from "react-hot-toast";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { Report as ReportType } from "@/lib/types/report";
-import { InternshipCards } from "@/lib/types/internshipCards";
+import { InternshipCards } from "@/lib/interfaces/internshipCards";
 
 export default function ReportPage() {
   const [user, setUser] = useState<User | null>(null);

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { InternshipCards as InternshipType } from "../types/internshipCards";
+import { InternshipCards as InternshipType } from "../interfaces/internshipCards";
 import {
   AccessTimeOutlined as TimeIcon,
   WorkOutlineOutlined as WorkIcon,

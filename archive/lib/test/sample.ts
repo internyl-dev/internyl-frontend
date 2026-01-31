@@ -1,4 +1,4 @@
-import { InternshipCards } from "@/lib/types/internshipCards";
+import { InternshipCards } from "@/lib/interfaces/internshipCards";
 
 export const sampleInternshipData: InternshipCards[] = [
     {

@@ -1,4 +1,4 @@
-import { InternshipCards } from "@/lib/types/internshipCards";
+import { InternshipCards } from "@/lib/interfaces/internshipCards";
 import { UserPreferences } from "@/lib/types/userPreferences";
 
 export function scoreInternship(

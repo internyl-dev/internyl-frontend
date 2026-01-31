@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { db } from "@/lib/config/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 
-import { InternshipCards } from "@/lib/types/internshipCards";
+import { InternshipCards } from "@/lib/interfaces/internshipCards";
 import { UserPreferences } from "@/lib/types/userPreferences";
 import { scoreInternship } from "@/lib/modules/scoreInternship.algorithm";
 

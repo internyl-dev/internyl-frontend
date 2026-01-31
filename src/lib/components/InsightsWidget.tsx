@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { InternshipCards as Internship } from "@/lib/types/internshipCards";
+import { InternshipCards as Internship } from "@/lib/interfaces/internshipCards";
 
 export const InsightsWidget = ({ savedCount, totalInternships, savedInternshipsFiltered }: {
   savedCount: number;

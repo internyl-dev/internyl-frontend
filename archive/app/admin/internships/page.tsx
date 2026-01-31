@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { InternshipCards } from "@/lib/types/internshipCards";
+import { InternshipCards } from "@/lib/interfaces/internshipCards";
 import { db } from "@/lib/config/firebaseConfig";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import {

@@ -21,7 +21,7 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import InternshipCards from "@/lib/components/InternshipCards";
 import Brushstroke from "@/lib/components/Brushstroke";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
-import { InternshipCards as Internship } from "@/lib/types/internshipCards";
+import { InternshipCards as Internship } from "@/lib/interfaces/internshipCards";
 import { useInternshipsWithFallback } from "@/lib/hooks/useRecommendedInternships";
 
 // Define user data type

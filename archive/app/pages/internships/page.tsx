@@ -8,7 +8,7 @@ import { ChevronDown, X, Filter, Search, SlidersHorizontal, BookmarkCheck, Clock
 import SearchBar from "@/lib/components/SearchBar";
 import InternshipCards from "@/lib/components/InternshipCards";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
-import { InternshipCards as InternshipType, Deadline, CostsSection } from "@/lib/types/internshipCards";
+import { InternshipCards as InternshipType, Deadline, CostsSection } from "@/lib/interfaces/internshipCards";
 
 
 import { auth, db } from "@/lib/config/firebaseConfig";
