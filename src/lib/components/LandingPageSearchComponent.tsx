@@ -1,3 +1,10 @@
+/*
+    IMPORTANT: NOT IN USE
+    DEPRECATED
+
+    REASON: was not able to fully integrate this file into LandingPage.tsx
+*/
+
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
