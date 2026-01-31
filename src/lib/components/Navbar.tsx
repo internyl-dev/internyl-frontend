@@ -13,6 +13,7 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import { useAdminCheck } from "../hooks/useAdminCheck";
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -24,7 +25,7 @@ export default function Navbar() {
   const mobileDropdownRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
-  // const isAdmin = useAdminCheck();
+  const isAdmin = useAdminCheck();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -113,9 +114,8 @@ export default function Navbar() {
       />
 
       <nav
-        className={`fixed top-0 left-0 w-full z-50 backdrop-blur-md px-5 sm:px-7 py-2 flex justify-between items-center transition-all duration-500 ${
-          scrolled ? "navbar-scrolled" : ""
-        }`}
+        className={`fixed top-0 left-0 w-full z-50 backdrop-blur-md px-5 sm:px-7 py-2 flex justify-between items-center transition-all duration-500 ${scrolled ? "navbar-scrolled" : ""
+          }`}
       >
         {/* Logo */}
         <h1 className="text-[1.5rem] sm:text-[2rem] font-bold text-gray-900 tracking-[-0.05em] logo-hover cursor-pointer">
@@ -143,7 +143,7 @@ export default function Navbar() {
             internships
           </Link>
 
-          {/* {isAdmin && (
+          {isAdmin && (
             <Link
               href="/admin"
               className="nav-link hover:text-amber-600 transition flex items-center gap-2 px-3 py-2 rounded-lg animate-settings"
@@ -151,7 +151,7 @@ export default function Navbar() {
               <SettingsOutlinedIcon />
               admin dashboard
             </Link>
-          )} */}
+          )}
 
           <div className="relative">
             <button
@@ -225,14 +225,14 @@ export default function Navbar() {
           >
             <SearchOutlinedIcon />
           </Link>
-          {/* {isAdmin && (
+          {isAdmin && (
             <Link
               href="/admin"
               className="mobile-nav-item hover:text-amber-600 transition animate-settings"
             >
               <SettingsOutlinedIcon />
             </Link>
-          )} */}
+          )}
           <button
             onClick={() => setDropdownOpen((prev) => !prev)}
             className="mobile-nav-item text-gray-800 hover:text-purple-600 transition focus:outline-none animate-person"
