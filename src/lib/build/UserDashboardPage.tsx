@@ -5,8 +5,44 @@ import Brushstroke from "../components/Brushstroke";
 import { InsightsWidget } from "../components/InsightsWidget";
 import InternshipCards from "../components/InternshipCards";
 import { caveat } from "../utils/fonts";
+import { UserData } from "../interfaces/UserData";
+import { useState } from "react";
+import { User } from "firebase/auth";
+import { InternshipCards as Internship } from "@/lib/interfaces/internshipCards";
+
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import { useInternshipsWithFallback } from "@/lib/hooks/useRecommendedInternships";
+import { toggleBookmarkInFirestore } from "../modules/toggleBookmark";
 
 export default function UserDashboardPage() {
+    const [user, setUser] = useState<User | null>(null);
+    const [userData, setUserData] = useState<UserData | null>(null);
+    const [internships, setInternships] = useState<Internship[]>([]);
+    const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
+
+    const { internshipsToShow } = useInternshipsWithFallback(bookmarked);
+
+    const savedInternshipsFiltered = internships.filter((internship) =>
+        userData?.savedInternships?.includes(internship.id)
+    )
+
+    const toggleBookmark = async (internshipId: string) => {
+        const isBookmarked = bookmarked[internshipId] === true;
+        try {
+            await toggleBookmarkInFirestore(internshipId, isBookmarked);
+            setBookmarked((prev) => ({
+                ...prev,
+                [internshipId]: !isBookmarked,
+            }));
+        } catch (err) {
+            console.error("Failed to toggle bookmark:", err);
+        }
+    };
+
     return (
         <>
             <div className="overflow-hidden">
@@ -48,7 +84,7 @@ export default function UserDashboardPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6, delay: 0.2 }}
                             >
-                                Beware, {userData?.displayName?.split(" ")[0] || user.displayName?.split(" ")[0] || "Intern"}
+                                Beware, {userData?.displayName?.split(" ")[0] || user?.displayName?.split(" ")[0] || "Intern"}
                             </motion.h1>
                             <motion.p
                                 className={`text-center text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-[115%] tracking-[-0.05em] ${caveat.className} drop-shadow-md`}
@@ -214,7 +250,7 @@ export default function UserDashboardPage() {
                 savedCount={savedInternshipsFiltered.length}
                 totalInternships={internships.length}
                 savedInternshipsFiltered={savedInternshipsFiltered}
-                /> */}  
+                /> */}
             </div>
         </>
     )
