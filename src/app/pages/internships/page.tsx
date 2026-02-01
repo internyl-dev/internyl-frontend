@@ -18,6 +18,7 @@ import { getDueCategory } from "@/lib/modules/getDueCategory";
 import { getEarliestDeadlineDate } from "@/lib/modules/getEarliestDeadlineDate";
 import { getCostValue } from "@/lib/modules/getCostValue";
 import InternshipsLoadingScreen from "@/lib/build/InternshipsLoadingScreen";
+import { useInternshipsPaginated } from "@/lib/hooks/useInternshipsPaginated";
 
 const sortOptions = [
   { value: "relevance", label: "Best Match" },
@@ -92,7 +93,14 @@ function InternshipsContent() {
   const [bookmarked, setBookmarked] = useState<{ [key: string]: boolean }>({});
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [internships, setInternships] = useState<InternshipType[]>([]);
+
+  const {
+    internships,
+    loading: internshipsLoading,
+    hasMore,
+    sentinelRef,
+  } = useInternshipsPaginated();
+
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [sortBy, setSortBy] = useState("relevance");
   const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
@@ -148,18 +156,6 @@ function InternshipsContent() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.filter-dropdown') && !target.closest('.filter-button') && !target.closest('.sort-dropdown-container')) {
-        setOpenDropdown(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   // Add keyboard navigation support
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -183,102 +179,24 @@ function InternshipsContent() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  function isTimestamp(value: unknown): value is { toDate: () => Date } {
-    return (
-      value !== null &&
-      typeof value === "object" &&
-      "toDate" in value &&
-      typeof (value as { toDate?: unknown }).toDate === "function"
-    );
-  }
-
   useEffect(() => {
-    async function fetchInternships() {
-      try {
-        const internshipsCollection = collection(db, "programs-display");
-        const snapshot = await getDocs(internshipsCollection);
-
-        let highestCost = 0;
-        const fetchedInternships = snapshot.docs.map((doc) => {
-          const data = doc.data();
-          // Check: deadlines might be undefined
-          const deadlines = (data.dates?.deadlines ?? []).map((deadline: Deadline) => {
-            const dateVal = deadline.date;
-            return {
-              ...deadline,
-              date: isTimestamp(dateVal)
-                ? dateVal.toDate().toISOString().split("T")[0]
-                : typeof dateVal === "string"
-                  ? dateVal
-                  : null,
-            };
-          });
-          const dates = {
-            ...data.dates,
-            deadlines,
-          };
-          // Find highest cost
-          if (data.costs?.costs && Array.isArray(data.costs.costs)) {
-            data.costs.costs.forEach((item: { lowest?: number; highest?: number;[key: string]: unknown }) => {
-              if (typeof item.highest === 'number' && item.highest > highestCost) {
-                highestCost = item.highest;
-              } else if (typeof item.lowest === 'number' && item.lowest > highestCost) {
-                highestCost = item.lowest;
-              }
-            });
-          }
-          return {
-            id: doc.id,
-            overview: data.overview,
-            eligibility: data.eligibility,
-            dates,
-            locations: data.locations,
-            costs: data.costs,
-            contact: data.contact,
-            metadata: data.metadata,
-          } as InternshipType;
-        });
-        setMaxCost(highestCost > 0 ? highestCost : 10000);
-        setCustomCostRange([0, highestCost > 0 ? highestCost : 10000]);
-        // Extract unique subjects from all internships
-        const subjectsSet = new Set<string>();
-        fetchedInternships.forEach((internship) => {
-          if (internship.overview?.subject && Array.isArray(internship.overview.subject)) {
-            internship.overview.subject.forEach((subject) => {
-              if (subject && typeof subject === 'string') {
-                // Capitalize first letter and clean up the subject
-                const cleanSubject = subject.trim();
-                if (cleanSubject) {
-                  const capitalizedSubject = cleanSubject.charAt(0).toUpperCase() + cleanSubject.slice(1).toLowerCase();
-                  subjectsSet.add(capitalizedSubject);
-                }
-              }
-            });
-          }
-        });
-        // Convert to sorted array
-        const uniqueSubjects = Array.from(subjectsSet).sort();
-        setDynamicSubjects(uniqueSubjects);
-        setInternships(fetchedInternships);
-      } catch (error) {
-        console.error("Error fetching internships:", error);
-      }
-    }
-    fetchInternships();
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+
       if (currentUser) {
         const docRef = doc(db, "users", currentUser.uid);
         const snapshot = await getDoc(docRef);
+
         if (snapshot.exists()) {
           const data = snapshot.data();
           const saved: string[] = data.savedInternships || [];
           const map: { [key: string]: boolean } = {};
-          saved.forEach((id: string) => {
+          saved.forEach((id) => {
             map[id] = true;
           });
           setBookmarked(map);
         }
+
         const pendingId = localStorage.getItem("pendingBookmark");
         if (pendingId) {
           await toggleBookmarkInFirestore(pendingId, false);
@@ -286,10 +204,19 @@ function InternshipsContent() {
           localStorage.removeItem("pendingBookmark");
         }
       }
+
       setIsLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
+
+
+  useEffect(() => {
+    if (openDropdown !== "Subject") {
+      setSubjectSearch("");
+    }
+  }, [openDropdown]);
 
   const toggleBookmark = async (internshipId: string) => {
     if (!user) {
@@ -345,7 +272,9 @@ function InternshipsContent() {
     setSortBy("relevance");
     setCustomCostRange([0, maxCost]);
     setShowCustomCostInput(false);
+    router.replace("/pages/internships");
   };
+
 
   const clearCategoryFilter = (category: string) => {
     setActiveFilters(prev => {
@@ -742,7 +671,7 @@ function InternshipsContent() {
   const hasBookmarkedInternships = Object.values(bookmarked).some(Boolean);
 
   if (isLoading) {
-    <InternshipsLoadingScreen />
+    return <InternshipsLoadingScreen />;
   }
 
   return (
@@ -1219,6 +1148,16 @@ function InternshipsContent() {
           bookmarked={bookmarked}
           toggleBookmark={toggleBookmark}
         />
+
+        {hasMore && (
+          <div ref={sentinelRef} className="h-16 flex items-center justify-center">
+            {internshipsLoading && (
+              <span className="text-gray-500 text-sm animate-pulse">
+                Loading more internships…
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
