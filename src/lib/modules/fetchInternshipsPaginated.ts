@@ -12,7 +12,7 @@ import { db } from "@/lib/config/firebaseConfig";
 import { InternshipCards, Deadline } from "@/lib/interfaces/internshipCards";
 
 const COLLECTION_NAME =
-    process.env.NEXT_PUBLIC_INTERNSHIPS_COLLECTION_DISPLAY!;
+    process.env.NEXT_PRIVATE_INTERNSHIPS_COLLECTION_DISPLAY!;
 const PAGE_SIZE = 12;
 
 /** Timestamp guard */
