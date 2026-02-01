@@ -1,5 +1,5 @@
 import { InternshipCards } from "@/lib/interfaces/internshipCards";
-import { UserPreferences } from "@/lib/types/userPreferences";
+import { UserPreferences } from "@/lib/interfaces/userPreferences";
 
 export function scoreInternship(
   internship: InternshipCards,
