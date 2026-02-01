@@ -17,7 +17,7 @@ import {
     FieldValue,
 } from "firebase/firestore";
 import toast from "react-hot-toast";
-import { Report } from "@/lib/types/report";
+import { Report } from "@/lib/interfaces/report";
 
 // Define more specific types for different report types
 interface InfoReport extends Report {
