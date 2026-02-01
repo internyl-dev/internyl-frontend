@@ -37,6 +37,7 @@ import { isValidValue } from "../modules/isValidValue";
 import { isNewInternship } from "../modules/isNewInternship";
 import { formatDuration } from "../modules/formatDuration";
 import { formatLocation } from "../modules/formatLocation";
+import { capitalizeWords } from "../modules/capitalizeWords";
 
 const bookmarkButtonStyles = {
   animation: "bookmarkAnimation 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
@@ -72,13 +73,6 @@ export default function InternshipCards({
   const [userEligibilityData, setUserEligibilityData] = useState<UserEligibilityData>({});
 
   const userId = auth.currentUser != null ? auth.currentUser.uid : null;
-
-  const capitalizeWords = (text: string) =>
-    text
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-
   
 
   // Function to handle opening the modal

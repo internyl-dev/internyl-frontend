@@ -1,4 +1,7 @@
 import { InternshipCards as InternshipType } from "../interfaces/internshipCards";
+import { capitalizeWords } from "./capitalizeWords";
+import { formatDate } from "./dateUtils";
+import { isTruthyValue } from "./isTruthyValue";
 import { isValidValue } from "./isValidValue";
 // Function to get additional info not displayed on card
 export const getAdditionalInfo = (internship: InternshipType) => {
