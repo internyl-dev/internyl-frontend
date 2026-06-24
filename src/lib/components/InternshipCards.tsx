@@ -78,6 +78,9 @@ export default function InternshipCards({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_isLayoutCalculated, setIsLayoutCalculated] = useState<boolean>(false);
   const [isInitialRender, setIsInitialRender] = useState<boolean>(true);
+  // Ref to guard eligibility save from firing on modal open
+  const eligibilityModalPrevRef = useRef<string | null>(null);
+  const isInitialRenderRef = useRef<boolean>(true);
   const [expandedSubjects, setExpandedSubjects] = useState<{ [key: string]: boolean }>({});
   const [modalInfo, setModalInfo] = useState<{ internshipId: string; info: { label: string; value: string }[] } | null>(null);
 
@@ -523,10 +526,19 @@ export default function InternshipCards({
   };
 
   // UseEffect to save data to Firebase whenever userEligibilityData changes
+  // Guard: only save when the data actually changes, not when the modal first opens
   useEffect(() => {
-    if (eligibilityModal) {
-      saveEligibilityData(eligibilityModal.internshipId);
+    if (!eligibilityModal) {
+      eligibilityModalPrevRef.current = null;
+      return;
     }
+    const internshipId = eligibilityModal.internshipId;
+    // If modal just opened (new internshipId), record it but don't save yet
+    if (eligibilityModalPrevRef.current !== internshipId) {
+      eligibilityModalPrevRef.current = internshipId;
+      return;
+    }
+    saveEligibilityData(internshipId);
   }, [userEligibilityData, eligibilityModal]);
 
   // Function to save eligibility data to database
@@ -670,10 +682,11 @@ export default function InternshipCards({
     setCardPositions(positions);
     setContainerHeight(Math.max(...columnHeights) - gap); // Remove last gap
     setIsLayoutCalculated(true);
-    if (isInitialRender) {
+    if (isInitialRenderRef.current) {
+      isInitialRenderRef.current = false;
       setIsInitialRender(false);
     }
-  }, [internships, itemWidth, gap, isInitialRender]);
+  }, [internships, itemWidth, gap]);
 
   // Initial layout calculation after cards are rendered
   useEffect(() => {

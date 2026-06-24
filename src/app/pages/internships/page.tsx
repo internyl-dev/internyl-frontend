@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, Suspense } from "react";
+import React, { useEffect, useState, useMemo, useRef, useCallback, Suspense } from "react";
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useRouter, useSearchParams } from "next/navigation";
@@ -121,6 +121,13 @@ function InternshipsContent() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const router = useRouter();
 
+  // Infinite scroll state
+  const INITIAL_COUNT = 12;
+  const LOAD_MORE_COUNT = 8;
+  const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+  // Ref so the scroll handler always sees the latest total without re-subscribing
+  const totalRef = useRef(0);
+
   const filterData = [
     {
       label: "Due in",
@@ -194,18 +201,6 @@ function InternshipsContent() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.filter-dropdown') && !target.closest('.filter-button') && !target.closest('.sort-dropdown-container')) {
-        setOpenDropdown(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   // Add keyboard navigation support
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -228,6 +223,28 @@ function InternshipsContent() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Infinite scroll: scroll listener using a ref for the total so we never re-subscribe
+  const loadMore = useCallback(() => {
+    setVisibleCount((prev) => {
+      if (prev >= totalRef.current) return prev;
+      return Math.min(prev + LOAD_MORE_COUNT, totalRef.current);
+    });
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const distanceFromBottom =
+        document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+      // Pre-load when 600px away from bottom
+      if (distanceFromBottom < 600) {
+        loadMore();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loadMore]);
 
   function isTimestamp(value: unknown): value is { toDate: () => Date } {
     return (
@@ -565,6 +582,11 @@ function InternshipsContent() {
     }
   };
 
+  // Reset visible count whenever filters/search/sort change
+  useEffect(() => {
+    setVisibleCount(INITIAL_COUNT);
+  }, [activeFilters, searchTerm, showBookmarkedOnly, sortBy]);
+
   const filteredAndSortedInternships = useMemo(() => {
     const filtered = internships.filter((internship) => {
       // Search filter
@@ -783,6 +805,11 @@ function InternshipsContent() {
 
     return sortInternships(filtered, sortBy, searchTerm);
   }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime]);
+
+  // Slice for infinite scroll — cap at visibleCount but never more than available
+  totalRef.current = filteredAndSortedInternships.length;
+  const visibleInternships = filteredAndSortedInternships.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredAndSortedInternships.length;
 
   const totalActiveFilters = Object.values(activeFilters).reduce((acc, arr) => acc + arr.length, 0);
   const hasBookmarkedInternships = Object.values(bookmarked).some(Boolean);
@@ -1214,7 +1241,7 @@ function InternshipsContent() {
                             {option === "Custom Range" && showCustomCostInput && activeFilters[filter.label]?.includes("Custom Range") && (
                               <div className="ml-0 mt-2 space-y-2 w-[180px]" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex flex-col gap-2 items-start w-full">
-                                  <div className="flex items-center justify-start w-full mb-1 pr-1ok">
+                                  <div className="flex items-center justify-start w-full mb-1 pr-1">
                                     <div className="flex flex-col items-start w-[80px]">
                                       <label htmlFor="minCostInput" className="text-xs text-gray-600 mb-1 ml-1">Min</label>
                                       <input
@@ -1373,11 +1400,20 @@ function InternshipsContent() {
 
       <div className="animate-in fade-in-0 duration-500">
         <InternshipCards
-          internships={filteredAndSortedInternships}
+          internships={visibleInternships}
           bookmarked={bookmarked}
           toggleBookmark={toggleBookmark}
         />
       </div>
+
+      {/* Subtle loading indicator while more cards are coming */}
+      {hasMore && (
+        <div className="flex justify-center items-center gap-2 py-8 opacity-40">
+          <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+          <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+          <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+        </div>
+      )}
     </div>
   );
 }
