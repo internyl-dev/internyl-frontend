@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "@/lib/config/firebaseConfig";
@@ -21,8 +21,9 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import InternshipCards from "@/lib/components/InternshipCards";
 import Brushstroke from "@/lib/components/Brushstroke";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
-import { InternshipCards as Internship } from "@/lib/types/internshipCards";
+import { InternshipCards as Internship, Grade } from "@/lib/types/internshipCards";
 import { useInternshipsWithFallback } from "@/lib/hooks/useRecommendedInternships";
+import { UserPreferences } from "@/lib/types/userPreferences";
 
 // Define user data type
 interface UserData {
@@ -316,7 +317,31 @@ function HomeContent() {
 
   const router = useRouter();
 
-  const { internshipsToShow } = useInternshipsWithFallback(bookmarked);
+  // Derive implicit preferences from the user's bookmarked internships.
+  // This gives the scorer real signal without requiring a manual prefs setup.
+  const impliedPrefs = useMemo((): UserPreferences | undefined => {
+    const saved = internships.filter((i) => bookmarked[i.id]);
+    if (!saved.length) return undefined;
+
+    const subjects = new Set<string>();
+    const grades = new Set<Grade>();
+
+    saved.forEach((i) => {
+      i.overview?.subject?.forEach((s) => { if (s) subjects.add(s); });
+      (i.eligibility?.eligibility?.grades ?? []).forEach((g) => { if (g && g !== "not provided") grades.add(g); });
+    });
+
+    return {
+      subjects: Array.from(subjects),
+      preferredGrades: Array.from(grades),
+      tags: [],
+      preferredLocation: { virtual: false, states: [], cities: [] },
+      minDurationWeeks: null,
+      stipendRequired: false,
+    };
+  }, [internships, bookmarked]);
+
+  const { internshipsToShow } = useInternshipsWithFallback(bookmarked, impliedPrefs);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
