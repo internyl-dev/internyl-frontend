@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 interface BrushStrokeProps {
   children: React.ReactNode;
@@ -28,18 +28,45 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
   const brushClipId = `${clipId}-brush`;
   const brushShapeId = `${clipId}-shape`;
 
+  // Refs for imperative animation restart
+  const animRef = useRef<SVGAnimateElement>(null);
+  const pseudoRef = useRef<HTMLDivElement>(null);
+
+  // On every mount (including client-side navigation), restart both animations
+  // together so they're always in sync and never "pop" in.
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      // 1. Restart the CSS animation by toggling it off and back on
+      if (pseudoRef.current) {
+        pseudoRef.current.style.animation = 'none';
+        // Force a reflow so the browser registers the change
+        void pseudoRef.current.offsetHeight;
+        pseudoRef.current.style.animation = `brushReveal-${clipId} ${duration}s cubic-bezier(0.19, 1, 0.22, 1) forwards`;
+      }
+
+      // 2. Imperatively begin the SVG SMIL animation
+      if (animRef.current) {
+        try {
+          (animRef.current as SVGAnimateElement & { beginElement?: () => void }).beginElement?.();
+        } catch {
+          // beginElement not supported in this browser — SVG will stay at width=0
+        }
+      }
+    });
+
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const wrapperStyles: React.CSSProperties = {
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    // Take up left half of container
     width: '80%',
     minWidth: 'fit-content',
-    // Vertical padding (top and bottom)
     paddingTop: `clamp(${0.25 * paddingScale}rem, ${0.75 * paddingScale}vw + ${0.25 * paddingScale}rem, ${1 * paddingScale}rem)`,
     paddingBottom: `clamp(${0.25 * paddingScale}rem, ${0.75 * paddingScale}vw + ${0.25 * paddingScale}rem, ${1 * paddingScale}rem)`,
-    // Minimal horizontal padding
     paddingLeft: `clamp(${0.5 * paddingScale}rem, ${1 * paddingScale}vw, ${1.5 * paddingScale}rem)`,
     paddingRight: `clamp(${0.5 * paddingScale}rem, ${1 * paddingScale}vw, ${1.5 * paddingScale}rem)`,
     boxSizing: 'border-box',
@@ -57,11 +84,11 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
     zIndex: -1,
     clipPath: `url(#${brushClipId})`,
     opacity: 0,
+    // Initial animation — will be reset imperatively in useEffect
     animation: `brushReveal-${clipId} ${duration}s cubic-bezier(0.19, 1, 0.22, 1) forwards`
   };
 
   const textStyles: React.CSSProperties = {
-    // Responsive font size using clamp for smooth scaling
     fontSize: `clamp(${minFontSize}, 4vw + 0.5rem, ${maxFontSize})`,
     textTransform: 'uppercase',
     margin: 0,
@@ -69,13 +96,10 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
     fontStyle: 'italic',
     filter: 'drop-shadow(0px 0px 2px black)',
     lineHeight: '1.2',
-    // Ensure text doesn't overflow
     wordWrap: 'break-word',
     hyphens: 'auto',
-    // Better text scaling on different devices
     textSizeAdjust: '100%',
     WebkitTextSizeAdjust: '100%',
-    // Center text within container
     textAlign: 'center',
     width: '100%'
   };
@@ -85,7 +109,7 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
       <style>
         {`
           @keyframes brushReveal-${clipId} {
-            0% { 
+            0% {
               opacity: 0;
               clipPath: url(#${brushClipId});
             }
@@ -93,28 +117,26 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
               opacity: 1;
               clipPath: url(#${brushClipId});
             }
-            100% { 
+            100% {
               opacity: 1;
               clipPath: url(#${brushClipId});
             }
           }
 
-          /* Media queries for fine-tuned responsiveness */
           @media (max-width: 480px) {
-  .brush-wrap {
-    padding-top: clamp(${0.125 * paddingScale}rem, ${0.5 * paddingScale}vw, ${0.5 * paddingScale}rem) !important;
-    padding-bottom: clamp(${0.125 * paddingScale}rem, ${0.5 * paddingScale}vw, ${0.5 * paddingScale}rem) !important;
-  }
-}
+            .brush-wrap {
+              padding-top: clamp(${0.125 * paddingScale}rem, ${0.5 * paddingScale}vw, ${0.5 * paddingScale}rem) !important;
+              padding-bottom: clamp(${0.125 * paddingScale}rem, ${0.5 * paddingScale}vw, ${0.5 * paddingScale}rem) !important;
+            }
+          }
 
-@media (min-width: 1200px) {
-  .brush-wrap {
-    padding-top: clamp(${0.5 * paddingScale}rem, ${0.625 * paddingScale}vw, ${1.25 * paddingScale}rem) !important;
-    padding-bottom: clamp(${0.5 * paddingScale}rem, ${0.625 * paddingScale}vw, ${1.25 * paddingScale}rem) !important;
-  }
-}
+          @media (min-width: 1200px) {
+            .brush-wrap {
+              padding-top: clamp(${0.5 * paddingScale}rem, ${0.625 * paddingScale}vw, ${1.25 * paddingScale}rem) !important;
+              padding-bottom: clamp(${0.5 * paddingScale}rem, ${0.625 * paddingScale}vw, ${1.25 * paddingScale}rem) !important;
+            }
+          }
 
-          /* Handle high DPI displays */
           @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
             .brush-wrap .brush-text {
               text-rendering: optimizeLegibility;
@@ -123,18 +145,17 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
             }
           }
 
-          /* Ensure container queries work when supported */
           @supports (container-type: inline-size) {
             .brush-wrap {
               container-type: inline-size;
             }
-            
+
             @container (max-width: 300px) {
               .brush-text {
                 font-size: clamp(0.75rem, 6cqw, 2rem) !important;
               }
             }
-            
+
             @container (min-width: 600px) {
               .brush-text {
                 font-size: clamp(1.5rem, 5cqw, 5rem) !important;
@@ -148,6 +169,7 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
         style={wrapperStyles}
       >
         <div
+          ref={pseudoRef}
           className="brush-pseudo"
           style={pseudoElementStyles}
         />
@@ -164,15 +186,15 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
         height="0"
         width="0"
         style={{ position: 'absolute', pointerEvents: 'none' }}
-        // Make SVG responsive
         viewBox="0 0 1 1"
         preserveAspectRatio="none"
       >
         <defs>
-          {/* Rectangle clip path with smooth animation */}
+          {/* Rectangle clip path — begin="indefinite" so we control it imperatively */}
           <clipPath id={rectClipId}>
             <rect x="0" y="0" width="0" height="1">
               <animate
+                ref={animRef}
                 id={animId}
                 attributeName="width"
                 dur={`${duration}s`}
@@ -181,7 +203,7 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
                 keyTimes="0; 0.017; 0.033; 0.05; 0.067; 0.083; 0.1; 0.12; 0.15; 0.18; 0.22; 0.25; 0.28; 0.32; 0.35; 0.4; 0.45; 0.5; 0.55; 0.6; 0.65; 0.7; 0.74; 0.78; 0.82; 0.85; 0.88; 0.91; 0.93; 0.95; 0.97; 0.98; 0.99; 1"
                 keySplines="0.19,1,0.22,1; 0.18,1,0.21,1; 0.17,1,0.2,1; 0.16,1,0.3,1; 0.15,1,0.28,1; 0.14,1,0.26,1; 0.25,0.46,0.45,0.94; 0.24,0.44,0.44,0.92; 0.23,0.42,0.43,0.9; 0.25,0.46,0.45,0.94; 0.26,0.48,0.46,0.96; 0.25,0.46,0.45,0.94; 0.24,0.44,0.44,0.92; 0.25,0.46,0.45,0.94; 0.26,0.48,0.46,0.96; 0.25,0.46,0.45,0.94; 0.25,0.46,0.45,0.94; 0.24,0.44,0.44,0.92; 0.23,0.42,0.43,0.9; 0.25,0.46,0.45,0.94; 0.26,0.48,0.46,0.96; 0.25,0.46,0.45,0.94; 0.24,0.44,0.44,0.92; 0.23,0.42,0.43,0.9; 0.22,0.4,0.42,0.88; 0.21,0.38,0.41,0.86; 0.19,1,0.22,1; 0.18,1,0.21,1; 0.17,1,0.2,1; 0.16,1,0.3,1; 0.15,1,0.28,1; 0.14,1,0.26,1; 0.13,1,0.25,1"
                 values="0; 0.007; 0.014; 0.02; 0.027; 0.035; 0.043; 0.06; 0.08; 0.1; 0.15; 0.19; 0.23; 0.26; 0.28; 0.32; 0.37; 0.45; 0.52; 0.57; 0.62; 0.67; 0.71; 0.78; 0.82; 0.85; 0.89; 0.92; 0.94; 0.97; 0.985; 0.993; 0.998; 1"
-                begin="0s"
+                begin="indefinite"
                 repeatCount={indefinite ? "indefinite" : "1"}
                 restart="always"
               />
