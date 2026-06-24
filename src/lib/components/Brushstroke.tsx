@@ -34,27 +34,38 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
 
   // On every mount (including client-side navigation), restart both animations
   // together so they're always in sync and never "pop" in.
+  // Double-RAF ensures Safari has processed the initial style before we restart.
   useEffect(() => {
-    const raf = requestAnimationFrame(() => {
-      // 1. Restart the CSS animation by toggling it off and back on
-      if (pseudoRef.current) {
-        pseudoRef.current.style.animation = 'none';
-        // Force a reflow so the browser registers the change
-        void pseudoRef.current.offsetHeight;
-        pseudoRef.current.style.animation = `brushReveal-${clipId} ${duration}s cubic-bezier(0.19, 1, 0.22, 1) forwards`;
-      }
+    let innerRaf: number;
 
-      // 2. Imperatively begin the SVG SMIL animation
-      if (animRef.current) {
-        try {
-          (animRef.current as SVGAnimateElement & { beginElement?: () => void }).beginElement?.();
-        } catch {
-          // beginElement not supported in this browser — SVG will stay at width=0
+    const outerRaf = requestAnimationFrame(() => {
+      innerRaf = requestAnimationFrame(() => {
+        // 1. Restart the CSS animation by toggling it off and back on
+        if (pseudoRef.current) {
+          pseudoRef.current.style.animation = 'none';
+          pseudoRef.current.style.webkitAnimation = 'none';
+          // Force a reflow so the browser registers the change
+          void pseudoRef.current.offsetHeight;
+          const animValue = `brushReveal-${clipId} ${duration}s cubic-bezier(0.19, 1, 0.22, 1) forwards`;
+          pseudoRef.current.style.animation = animValue;
+          pseudoRef.current.style.webkitAnimation = animValue;
         }
-      }
+
+        // 2. Imperatively begin the SVG SMIL animation
+        if (animRef.current) {
+          try {
+            (animRef.current as SVGAnimateElement & { beginElement?: () => void }).beginElement?.();
+          } catch {
+            // beginElement not supported in this browser — SVG will stay at width=0
+          }
+        }
+      });
     });
 
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(outerRaf);
+      if (innerRaf) cancelAnimationFrame(innerRaf);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -83,9 +94,12 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
     background: '#FF7373',
     zIndex: -1,
     clipPath: `url(#${brushClipId})`,
+    WebkitClipPath: `url(#${brushClipId})`,
     opacity: 0,
+    willChange: 'opacity, clip-path',
     // Initial animation — will be reset imperatively in useEffect
-    animation: `brushReveal-${clipId} ${duration}s cubic-bezier(0.19, 1, 0.22, 1) forwards`
+    animation: `brushReveal-${clipId} ${duration}s cubic-bezier(0.19, 1, 0.22, 1) forwards`,
+    WebkitAnimation: `brushReveal-${clipId} ${duration}s cubic-bezier(0.19, 1, 0.22, 1) forwards`,
   };
 
   const textStyles: React.CSSProperties = {
@@ -111,15 +125,32 @@ const BrushStroke: React.FC<BrushStrokeProps> = ({
           @keyframes brushReveal-${clipId} {
             0% {
               opacity: 0;
-              clipPath: url(#${brushClipId});
+              clip-path: url(#${brushClipId});
+              -webkit-clip-path: url(#${brushClipId});
             }
             1% {
               opacity: 1;
-              clipPath: url(#${brushClipId});
+              clip-path: url(#${brushClipId});
+              -webkit-clip-path: url(#${brushClipId});
             }
             100% {
               opacity: 1;
-              clipPath: url(#${brushClipId});
+              clip-path: url(#${brushClipId});
+              -webkit-clip-path: url(#${brushClipId});
+            }
+          }
+          @-webkit-keyframes brushReveal-${clipId} {
+            0% {
+              opacity: 0;
+              -webkit-clip-path: url(#${brushClipId});
+            }
+            1% {
+              opacity: 1;
+              -webkit-clip-path: url(#${brushClipId});
+            }
+            100% {
+              opacity: 1;
+              -webkit-clip-path: url(#${brushClipId});
             }
           }
 

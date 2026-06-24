@@ -79,7 +79,8 @@ const AnimatedStrikethroughList = () => {
       {items.map((item, index) => (
         <motion.li
           key={index}
-          className="relative transform transition-all duration-300 hover:scale-[1.02]"
+          className="relative hover:scale-[1.02] transition-transform duration-300"
+          style={{ willChange: 'transform, opacity' }}
           initial={{ opacity: 0.4, x: -20 }}
           animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0.4, x: -20 }}
           transition={{ duration: 0.6, delay: index * 0.15, ease: "easeOut" }}
@@ -87,11 +88,11 @@ const AnimatedStrikethroughList = () => {
           <span className="relative">
             {item}
             <motion.span
-              className="absolute inset-0 border-t-2 border-gray-600"
+              className="absolute left-0 right-0 border-t-2 border-gray-600"
               style={{
                 top: '50%',
-                transform: 'translateY(-50%)',
-                transformOrigin: 'left center'
+                marginTop: '-1px',
+                originX: 0,
               }}
               initial={{ scaleX: 0 }}
               animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
@@ -117,11 +118,9 @@ const FloatingCard = ({ children, delay = 0, className = "" }: {
   return (
     <motion.div
       className={className}
-      initial={{ y: 0, rotate: 0 }}
-      animate={{
-        y: [-5, 5, -5],
-        rotate: [-0.5, 0.5, -0.5]
-      }}
+      style={{ willChange: 'transform', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}
+      initial={{ y: 0 }}
+      animate={{ y: [-5, 5, -5] }}
       transition={{
         duration: 6,
         delay,
@@ -609,7 +608,8 @@ function HomeContent() {
                   <motion.div
                     key={internship.id}
                     className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm sm:mr-0 mr-10"
-                    initial={{ opacity: 1, y: 20 }}
+                    style={{ willChange: 'transform, opacity' }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
@@ -674,7 +674,8 @@ function HomeContent() {
                   <motion.div
                     key={internship.id}
                     className="flex-shrink-0 min-w-[280px] max-w-xs md:max-w-sm sm:mr-0 mr-10"
-                    initial={{ opacity: 1, y: 20 }}
+                    style={{ willChange: 'transform, opacity' }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
@@ -860,7 +861,7 @@ function HomeContent() {
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.1 }}
       >
         <h2 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-[#1d1d1f] to-[#4a4a5a] bg-clip-text text-transparent">
           Skip the search, <br className="sm:hidden" />just choose and apply
@@ -872,14 +873,17 @@ function HomeContent() {
         <div className="flex flex-col md:flex-row justify-center items-stretch gap-6 sm:gap-8 max-w-6xl mx-auto text-md">
           {/* Without Internyl Card - Enhanced */}
           <motion.div
-            className="relative w-full md:w-1/2 p-6 sm:p-8 text-left rounded-3xl shadow-2xl backdrop-blur-2xl overflow-hidden min-w-[220px] border border-red-100/50 group hover:scale-[1.02] transition-all duration-500"
+            className="relative w-full md:w-1/2 p-6 sm:p-8 text-left rounded-3xl shadow-2xl backdrop-blur-2xl overflow-hidden min-w-[220px] border border-red-100/50 group hover:scale-[1.02] transition-transform duration-500"
             style={{
               boxShadow: '0 20px 60px 0 rgba(226, 98, 98, 0.15)',
+              willChange: 'transform, opacity',
+              WebkitBackfaceVisibility: 'hidden',
+              backfaceVisibility: 'hidden',
             }}
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.1 }}
           >
             <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{
               background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(236,100,100,0.08) 50%, rgba(255,255,255,0.2) 100%)',
@@ -896,14 +900,17 @@ function HomeContent() {
 
           {/* With Internyl Card - Enhanced */}
           <motion.div
-            className="relative w-full md:w-1/2 p-6 sm:p-8 text-left rounded-3xl shadow-2xl border border-green-100/50 bg-white/20 backdrop-blur-2xl overflow-hidden min-w-[220px] group hover:scale-[1.02] transition-all duration-500"
+            className="relative w-full md:w-1/2 p-6 sm:p-8 text-left rounded-3xl shadow-2xl border border-green-100/50 bg-white/20 backdrop-blur-2xl overflow-hidden min-w-[220px] group hover:scale-[1.02] transition-transform duration-500"
             style={{
               boxShadow: '0 20px 60px 0 rgba(43, 162, 128, 0.15)',
+              willChange: 'transform, opacity',
+              WebkitBackfaceVisibility: 'hidden',
+              backfaceVisibility: 'hidden',
             }}
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.1 }}
           >
             <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{
               background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(43,162,128,0.08) 50%, rgba(255,255,255,0.2) 100%)',
@@ -919,7 +926,8 @@ function HomeContent() {
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6, duration: 0.4 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  style={{ willChange: 'transform, opacity' }}
                   className="hover:scale-[1.02] transition-transform duration-200"
                 >
                   Use <span className="text-[#3C66C2] font-bold bg-blue-50/50 px-1 rounded">smart filters</span> to explore curated internships & programs
@@ -928,7 +936,8 @@ function HomeContent() {
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.8, duration: 0.4 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  style={{ willChange: 'transform, opacity' }}
                   className="hover:scale-[1.02] transition-transform duration-200"
                 >
                   View all <span className="text-[#E66646] font-bold bg-red-50/50 px-1 rounded">key info</span> at a glance: deadlines, eligibility, cost
@@ -937,7 +946,8 @@ function HomeContent() {
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ delay: 1.0, duration: 0.4 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  style={{ willChange: 'transform, opacity' }}
                   className="hover:scale-[1.02] transition-transform duration-200"
                 >
                   <span className="text-[#2BA280] font-bold bg-green-50/50 px-1 rounded">Save listings</span>, set reminders, and <span className="text-[#E66646] font-bold bg-red-50/50 px-1 rounded">never miss a deadline</span>
@@ -954,7 +964,7 @@ function HomeContent() {
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.1 }}
       >
         <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-[#1d1d1f] to-[#4a4a5a] bg-clip-text text-transparent">
           No more stress,<br />we&apos;ve got you
@@ -968,11 +978,12 @@ function HomeContent() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Feature Card 1 - Enhanced */}
           <motion.div
-            className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-3xl"
+            className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group transition-shadow duration-300 hover:shadow-3xl"
+            style={{ willChange: 'transform', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 100 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.1 }}
             whileHover={{ y: -5, scale: 1.05 }}
           >
             <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(236,100,100,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0 }} />
@@ -990,11 +1001,12 @@ function HomeContent() {
 
           {/* Feature Card 2 - Enhanced */}
           <motion.div
-            className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-3xl"
+            className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group transition-shadow duration-300 hover:shadow-3xl"
+            style={{ willChange: 'transform', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 100 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.1 }}
             whileHover={{ y: -5, scale: 1.05 }}
           >
             <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(43,162,128,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0 }} />
@@ -1012,11 +1024,12 @@ function HomeContent() {
 
           {/* Feature Card 3 - Enhanced */}
           <motion.div
-            className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-3xl"
+            className="relative rounded-3xl p-6 sm:p-7 text-center border border-white/40 bg-white/20 backdrop-blur-2xl shadow-2xl overflow-hidden group transition-shadow duration-300 hover:shadow-3xl"
+            style={{ willChange: 'transform', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 100 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.1 }}
             whileHover={{ y: -5, scale: 1.05 }}
           >
             <div className="absolute inset-0 rounded-3xl pointer-events-none group-hover:opacity-80 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(60,102,194,0.1) 50%, rgba(255,255,255,0.2) 100%)', zIndex: 0 }} />
