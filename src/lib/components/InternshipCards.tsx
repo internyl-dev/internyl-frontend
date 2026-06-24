@@ -801,12 +801,12 @@ export default function InternshipCards({
                 ref={(el) => {
                   cardRefs.current[internshipId] = el;
                 }}
-                className="absolute w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-lg border-2 border-black/30 flex flex-col hover:shadow-xl transition-all duration-300"
+                className="absolute w-[350px] bg-white rounded-[30px] px-[32px] py-[42px] shadow-md border border-gray-200 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 style={{
                   left: position ? `${position.x}px` : "0px",
                   top: position ? `${position.y}px` : "0px",
                   transform: position ? "translate3d(0, 0, 0)" : "translate3d(0, 0, 0)",
-                  opacity: isInitialRender ? 0 : (daysRemaining !== null && daysRemaining < 0 ? 0.6 : 1),
+                  opacity: isInitialRender ? 0 : (daysRemaining !== null && daysRemaining < 0 ? 0.55 : 1),
                   transition: isInitialRender ? "opacity 0.3s ease-out" : "all 0.3s ease-out",
                   width: `${itemWidth}px`,
                 }}
@@ -1057,25 +1057,30 @@ export default function InternshipCards({
       {/* Info Modal */}
       {modalInfo && (
         <div
-          className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm bg-black/10 z-[9999] flex items-center justify-center p-4"
+          className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm bg-black/30 z-[9999] flex items-center justify-center p-4"
           onClick={closeModal}
         >
           <div
-            className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
+            className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-lg">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-semibold text-gray-800">
-                  {internships.find(i => i.id === modalInfo.internshipId)?.overview?.title || 'Internship Details'}
-                </h2>
+            {/* Branded Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-[#9381FF] to-[#A891FF] p-6 rounded-t-3xl">
+              <div className="flex justify-between items-start gap-3">
+                <div>
+                  <p className="text-white/70 text-xs font-semibold uppercase tracking-wide mb-1">
+                    {internships.find(i => i.id === modalInfo.internshipId)?.overview?.provider || 'Program'}
+                  </p>
+                  <h2 className="text-xl font-bold text-white leading-snug capitalize">
+                    {internships.find(i => i.id === modalInfo.internshipId)?.overview?.title || 'Internship Details'}
+                  </h2>
+                </div>
                 <button
                   onClick={closeModal}
-                  className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/20 transition-colors flex-shrink-0"
                   aria-label="Close modal"
                 >
-                  <CloseIcon fontSize="medium" />
+                  <CloseIcon fontSize="small" />
                 </button>
               </div>
             </div>
@@ -1083,16 +1088,16 @@ export default function InternshipCards({
             {/* Content */}
             <div className="p-6">
               {modalInfo.info.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {modalInfo.info.map((info, index) => (
-                    <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
-                      <div className="font-semibold text-gray-800 mb-2 text-lg">{info.label}:</div>
-                      <div className="text-gray-700 leading-relaxed">{info.value}</div>
+                    <div key={index} className="bg-gray-50 rounded-2xl px-4 py-3">
+                      <div className="text-xs font-bold text-[#9381FF] uppercase tracking-wide mb-1">{info.label}</div>
+                      <div className="text-gray-700 text-sm leading-relaxed">{info.value}</div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-gray-500 text-center py-8">
+                <div className="text-gray-400 text-center py-10">
                   No additional information available for this internship.
                 </div>
               )}
@@ -1104,43 +1109,60 @@ export default function InternshipCards({
       {/* Eligibility Checklist Modal */}
       {eligibilityModal && (
         <div
-          className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm bg-black/10 z-[9999] flex items-center justify-center p-4"
+          className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm bg-black/30 z-[9999] flex items-center justify-center p-4"
           onClick={closeEligibilityModal}
         >
           <div
-            className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative"
+            className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-lg">
-              <div className="flex justify-between items-center">
+            {/* Branded Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-[#2BA280] to-[#3C66C2] p-6 rounded-t-3xl">
+              <div className="flex justify-between items-start gap-3">
                 <div>
-                  <h2 className="text-2xl font-semibold text-gray-800">
-                    Eligibility Checklist
-                  </h2>
-                  <p className="text-gray-600 text-sm mt-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ChecklistIcon sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 18 }} />
+                    <span className="text-white/70 text-xs font-semibold uppercase tracking-wide">Application Checklist</span>
+                  </div>
+                  <h2 className="text-xl font-bold text-white leading-snug capitalize">
                     {internships.find(i => i.id === eligibilityModal.internshipId)?.overview?.title || 'Internship'}
-                  </p>
+                  </h2>
                 </div>
                 <button
                   onClick={closeEligibilityModal}
-                  className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/20 transition-colors flex-shrink-0"
                   aria-label="Close checklist"
                 >
-                  <CloseIcon fontSize="medium" />
+                  <CloseIcon fontSize="small" />
                 </button>
               </div>
+
+              {/* Progress bar in header */}
+              {eligibilityModal.items.length > 0 && (
+                <div className="mt-4">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-white/80 text-xs font-medium">Progress</span>
+                    <span className="text-white text-xs font-bold">
+                      {Object.values(userEligibilityData[eligibilityModal.internshipId] || {}).filter(Boolean).length} / {eligibilityModal.items.length}
+                    </span>
+                  </div>
+                  <div className="w-full bg-white/20 rounded-full h-2">
+                    <div
+                      className="bg-white h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${(Object.values(userEligibilityData[eligibilityModal.internshipId] || {}).filter(Boolean).length / eligibilityModal.items.length) * 100}%`
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Content */}
-            <div className="p-6">
+            <div className="p-5">
               {eligibilityModal.items.length > 0 ? (
-                <div className="space-y-4">
-                  <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                    <p className="text-blue-800 text-sm">
-                      Check off items as you complete them. Your progress will be saved automatically.
-                    </p>
-                  </div>
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-400 mb-3 px-1">Tap items to check them off — progress saves automatically.</p>
 
                   {eligibilityModal.items.map((item) => {
                     const isChecked = userEligibilityData[eligibilityModal.internshipId]?.[item.id] || false;
@@ -1149,31 +1171,35 @@ export default function InternshipCards({
                       <div
                         key={item.id}
                         onClick={() => handleCheckboxToggle(eligibilityModal.internshipId, item.id)}
-                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                        className={`rounded-2xl p-4 cursor-pointer transition-all duration-200 border ${
+                          isChecked
+                            ? 'bg-green-50 border-green-200'
+                            : 'bg-gray-50 border-gray-100 hover:bg-white hover:border-[#9381FF]/30 hover:shadow-sm'
+                        }`}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="mt-1 text-blue-600">
+                          <div className="mt-0.5 flex-shrink-0">
                             {isChecked ? (
-                              <CheckCircleOutlinedIcon className="text-green-600" />
+                              <CheckCircleOutlinedIcon sx={{ color: '#2BA280', fontSize: 22 }} />
                             ) : (
-                              <RadioButtonUncheckedIcon />
+                              <RadioButtonUncheckedIcon sx={{ color: '#9381FF', fontSize: 22 }} />
                             )}
                           </div>
 
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className={`font-medium ${isChecked ? 'text-green-700 line-through' : 'text-gray-800'}`}>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className={`font-medium text-sm ${isChecked ? 'text-green-700 line-through decoration-green-400' : 'text-gray-800'}`}>
                                 {item.label}
                               </h3>
                               {item.required && (
-                                <span className="text-red-500 text-xs bg-red-100 px-2 py-1 rounded-full">
+                                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${isChecked ? 'bg-green-100 text-green-600' : 'bg-[#9381FF]/10 text-[#9381FF]'}`}>
                                   Required
                                 </span>
                               )}
                             </div>
 
                             {item.description && (
-                              <p className={`text-sm ${isChecked ? 'text-gray-400' : 'text-gray-600'}`}>
+                              <p className={`text-xs mt-0.5 ${isChecked ? 'text-gray-400' : 'text-gray-500'}`}>
                                 {item.description}
                               </p>
                             )}
@@ -1182,27 +1208,9 @@ export default function InternshipCards({
                       </div>
                     );
                   })}
-
-                  { }
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-gray-700">Progress</span>
-                      <span className="text-sm text-gray-600">
-                        {Object.values(userEligibilityData[eligibilityModal.internshipId] || {}).filter(Boolean).length} of {eligibilityModal.items.length} completed
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${(Object.values(userEligibilityData[eligibilityModal.internshipId] || {}).filter(Boolean).length / eligibilityModal.items.length) * 100}%`
-                        }}
-                      ></div>
-                    </div>
-                  </div>
                 </div>
               ) : (
-                <div className="text-gray-500 text-center py-8">
+                <div className="text-gray-400 text-center py-10 text-sm">
                   No specific eligibility requirements found for this internship.
                 </div>
               )}

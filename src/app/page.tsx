@@ -557,26 +557,26 @@ function HomeContent() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 sm:px-6 md:px-12 lg:px-20 pt-10 md:pt-18 sm:pb-8 md:pb-12 gap-4 md:gap-0 ml-8 sm:ml-0 pb-0">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 sm:px-8 md:px-12 lg:px-16 pt-10 md:pt-14 pb-6 gap-4 md:gap-0">
             <div className="flex flex-col items-start w-full md:w-auto">
-              <p className="text-base sm:text-lg md:text-[18px] text-[#A2A2C7] tracking-[-0.04em] mb-1 font-medium">
+              <p className="text-sm sm:text-base text-[#A2A2C7] tracking-[-0.02em] mb-1 font-medium uppercase">
                 Track your internships
               </p>
-              <h2 className="text-2xl sm:text-4xl md:text-5xl font-semibold bg-gradient-to-r from-[#2F2F3A] to-[#5A5A6B] bg-clip-text text-transparent">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold bg-gradient-to-r from-[#2F2F3A] to-[#5A5A6B] bg-clip-text text-transparent">
                 Your Internships
               </h2>
             </div>
             <Link
               href="/pages/internships"
-              className="group inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-[18px] font-medium text-white bg-gradient-to-r from-[#E26262] to-[#F07575] rounded-full gap-2 sm:gap-3.5 hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl transform hover:scale-105 whitespace-nowrap mt-4 md:mt-0 border border-white/20"
+              className="group inline-flex items-center px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-[#E26262] to-[#F07575] rounded-full gap-2 sm:gap-3 hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap border border-white/20"
             >
-              see all
-              <ArrowForwardIcon className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform duration-300" />
+              See all
+              <ArrowForwardIcon className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
           </div>
 
           {/* Scrollable Internship Cards with enhanced container */}
-          <div className="overflow-x-auto px-2 sm:px-6 md:px-12 lg:px-20 pb-8 md:pb-10">
+          <div className="overflow-x-auto px-6 sm:px-8 md:px-12 lg:px-16 pb-10 md:pb-12">
             <div className="flex w-max md:w-full gap-6">
               {savedInternshipsFiltered.length === 0 ? (
                 <motion.div
@@ -632,25 +632,25 @@ function HomeContent() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-2 sm:px-6 md:px-12 lg:px-20 pt-10 md:pt-18 sm:pb-8 md:pb-12 gap-4 md:gap-0 ml-8 pb-0">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 sm:px-8 md:px-12 lg:px-16 pt-10 md:pt-14 pb-6 gap-4 md:gap-0">
             <div className="flex flex-col items-start w-full md:w-auto">
-              <p className="text-base sm:text-lg md:text-[18px] text-[#A2A2C7] tracking-[-0.04em] mb-1 font-medium">
+              <p className="text-sm sm:text-base text-[#A2A2C7] tracking-[-0.02em] mb-1 font-medium uppercase">
                 Recommended for you
               </p>
-              <h2 className="text-2xl sm:text-4xl md:text-5xl font-semibold bg-gradient-to-r from-[#2F2F3A] to-[#5A5A6B] bg-clip-text text-transparent">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold bg-gradient-to-r from-[#2F2F3A] to-[#5A5A6B] bg-clip-text text-transparent">
                 Suggested Internships
               </h2>
             </div>
             <Link
-              href="/pages/internships?bookmarked=true"
-              className="group inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-[18px] font-medium text-white bg-gradient-to-r from-[#E26262] to-[#F07575] rounded-full gap-2 sm:gap-3.5 hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl transform hover:scale-105 whitespace-nowrap mt-4 md:mt-0 border border-white/20"
+              href="/pages/internships"
+              className="group inline-flex items-center px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-[#E26262] to-[#F07575] rounded-full gap-2 sm:gap-3 hover:from-[#d65050] hover:to-[#e66666] transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap border border-white/20"
             >
-              see all
-              <ArrowForwardIcon className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform duration-300" />
+              See all
+              <ArrowForwardIcon className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
           </div>
 
-          <div className="overflow-x-auto px-2 sm:px-6 md:px-12 lg:px-20 pb-8 md:pb-10">
+          <div className="overflow-x-auto px-6 sm:px-8 md:px-12 lg:px-16 pb-10 md:pb-12">
             <div className="flex w-max md:w-full gap-6">
               {internshipsToShow.length === 0 ? (
                 <div className="w-full text-center py-12 px-6">

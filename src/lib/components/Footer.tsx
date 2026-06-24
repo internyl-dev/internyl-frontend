@@ -300,6 +300,12 @@ export default function Footer() {
               </ul>
             </div>
           </div>
+
+          {/* Bottom copyright bar */}
+          <div className="mt-10 pt-6 border-t border-gray-200/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
+            <span>© {new Date().getFullYear()} Internyl. All rights reserved.</span>
+            <span>Made for students, by students.</span>
+          </div>
         </div>
       </footer>
     </>
