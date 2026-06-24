@@ -94,7 +94,8 @@ export default function SignUp() {
             });
 
             setStatus("Account created successfully!");
-            router.push("/");
+            const pendingBookmark = localStorage.getItem("pendingBookmark");
+            router.push(pendingBookmark ? "/pages/internships" : "/");
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setStatus(err.message);

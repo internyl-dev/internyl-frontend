@@ -62,7 +62,8 @@ export default function Login() {
         });
       }
 
-      router.push("/");
+      const pendingBookmark = localStorage.getItem("pendingBookmark");
+      router.push(pendingBookmark ? "/pages/internships" : "/");
     } catch { {/* (error) */}
       setStatusType("error");
       setStatus("Invalid email or password.");
@@ -91,7 +92,8 @@ export default function Login() {
         });
       }
 
-      router.push("/");
+      const pendingBookmark = localStorage.getItem("pendingBookmark");
+      router.push(pendingBookmark ? "/pages/internships" : "/");
     } catch { {/* (error) */}
       setStatusType("error");
       setStatus("Google sign-in failed.");

@@ -686,42 +686,18 @@ function InternshipsContent() {
                   return isFree;
 
                 case "Under $1000":
-                  return (
-                    isFree ||
-                    minCost !== null &&
-                    maxCost !== null &&
-                    minCost > 0 &&
-                    maxCost < 1000
-                  );
+                  return isFree || (minCost !== null && minCost < 1000);
 
                 case "$1000–$3000":
-                  return (
-                    !isFree &&
-                    minCost !== null &&
-                    maxCost !== null &&
-                    minCost >= 1000 &&
-                    maxCost <= 3000
-                  );
+                  return minCost !== null && minCost >= 1000 && minCost <= 3000;
 
                 case "$3000+":
-                  return (
-                    !isFree &&
-                    minCost !== null &&
-                    minCost > 3000
-                  );
+                  return minCost !== null && minCost >= 3000;
 
                 case "Custom Range": {
                   const [min, max] = customCostRange;
-
                   if (min === 0 && isFree) return true;
-
-                  return (
-                    !isFree &&
-                    minCost !== null &&
-                    maxCost !== null &&
-                    minCost >= min &&
-                    maxCost <= max
-                  );
+                  return minCost !== null && minCost >= min && minCost <= max;
                 }
 
                 default:
@@ -804,7 +780,7 @@ function InternshipsContent() {
     });
 
     return sortInternships(filtered, sortBy, searchTerm);
-  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime]);
+  }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime, customCostRange]);
 
   // Slice for infinite scroll — cap at visibleCount but never more than available
   totalRef.current = filteredAndSortedInternships.length;
@@ -1256,6 +1232,7 @@ function InternshipsContent() {
                                           if (val < 0) val = 0;
                                           if (val > customCostRange[1]) val = customCostRange[1];
                                           setCustomCostRange([val, customCostRange[1]]);
+                                          setLastSearchTime(Date.now());
                                         }}
                                         className="w-full px-2 py-1 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md hover:border-gray-400"
                                         style={{ minWidth: '60px' }}
@@ -1276,6 +1253,7 @@ function InternshipsContent() {
                                           if (val < customCostRange[0]) val = customCostRange[0];
                                           if (val > maxCost) val = maxCost;
                                           setCustomCostRange([customCostRange[0], val]);
+                                          setLastSearchTime(Date.now());
                                         }}
                                         className="w-full px-2 py-1 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
                                         style={{ minWidth: '60px' }}
