@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-// import { useState } from "react";
 
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
@@ -201,9 +200,9 @@ export default function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Company Info */}
             <div className="footer-section lg:col-span-2">
-              <h3 className="footer-logo text-2xl font-bold text-gray-900 mb-4 cursor-pointer tracking-[-0.05em]">
+              <Link href="/" className="footer-logo text-2xl font-bold text-gray-900 mb-4 inline-block tracking-[-0.05em]">
                 internyl
-              </h3>
+              </Link>
               <p className="text-gray-600 text-sm leading-relaxed mb-6 max-w-md">
                 Connecting talented students with incredible internship
                 opportunities. Build your career, gain experience, and make

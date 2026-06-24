@@ -20,6 +20,7 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 
 import InternshipCards from "@/lib/components/InternshipCards";
 import Brushstroke from "@/lib/components/Brushstroke";
+import ScrollToTop from "@/lib/components/ScrollToTop";
 import { toggleBookmarkInFirestore } from "@/lib/modules/toggleBookmark";
 import { InternshipCards as Internship, Grade } from "@/lib/types/internshipCards";
 import { useInternshipsWithFallback } from "@/lib/hooks/useRecommendedInternships";
@@ -257,49 +258,6 @@ const InsightsWidget = ({ savedCount, totalInternships, savedInternshipsFiltered
   );
 };
 
-const ScrollToTop = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const toggleVisibility = () => {
-      if (window.pageYOffset > 300) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
-    };
-
-    window.addEventListener('scroll', toggleVisibility);
-    return () => window.removeEventListener('scroll', toggleVisibility);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
-
-  return (
-    <>
-      {isVisible && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0 }}
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 p-4 bg-gradient-to-r from-[#9381FF] to-[#A891FF] text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 border border-white/20"
-          whileHover={{ y: -5 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-          </svg>
-        </motion.button>
-      )}
-    </>
-  );
-};
 
 // Component that uses useSearchParams - wrapped in its own Suspense
 function HomeContent() {
@@ -341,6 +299,27 @@ function HomeContent() {
   }, [internships, bookmarked]);
 
   const { internshipsToShow } = useInternshipsWithFallback(bookmarked, impliedPrefs);
+
+  const getRecommendationReason = (internship: Internship): string => {
+    if (impliedPrefs?.subjects?.length) {
+      const matchingSubjects = (internship.overview?.subject ?? []).filter(
+        (s) => impliedPrefs.subjects?.includes(s)
+      );
+      if (matchingSubjects.length > 0) {
+        const labels = matchingSubjects
+          .slice(0, 2)
+          .map((s) => s.charAt(0).toUpperCase() + s.slice(1));
+        return `Matches: ${labels.join(", ")}`;
+      }
+    }
+    if (impliedPrefs?.preferredGrades?.length) {
+      const grades = internship.eligibility?.eligibility?.grades ?? [];
+      if (grades.some((g) => impliedPrefs.preferredGrades?.includes(g as Grade))) {
+        return "Matches your grade level";
+      }
+    }
+    return "Popular near your deadlines";
+  };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -684,6 +663,9 @@ function HomeContent() {
                       bookmarked={bookmarked}
                       toggleBookmark={toggleBookmark}
                     />
+                    <p className="text-xs text-center text-[#A2A2C7] mt-2 font-medium px-2">
+                      {getRecommendationReason(internship)}
+                    </p>
                   </motion.div>
                 ))
               )}
@@ -691,12 +673,6 @@ function HomeContent() {
           </div>
         </motion.div>
 
-        {/* Smart Data Insights Widget
-        <InsightsWidget
-          savedCount={savedInternshipsFiltered.length}
-          totalInternships={internships.length}
-          savedInternshipsFiltered={savedInternshipsFiltered}
-        /> */}
       </div>
     );
   }
@@ -1046,8 +1022,6 @@ function HomeContent() {
           </motion.div>
         </div>
       </motion.section>
-
-      <ScrollToTop />
 
       {/* Enhanced global styles */}
       <style jsx global>{`

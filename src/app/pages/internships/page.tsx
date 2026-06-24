@@ -15,6 +15,72 @@ import { auth, db } from "@/lib/config/firebaseConfig";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 
+// Static arrays outside the component — no re-creation on each render
+const motivationalPhrases = [
+  "Discover your next adventure today! 🚀",
+  "Your dream internship is just a search away ✨",
+  "Transform your summer into something extraordinary 🌟",
+  "Find the perfect opportunity to grow and learn 📚",
+  "Take the first step toward your bright future 🌅",
+  "Unlock new possibilities with every click 🔓",
+  "Your journey to success starts here 🎯",
+  "Explore programs that will shape your tomorrow 🔮",
+  "Turn your passion into real-world experience 💡",
+  "Every great career begins with a single opportunity 🌱",
+  "Ready to make this summer count? Let's go! ⚡",
+  "Find internships that match your ambitions 🎨",
+  "Your next chapter is waiting to be written ✍️",
+  "Dive into experiences that will inspire you 🌊",
+  "Connect your interests with amazing opportunities 🔗",
+  "Build the foundation for your dream career 🏗️",
+  "Discover programs tailored just for you 🎪",
+  "Step out of your comfort zone and into greatness 🦋",
+  "Find your place in the world of innovation 🌍",
+  "Today's search could change your entire future 🌈",
+];
+
+function calculateRelevanceScore(
+  internship: InternshipType,
+  searchTerm: string,
+  bookmarked: { [key: string]: boolean }
+): number {
+  if (!searchTerm) return 1;
+
+  const search = searchTerm.toLowerCase().trim();
+  const title = (internship.overview?.title || '').toLowerCase();
+  const provider = (internship.overview?.provider || '').toLowerCase();
+  const description = (internship.overview?.description || '').toLowerCase();
+
+  let subjects: string[] = [];
+  if (internship.overview?.subject && Array.isArray(internship.overview.subject)) {
+    subjects = internship.overview.subject.map(s => String(s).toLowerCase());
+  }
+
+  let score = 0;
+
+  if (title.includes(search)) score += title.startsWith(search) ? 10 : 5;
+  if (provider.includes(search)) score += provider.startsWith(search) ? 4 : 2;
+  if (subjects.some(s => s.includes(search))) {
+    score += subjects.some(s => s === search) ? 6 : 3;
+  }
+  if (description.includes(search)) score += 1;
+
+  const searchWords = search.split(' ').filter(word => word.length > 2);
+  searchWords.forEach(word => {
+    if (title.includes(word)) score += 2;
+    if (provider.includes(word)) score += 1;
+    if (subjects.some(s => s.includes(word))) score += 1.5;
+  });
+
+  if (bookmarked[internship.id]) score += 1;
+  if (title.length > 60) score *= 0.9;
+
+  const fieldsMatched = [title, provider, description, ...subjects].filter(f => f.includes(search)).length;
+  if (fieldsMatched > 1) score *= 1.2;
+
+  return score;
+}
+
 const sortOptions = [
   { value: "relevance", label: "Best Match" },
   { value: "deadline", label: "Deadline (Soonest)" },
@@ -47,29 +113,6 @@ function getDueCategory(date: Date | null): string {
 }
 
 function InternshipsContent() {
-  const motivationalPhrases = [
-    "Discover your next adventure today! 🚀",
-    "Your dream internship is just a search away ✨",
-    "Transform your summer into something extraordinary 🌟",
-    "Find the perfect opportunity to grow and learn 📚",
-    "Take the first step toward your bright future 🌅",
-    "Unlock new possibilities with every click 🔓",
-    "Your journey to success starts here 🎯",
-    "Explore programs that will shape your tomorrow 🔮",
-    "Turn your passion into real-world experience 💡",
-    "Every great career begins with a single opportunity 🌱",
-    "Ready to make this summer count? Let's go! ⚡",
-    "Find internships that match your ambitions 🎨",
-    "Your next chapter is waiting to be written ✍️",
-    "Dive into experiences that will inspire you 🌊",
-    "Connect your interests with amazing opportunities 🔗",
-    "Build the foundation for your dream career 🏗️",
-    "Discover programs tailored just for you 🎪",
-    "Step out of your comfort zone and into greatness 🦋",
-    "Find your place in the world of innovation 🌍",
-    "Today's search could change your entire future 🌈"
-
-  ];
   useEffect(() => {
     // Gradient animation styles
     const style = document.createElement('style');
@@ -158,6 +201,12 @@ function InternshipsContent() {
       color: "bg-[#def0ea]",
       icon: Calendar,
       options: ["1 week", "2–4 weeks", "1–2 months", "Full Summer"],
+    },
+    {
+      label: "Stipend",
+      color: "bg-[#e8f4e8]",
+      icon: DollarSign,
+      options: ["Stipend Available"],
     },
   ];
 
@@ -342,11 +391,13 @@ function InternshipsContent() {
           });
           setBookmarked(map);
         }
-        const pendingId = localStorage.getItem("pendingBookmark");
-        if (pendingId) {
-          await toggleBookmarkInFirestore(pendingId, false);
-          setBookmarked((prev) => ({ ...prev, [pendingId]: true }));
-          localStorage.removeItem("pendingBookmark");
+        const pendingIds: string[] = JSON.parse(localStorage.getItem("pendingBookmarks") || "[]");
+        if (pendingIds.length > 0) {
+          for (const pendingId of pendingIds) {
+            await toggleBookmarkInFirestore(pendingId, false);
+            setBookmarked((prev) => ({ ...prev, [pendingId]: true }));
+          }
+          localStorage.removeItem("pendingBookmarks");
         }
       }
       setIsLoading(false);
@@ -356,7 +407,9 @@ function InternshipsContent() {
 
   const toggleBookmark = async (internshipId: string) => {
     if (!user) {
-      localStorage.setItem("pendingBookmark", internshipId);
+      const pending: string[] = JSON.parse(localStorage.getItem("pendingBookmarks") || "[]");
+      if (!pending.includes(internshipId)) pending.push(internshipId);
+      localStorage.setItem("pendingBookmarks", JSON.stringify(pending));
       router.push("/pages/signup");
       return;
     }
@@ -422,65 +475,8 @@ function InternshipsContent() {
     return filterData.find(f => f.label === category)?.color || "bg-gray-200";
   };
 
-  const calculateRelevanceScore = (internship: InternshipType, searchTerm: string): number => {
-    if (!searchTerm) return 1; // No search term, all equally relevant
 
-    const search = searchTerm.toLowerCase().trim();
-    const title = (internship.overview?.title || '').toLowerCase();
-    const provider = (internship.overview?.provider || '').toLowerCase();
-    const description = (internship.overview?.description || '').toLowerCase();
-
-    // Handle subjects - can be array or empty
-    let subjects: string[] = [];
-    if (internship.overview?.subject && Array.isArray(internship.overview.subject)) {
-      subjects = internship.overview.subject.map(s => String(s).toLowerCase());
-    }
-
-    let score = 0;
-
-    // Title matches (highest weight)
-    if (title.includes(search)) {
-      score += title.startsWith(search) ? 10 : 5;
-    }
-
-    // Provider matches
-    if (provider.includes(search)) {
-      score += provider.startsWith(search) ? 4 : 2;
-    }
-
-    // Subject matches
-    if (subjects.some(s => s.includes(search))) {
-      const isExact = subjects.some(s => s === search);
-      score += isExact ? 6 : 3;
-    }
-
-    // Description matches (lower weight)
-    if (description.includes(search)) {
-      score += 1;
-    }
-
-    // Word-by-word matching for multi-word searches
-    const searchWords = search.split(' ').filter(word => word.length > 2);
-    searchWords.forEach(word => {
-      if (title.includes(word)) score += 2;
-      if (provider.includes(word)) score += 1;
-      if (subjects.some(s => s.includes(word))) score += 1.5;
-    });
-
-    // Boost bookmarked items slightly
-    if (bookmarked[internship.id]) score += 1;
-
-    // Penalty for very long titles
-    if (title.length > 60) score *= 0.9;
-
-    // Boost if multiple fields match
-    const fieldsMatched = [title, provider, description, ...subjects].filter(field => field.includes(search)).length;
-    if (fieldsMatched > 1) score *= 1.2;
-
-    return score;
-  };
-
-  const sortInternships = (internships: InternshipType[], sortBy: string, searchTerm: string) => {
+  const sortInternships = (internships: InternshipType[], sortBy: string, searchTerm: string, bookmarked: { [key: string]: boolean }) => {
     const sorted = [...internships];
 
     // Helper function to check if deadline is past due
@@ -574,8 +570,8 @@ function InternshipsContent() {
           if (aPastDue && !bPastDue) return 1;
           if (!aPastDue && bPastDue) return -1;
 
-          const aScore = calculateRelevanceScore(a, searchTerm);
-          const bScore = calculateRelevanceScore(b, searchTerm);
+          const aScore = calculateRelevanceScore(a, searchTerm, bookmarked);
+          const bScore = calculateRelevanceScore(b, searchTerm, bookmarked);
           if (bScore !== aScore) return bScore - aScore;
           return (a.overview?.title || '').localeCompare(b.overview?.title || '');
         });
@@ -773,13 +769,23 @@ function InternshipsContent() {
             });
           }
 
+          case "Stipend": {
+            return selectedOptions.some((opt) => {
+              if (opt === "Stipend Available") {
+                const stipend = internship.costs?.stipend;
+                return stipend?.available === true;
+              }
+              return false;
+            });
+          }
+
           default:
             return true;
         }
       });
     });
 
-    return sortInternships(filtered, sortBy, searchTerm);
+    return sortInternships(filtered, sortBy, searchTerm, bookmarked);
   }, [internships, activeFilters, searchTerm, showBookmarkedOnly, sortBy, bookmarked, lastSearchTime, customCostRange]);
 
   // Slice for infinite scroll — cap at visibleCount but never more than available
@@ -969,6 +975,8 @@ function InternshipsContent() {
         <div className="relative sort-dropdown-container">
           <button
             onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
+            aria-expanded={openDropdown === 'sort'}
+            aria-haspopup="listbox"
             className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border text-sm font-medium hover:bg-gray-50 hover:shadow-md transition-all duration-200 hover:scale-105"
           >
             <SlidersHorizontal className="w-4 h-4" />
@@ -1139,6 +1147,9 @@ function InternshipsContent() {
                   onClick={() =>
                     setOpenDropdown((prev) => (prev === filter.label ? null : filter.label))
                   }
+                  aria-expanded={openDropdown === filter.label}
+                  aria-haspopup="listbox"
+                  aria-label={`Filter by ${filter.label}`}
                   className={`filter-button flex items-center gap-2 px-4 py-2 rounded-full ${filter.color} text-black text-sm font-semibold shadow-sm hover:brightness-95 hover:scale-105 transition-all duration-200 ${hasActiveOptions ? 'ring-2 ring-blue-400 ring-offset-1' : ''
                     }`}
                 >
@@ -1374,6 +1385,15 @@ function InternshipsContent() {
             <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
           </div>
         </div>
+      )}
+
+      {filteredAndSortedInternships.length > 0 && (
+        <p className="text-center text-sm text-gray-500 mb-2 mt-4">
+          Showing {Math.min(visibleCount, filteredAndSortedInternships.length)} of {filteredAndSortedInternships.length} program{filteredAndSortedInternships.length !== 1 ? "s" : ""}
+          {internships.length !== filteredAndSortedInternships.length && (
+            <span className="text-gray-400"> (filtered from {internships.length} total)</span>
+          )}
+        </p>
       )}
 
       <div className="animate-in fade-in-0 duration-500">
