@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useId } from "react";
 import { InternshipCards as InternshipType } from "../types/internshipCards";
 import {
   AccessTimeOutlined as TimeIcon,
@@ -89,6 +89,45 @@ export default function InternshipCards({
   const [userEligibilityData, setUserEligibilityData] = useState<UserEligibilityData>({});
 
   const userId = auth.currentUser != null ? auth.currentUser.uid : null;
+  const infoModalTitleId = useId();
+  const eligibilityModalTitleId = useId();
+
+  // Focus trap: when either modal is open, trap Tab/Shift+Tab inside it
+  useEffect(() => {
+    const activeModal = document.querySelector<HTMLElement>('[role="dialog"]');
+    if (!activeModal) return;
+
+    const focusableSelectors =
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusable = Array.from(
+      activeModal.querySelectorAll<HTMLElement>(focusableSelectors)
+    ).filter((el) => !el.hasAttribute('disabled'));
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first?.focus();
+
+    const trap = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+    };
+    document.addEventListener('keydown', trap);
+    return () => document.removeEventListener('keydown', trap);
+  }, [modalInfo, eligibilityModal]);
+
+  const getUrgencyLabel = (daysRemaining: number | null): string | null => {
+    if (daysRemaining === null) return null;
+    if (daysRemaining < 0) return "Past due";
+    if (daysRemaining === 0) return "Due today";
+    if (daysRemaining <= 3) return "Due very soon";
+    if (daysRemaining <= 7) return "Due this week";
+    if (daysRemaining <= 30) return "Due this month";
+    return null; // no badge needed for distant deadlines
+  };
 
   const capitalizeWords = (text: string) =>
     text
@@ -844,12 +883,18 @@ export default function InternshipCards({
                     {internship.overview?.title || 'none'}
                   </h2>
                   {firstDeadlineDate && (
-                    <p className={`text-base font-medium flex items-center text-[1.2rem] ${dueTextClass}`}>
-                      <TimeIcon className="mr-2" sx={{ color: iconColor, fontSize: 26 }} />
-                      <span className="font-bold">Due: </span>
-                      <span className="ml-1">
-                        {firstDeadlineDate}
-                      </span>
+                    <p className={`text-base font-medium flex items-center flex-wrap gap-x-1 text-[1.2rem] ${dueTextClass}`}>
+                      <TimeIcon className="mr-1" sx={{ color: iconColor, fontSize: 26 }} />
+                      <span className="font-bold">Due:</span>
+                      <span>{firstDeadlineDate}</span>
+                      {(() => {
+                        const label = getUrgencyLabel(daysRemaining);
+                        return label ? (
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full opacity-75 ml-1" style={{ background: 'rgba(0,0,0,0.07)' }}>
+                            {label}
+                          </span>
+                        ) : null;
+                      })()}
                     </p>
                   )}
                 </div>
@@ -1059,8 +1104,12 @@ export default function InternshipCards({
         <div
           className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm bg-black/30 z-[9999] flex items-center justify-center p-4"
           onClick={closeModal}
+          aria-hidden="false"
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={infoModalTitleId}
             className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1071,7 +1120,7 @@ export default function InternshipCards({
                   <p className="text-white/70 text-xs font-semibold uppercase tracking-wide mb-1">
                     {internships.find(i => i.id === modalInfo.internshipId)?.overview?.provider || 'Program'}
                   </p>
-                  <h2 className="text-xl font-bold text-white leading-snug capitalize">
+                  <h2 id={infoModalTitleId} className="text-xl font-bold text-white leading-snug capitalize">
                     {internships.find(i => i.id === modalInfo.internshipId)?.overview?.title || 'Internship Details'}
                   </h2>
                 </div>
@@ -1111,8 +1160,12 @@ export default function InternshipCards({
         <div
           className="fixed top-0 left-0 w-full h-screen backdrop-blur-sm bg-black/30 z-[9999] flex items-center justify-center p-4"
           onClick={closeEligibilityModal}
+          aria-hidden="false"
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={eligibilityModalTitleId}
             className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1124,7 +1177,7 @@ export default function InternshipCards({
                     <ChecklistIcon sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 18 }} />
                     <span className="text-white/70 text-xs font-semibold uppercase tracking-wide">Application Checklist</span>
                   </div>
-                  <h2 className="text-xl font-bold text-white leading-snug capitalize">
+                  <h2 id={eligibilityModalTitleId} className="text-xl font-bold text-white leading-snug capitalize">
                     {internships.find(i => i.id === eligibilityModal.internshipId)?.overview?.title || 'Internship'}
                   </h2>
                 </div>

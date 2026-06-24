@@ -29,6 +29,16 @@ export default function Account() {
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // Auto-clear status messages after 4 seconds
+  useEffect(() => {
+    if (!statusMessage) return;
+    const timer = setTimeout(() => {
+      setStatusMessage("");
+      setStatusType(null);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [statusMessage]);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
@@ -52,11 +62,11 @@ export default function Account() {
     if (user && email !== user.email) {
       try {
         await updateEmail(user, email);
-        setStatusMessage("✅ Email updated.");
+        setStatusMessage("Email updated successfully.");
         setStatusType("success");
       } catch (err) {
         console.error(err);
-        setStatusMessage("❌ Error updating email.");
+        setStatusMessage("Error updating email. Please try again.");
         setStatusType("error");
       }
     }
@@ -90,7 +100,7 @@ export default function Account() {
       // Update password
       await updatePassword(user, newPassword);
       setStatusType("success");
-      setStatusMessage("Password successfully updated!");
+      setStatusMessage("Password updated successfully.");
       setNewPassword("");
       setCurrentPassword("");
     } catch (err: unknown) {
@@ -112,11 +122,11 @@ export default function Account() {
       try {
         const docRef = doc(db, "users", user.uid);
         await updateDoc(docRef, { displayName });
-        setStatusMessage("✅ Display name updated.");
+        setStatusMessage("Display name updated successfully.");
         setStatusType("success");
       } catch (err) {
         console.error(err);
-        setStatusMessage("❌ Error updating display name.");
+        setStatusMessage("Error updating display name. Please try again.");
         setStatusType("error");
       }
     }
@@ -127,11 +137,11 @@ export default function Account() {
       try {
         const docRef = doc(db, "users", user.uid);
         await updateDoc(docRef, { username });
-        setStatusMessage("✅ Username updated.");
+        setStatusMessage("Username updated successfully.");
         setStatusType("success");
       } catch (err) {
         console.error(err);
-        setStatusMessage("❌ Error updating username.");
+        setStatusMessage("Error updating username. Please try again.");
         setStatusType("error");
       }
     }
@@ -297,7 +307,6 @@ export default function Account() {
                     } shadow-lg transition-all duration-300`}
                   >
                     <p className="text-sm font-medium text-center">
-                      {statusType === "success" ? "✅ " : "❌ "}
                       {statusMessage}
                     </p>
                   </div>
